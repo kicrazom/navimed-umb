@@ -1,0 +1,89 @@
+{
+  "model": "bielik-11b-v30",
+  "model_hf_id": "speakleash/Bielik-11B-v3.0-Instruct",
+  "model_path": "/home/mozarcik/models/bielik-11b-v30",
+  "phase": "1_envelope",
+  "embargo": "PUBLIC",
+  "session_date": "2026-05-17",
+  "purpose": "Phase 1 envelope sanity test of bielik-11b-v30 (BF16, TP=2) on dual-R9700 / vLLM 0.19.0+rocm721 stack via OpenAI-compatible vllm serve endpoint. Direct A/B comparison vs TP=1 baseline from same session (2026-05-17-bielik-11b-v30-vllm-tp1-bf16.json).",
+  "transport": "vllm-serve-openai-api",
+  "config": {
+    "tensor_parallel_size": 2,
+    "max_model_len": 8192,
+    "gpu_memory_utilization": 0.9,
+    "enforce_eager": true,
+    "dtype": "bfloat16",
+    "port": 8101,
+    "port_note": "Port 8101 used because :8000 occupied by ai-dashboard (long-running) and :8100 reserved for parallel agent (bge-m3 relocation). Identical hardware path otherwise."
+  },
+  "stack": {
+    "rocm_version": "ROCM-SMI version: 4.0.0+fc0010cf6a (ROCM-SMI-LIB 7.8.0)",
+    "vllm_version": "0.19.0+rocm721",
+    "torch_version": "2.10.0+git8514f05",
+    "torch_hip_version": "7.2.53211"
+  },
+  "env_vars": {
+    "ROCR_VISIBLE_DEVICES": "0,1",
+    "VLLM_ROCM_USE_AITER": "0",
+    "AMD_SERIALIZE_KERNEL": "1",
+    "HIP_LAUNCH_BLOCKING": "1",
+    "PYTORCH_ALLOC_CONF": "<unset>"
+  },
+  "loaded": true,
+  "load_time_sec": 24,
+  "load_time_breakdown": {
+    "weights_load_sec": 2.59,
+    "model_loading_total_sec": 2.59,
+    "init_engine_profile_kv_warmup_sec": 6.06,
+    "end_to_end_serve_start_to_ready_sec": 24,
+    "method": "wall-clock from vllm-banner timestamp 22:03:00 to 'Application startup complete' 22:03:24; corroborated by curl-poll on /v1/models (first 200 OK at 22:03:26 within 5s poll resolution). Faster weights load vs TP=1 (2.59s vs 11.65s) because each worker loads only its shard concurrently."
+  },
+  "vram_used_gb": 31.062,
+  "vram_per_gpu_gb": [
+    31.062,
+    31.062
+  ],
+  "vram_per_gpu_note": "rocm-smi --showmeminfo vram --csv sampled after model load with request idle. card0 = 31.061987328 GiB, card1 = 31.061950464 GiB — perfectly symmetric (Δ = 37 KB, sub-pagesize noise). TP=2 sharding holds model equally across both R9700. card2 (iGPU RAPHAEL) at 1.46 GiB excluded per ROCR_VISIBLE_DEVICES — that's the parallel bge-m3 relocation agent, not our footprint.",
+  "vram_used_gb_card0": 31.062,
+  "vram_used_gb_card1": 31.062,
+  "model_footprint_worker_gb": 10.46,
+  "model_footprint_worker_note": "Per-worker; 'Model loading took 10.46 GiB memory and 2.59 seconds' from gpu_model_runner.py:4820 (Worker_TP0). Total model parameters across both workers ≈ 20.92 GiB, consistent with TP=1 single-worker 20.9 GiB footprint — confirms TP=2 splits weights evenly with negligible duplication overhead.",
+  "kv_cache_available_gb": 17.55,
+  "kv_cache_available_gb_note": "Per-worker 'Available KV cache memory: 17.55 GiB' from gpu_worker.py:436. TP=2 frees substantially more KV memory per worker (17.55 vs 7.17 GiB TP=1) because each worker only holds half the model weights, leaving more of the gpu_memory_utilization=0.9 budget for cache.",
+  "kv_cache_size_tokens": 183968,
+  "kv_cache_size_gb": null,
+  "kv_cache_gb_note": "vLLM 0.19 introspection path does not expose gpu_cache_size_bytes directly (same gap as TP=1 and 4.5B). Token-level capacity 183,968 = 4.90× TP=1 (37,584). Larger-than-expected: naive expectation was 2× (double KV budget), but TP=2 also splits KV cache shards, so per-token memory is half — net effect 2× memory × 2× density = ~4× capacity.",
+  "max_concurrency": 22.46,
+  "max_concurrency_note": "'Maximum concurrency for 8192 tokens per request: 22.46x' from kv_cache_utils.py:1324. TP=1 reported 4.59×. Ratio 22.46/4.59 = 4.89× — matches kv_cache_size_tokens ratio (183968/37584 = 4.90×) exactly. This is the engineering reason TP=2 exists for this model.",
+  "test_prompt": "Wyjaśnij krótko czym jest PEEP w wentylacji mechanicznej.",
+  "test_response": "PEEP (ang. Positive End-Expiratory Pressure), czyli dodatnie ciśnienie końcowo-wydechowe, to technika stosowana w wentylacji mechanicznej, mająca na celu utrzymanie otwartych pęcherzyków płucnych podczas wydechu. PEEP jest stosowany w celu zapobiegania zapadaniu się pęcherzyków płucnych (atelektazji) i poprawy wymiany gazowej u pacj",
+  "test_response_note": "Byte-for-byte identical to TP=1 response (greedy/sampling at temperature=0.7 + same prompt → deterministic-ish output for this short window). Off-protocol observation: acronym expansion 'Positive End-Expiratory Pressure' is clinically correct; this is a smoke-pipeline observation, NOT a capability claim per METHODOLOGY §8.",
+  "test_response_time_sec": 8.547,
+  "test_response_time_note": "End-to-end curl POST → JSON response, includes HTTP roundtrip + tokenization. Truncated at max_tokens=128 (finish_reason=length). Essentially identical to TP=1 (8.664s) at N=1 because the single-stream critical path is dominated by sequential decode steps, not parallelizable across TP ranks.",
+  "test_input_tokens": 33,
+  "test_output_tokens": 128,
+  "test_total_tokens": 161,
+  "vllm_engine_avg_generation_tok_s": 7.3,
+  "vllm_engine_avg_prompt_tok_s": 3.3,
+  "throughput_note": "Engine-side averages from vllm loggers.py at 22:03:44 (single-prompt window). Generation 7.3 tok/s = 57% of TP=1's 12.8 tok/s — single-stream throughput degrades under TP=2 due to inter-rank synchronization overhead (HIP_LAUNCH_BLOCKING=1 + custom_all_reduce disabled). This is the cost side of the TP=2 trade-off; the benefit (5× max_concurrency) only realizes at high N. Phase 2 sweep will quantify the crossover N where TP=2 wins on aggregate tok/s. NOT a scaling claim — Phase 1 baseline only, per METHODOLOGY §5.1 and §11.1.",
+  "errors": [],
+  "issues_encountered": [
+    "kill_method footnote: initial `kill $(cat /tmp/bielik-11b-v30-tp2.pid)` killed the bash wrapper script (PID 156669) but not the vllm subprocess tree (APIServer pid 156674, EngineCore 156927, Worker_TP{0,1} 157182/157183). nohup + & disconnected the children from the wrapper's process group, so SIGTERM did not propagate. Required follow-up `kill 156674` on the actual APIServer pid; clean shutdown completed in <1s with proper EngineCore + worker shutdown messages. Lesson: for nohup'd vllm serve under bash -c, pidfile must capture the vllm child pid (e.g. from `pgrep -f 'vllm serve.*8101'` after launch), not the wrapper $!. To be patched in v0.3 sanity runner."
+  ],
+  "kill_method": "Two-step: (1) SIGTERM to wrapper PID 156669 from /tmp/bielik-11b-v30-tp2.pid (no effect on children), (2) SIGTERM to actual APIServer pid 156674. Clean shutdown in <1s, no SIGKILL needed, no pkill -f used (per Debug-watch collateral-kill discipline). Post-kill VRAM card0=59.9 MB, card1=59.9 MB confirms full release.",
+  "started_at": "2026-05-17T20:03:00Z",
+  "ready_at": "2026-05-17T20:03:24Z",
+  "inference_done_at": "2026-05-17T20:03:47Z",
+  "killed_at": "2026-05-17T20:04:53Z",
+  "comparison_tp1_baseline": {
+    "reference_file": "environment/sanity-tests/2026-05-17-bielik-11b-v30-vllm-tp1-bf16.json",
+    "load_time_sec": {"tp1": 27, "tp2": 24, "delta_pct": -11.1},
+    "vram_per_gpu_gb": {"tp1": [28.877, 0.056], "tp2": [31.062, 31.062], "note": "TP=2 uses both cards symmetrically; aggregate VRAM 62.12 GiB vs 28.93 GiB TP=1 (2.15× more)"},
+    "model_footprint_per_worker_gb": {"tp1": 20.9, "tp2": 10.46, "delta_pct": -49.9, "note": "Halved per-worker footprint — clean TP=2 weight split"},
+    "kv_cache_available_gb_per_worker": {"tp1": 7.17, "tp2": 17.55, "delta_pct": 144.8},
+    "kv_cache_size_tokens": {"tp1": 37584, "tp2": 183968, "delta_pct": 389.5, "ratio": 4.90},
+    "max_concurrency": {"tp1": 4.59, "tp2": 22.46, "delta_pct": 389.3, "ratio": 4.89},
+    "test_response_time_sec": {"tp1": 8.664, "tp2": 8.547, "delta_pct": -1.4, "note": "Within noise — single-stream end-to-end roundtrip unaffected by TP at N=1"},
+    "vllm_engine_avg_generation_tok_s": {"tp1": 12.8, "tp2": 7.3, "delta_pct": -43.0, "note": "Single-stream throughput degraded; TP=2 cost paid here, benefit only at high N"}
+  }
+}
