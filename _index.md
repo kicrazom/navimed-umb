@@ -6,14 +6,14 @@ code_path: ~/code/navimed-umb
 github: https://github.com/kicrazom/navimed-umb
 models_used: [Bielik-11b, Qwen2.5-72b-awq, Qwen3.6-27b]
 related_projects:
-  - "[[broncho-nome]]"
-  - "[[capno-nome]]"
-  - "[[ego-architecture-ai]]"
+  - "[[10_Projekty/0002-Broncho-Nome/Broncho-Nome_index|Broncho-Nome]]"
+  - "[[10_Projekty/0003-Capno-Nome/Capno-Nome_index|Capno-Nome]]"
+  - "[[10_Projekty/0004-ego_architecture_ai/ego_architecture_ai_index|ego_architecture_ai]]"
 papers:
   - "[[30_Badania/DWM/README|DWM]]"
 tags: [project/active, domain/clinical, domain/ml-infra]
-claude_import: "[[Claude/projects/navimed-umb/project]]"
-claude_memory: "[[Claude/projects/navimed-umb/project-memory]]"
+claude_import: "[[Claude/projects/navimed-umb/navimed-umb]]"
+claude_memory: "[[Claude/projects/navimed-umb/navimed-umb-memory]]"
 ---
 
 # NaviMed-UMB
@@ -21,8 +21,8 @@ claude_memory: "[[Claude/projects/navimed-umb/project-memory]]"
 Główny system CDSS dla Uniwersytetu Medycznego w Białymstoku — łączy moduły kliniczne pulmonologii z infrastrukturą ML/inference.
 
 ## Powiązania
-- Bazuje na architekturze [[ego-architecture-ai]]
-- Korzysta z modułów [[broncho-nome]] (bronchoskopia) i [[capno-nome]] (kapnografia)
+- Bazuje na architekturze [[10_Projekty/0004-ego_architecture_ai/ego_architecture_ai_index|ego_architecture_ai]]
+- Korzysta z modułów [[10_Projekty/0002-Broncho-Nome/Broncho-Nome_index|Broncho-Nome]] (bronchoskopia) i [[10_Projekty/0003-Capno-Nome/Capno-Nome_index|Capno-Nome]] (kapnografia)
 - Modele: lokalne (Bielik, Qwen) na `~/models/`
 - Benchmarki: `~/code/navimed-umb/benchmarks/`
 
