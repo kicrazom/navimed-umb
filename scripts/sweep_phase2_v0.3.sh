@@ -6,8 +6,28 @@
 
 set -euo pipefail
 
+# --- METHODOLOGY §3.1 mandatory env (gfx1201) ---
+unset PYTORCH_ALLOC_CONF
+export VLLM_ROCM_USE_AITER=0
+export AMD_SERIALIZE_KERNEL=1
+export HIP_LAUNCH_BLOCKING=1
+export ROCR_VISIBLE_DEVICES=0,1
+
+# --- venv guard: huggingface-cli + vllm live only in $VLLM_VENV/bin ---
+VLLM_VENV="${VLLM_VENV:-$HOME/venvs/vllm}"
+if [[ ! -x "$VLLM_VENV/bin/huggingface-cli" ]] || [[ ! -x "$VLLM_VENV/bin/vllm" ]]; then
+  echo "[fatal] vllm venv tools missing in $VLLM_VENV/bin (need huggingface-cli + vllm)" >&2
+  exit 1
+fi
+export PATH="$VLLM_VENV/bin:$PATH"
+
+# --- HF cache fix: snap obsidian XDG override leaks token path ---
+if [[ "${XDG_CACHE_HOME:-}" == */snap/obsidian/* ]]; then
+  export HF_HOME="$HOME/.cache/huggingface"
+fi
+
 MODELS_DIR="${MODELS_DIR:-$HOME/models}"
-LOG_DIR="${LOG_DIR:-$HOME/Vaults-main/10_Projekty/navimed-umb/logs/phase2_v0.3}"
+LOG_DIR="${LOG_DIR:-$HOME/Vaults-main/10_Projekty/0001-navimed-umb/logs/phase2_v0.3}"
 PORT="${PORT:-8000}"
 mkdir -p "$LOG_DIR"
 
@@ -30,7 +50,10 @@ download() {
     return
   fi
   echo "[pull] $repo -> $dest"
-  huggingface-cli download "$repo" --local-dir "$MODELS_DIR/$dest" --local-dir-use-symlinks False
+  if ! huggingface-cli download "$repo" --local-dir "$MODELS_DIR/$dest" --local-dir-use-symlinks False; then
+    echo "[fail] $repo — check https://huggingface.co/$repo (gated repo? user mozarcik needs 'Request access')" >&2
+    return 1
+  fi
 }
 
 serve() {

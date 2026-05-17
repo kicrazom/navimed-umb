@@ -3,7 +3,10 @@ type: plan
 status: active
 domain: [navimed-umb, ai-stack, benchmarking]
 created: 2026-05-17
-related_projects: [[navimed-umb]], [[broncho-nome]], [[ego-architecture-ai]]
+related_projects:
+  - "[[navimed-umb]]"
+  - "[[broncho-nome]]"
+  - "[[ego-architecture-ai]]"
 ---
 
 # Sweep Phase 2 v0.3 — Plan
