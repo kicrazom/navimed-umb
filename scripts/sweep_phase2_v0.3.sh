@@ -4,27 +4,9 @@
 # Target HW: 2× AMD Radeon AI PRO R9700 (64 GB VRAM), ROCm 7.2.1, vLLM 0.19.0+rocm721
 # Generated: 2026-05-17
 
-set -euo pipefail
-
-# --- METHODOLOGY §3.1 mandatory env (gfx1201) ---
-unset PYTORCH_ALLOC_CONF
-export VLLM_ROCM_USE_AITER=0
-export AMD_SERIALIZE_KERNEL=1
-export HIP_LAUNCH_BLOCKING=1
-export ROCR_VISIBLE_DEVICES=0,1
-
-# --- venv guard: huggingface-cli + vllm live only in $VLLM_VENV/bin ---
-VLLM_VENV="${VLLM_VENV:-$HOME/venvs/vllm}"
-if [[ ! -x "$VLLM_VENV/bin/huggingface-cli" ]] || [[ ! -x "$VLLM_VENV/bin/vllm" ]]; then
-  echo "[fatal] vllm venv tools missing in $VLLM_VENV/bin (need huggingface-cli + vllm)" >&2
-  exit 1
-fi
-export PATH="$VLLM_VENV/bin:$PATH"
-
-# --- HF cache fix: snap obsidian XDG override leaks token path ---
-if [[ "${XDG_CACHE_HOME:-}" == */snap/obsidian/* ]]; then
-  export HF_HOME="$HOME/.cache/huggingface"
-fi
+# Single source of env per scripts/_env.sh (ROCm §3.1 + venv + XDG guard)
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/_env.sh"
 
 MODELS_DIR="${MODELS_DIR:-$HOME/models}"
 LOG_DIR="${LOG_DIR:-$HOME/Vaults-main/10_Projekty/0001-navimed-umb/logs/phase2_v0.3}"
@@ -56,16 +38,45 @@ download() {
   fi
 }
 
+stop_vllm() {
+  local pidfile="$1"
+  if [[ -f "$pidfile" ]]; then
+    local pid; pid=$(cat "$pidfile")
+    pkill -P "$pid" 2>/dev/null || true
+    kill "$pid" 2>/dev/null || true
+    rm -f "$pidfile"
+  fi
+}
+
 serve() {
   local model_path="$1" tp="$2" extra_flags="${3:-}"
   local name; name=$(basename "$model_path")
-  echo "[serve] $name (TP=$tp) -> log: $LOG_DIR/${name}.log"
+  local pidfile="$LOG_DIR/vllm-${name}.pid"
+  local logfile="$LOG_DIR/${name}.log"
+
+  echo "[serve] $name (TP=$tp) -> log: $logfile, pidfile: $pidfile"
+
   # shellcheck disable=SC2086  # intentional word splitting of extra_flags
   vllm serve "$model_path" \
     "${COMMON_FLAGS[@]}" \
     --tensor-parallel-size "$tp" \
     $extra_flags \
-    2>&1 | tee "$LOG_DIR/${name}.log"
+    >"$logfile" 2>&1 &
+  echo $! > "$pidfile"
+
+  # shellcheck disable=SC2064  # intentional: expand pidfile NOW per-invocation
+  trap "stop_vllm '$pidfile'" RETURN
+
+  # Wait for vLLM ready (max 5 min)
+  local elapsed=0
+  until curl -sf "http://localhost:$PORT/v1/models" >/dev/null 2>&1; do
+    sleep 2; elapsed=$((elapsed + 2))
+    if (( elapsed > 300 )); then
+      echo "[fail] $name didn't become ready in 5 min" >&2
+      return 1
+    fi
+  done
+  echo "[ready] $name @ port $PORT (after ${elapsed}s)"
 }
 
 # ============================================================================
