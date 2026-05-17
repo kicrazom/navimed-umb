@@ -64,3 +64,8 @@ logbook/raw_logs/
 
 # Local-only session continuation notes (private)
 SESSION_RESUME.md
+
+# Claude Code local-only files
+.claude/settings.local.json
+.claude/local/
+.claude/cache/
