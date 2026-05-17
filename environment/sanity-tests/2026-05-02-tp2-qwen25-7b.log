@@ -1,9 +1,9 @@
-(APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:299] 
+(APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:299]
 (APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:299]        █     █     █▄   ▄█
 (APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:299]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.19.0
 (APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:299]   █▄█▀ █     █     █     █  model   /home/mozarcik/models/qwen25-7b-instruct
 (APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:299]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
-(APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:299] 
+(APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:299]
 (APIServer pid=21736) INFO 05-02 00:25:20 [utils.py:233] non-default args: {'model_tag': '/home/mozarcik/models/qwen25-7b-instruct', 'host': '127.0.0.1', 'port': 8765, 'model': '/home/mozarcik/models/qwen25-7b-instruct', 'max_model_len': 4096, 'enforce_eager': True, 'served_model_name': ['qwen25-7b-instruct'], 'attention_backend': 'TRITON_ATTN', 'tensor_parallel_size': 2, 'gpu_memory_utilization': 0.85, 'max_num_seqs': 1}
 (APIServer pid=21736) INFO 05-02 00:25:20 [model.py:549] Resolved architecture: Qwen2ForCausalLM
 (APIServer pid=21736) INFO 05-02 00:25:20 [model.py:1678] Using max model len 4096
@@ -22,13 +22,19 @@
 (Worker_TP0 pid=21978) INFO 05-02 00:25:33 [gpu_model_runner.py:4735] Starting to load model /home/mozarcik/models/qwen25-7b-instruct...
 (Worker_TP0 pid=21978) INFO 05-02 00:25:33 [rocm.py:442] Using TRITON_ATTN backend (selected via --attention-backend).
 (Worker_TP0 pid=21978) WARNING 05-02 00:25:33 [compilation.py:1220] Op 'sparse_attn_indexer' not present in model, enabling with '+sparse_attn_indexer' has no effect
-(Worker_TP0 pid=21978) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
-(Worker_TP0 pid=21978) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:01<00:04,  1.41s/it]
-(Worker_TP0 pid=21978) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:02<00:02,  1.46s/it]
-(Worker_TP0 pid=21978) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:04<00:01,  1.48s/it]
-(Worker_TP0 pid=21978) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:05<00:00,  1.41s/it]
-(Worker_TP0 pid=21978) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:05<00:00,  1.43s/it]
-(Worker_TP0 pid=21978) 
+(Worker_TP0 pid=21978)
+Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(Worker_TP0 pid=21978)
+Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:01<00:04,  1.41s/it]
+(Worker_TP0 pid=21978)
+Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:02<00:02,  1.46s/it]
+(Worker_TP0 pid=21978)
+Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:04<00:01,  1.48s/it]
+(Worker_TP0 pid=21978)
+Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:05<00:00,  1.41s/it]
+(Worker_TP0 pid=21978)
+Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:05<00:00,  1.43s/it]
+(Worker_TP0 pid=21978)
 (Worker_TP0 pid=21978) INFO 05-02 00:25:39 [default_loader.py:384] Loading weights took 5.74 seconds
 (Worker_TP0 pid=21978) INFO 05-02 00:25:39 [gpu_model_runner.py:4820] Model loading took 7.26 GiB memory and 5.893864 seconds
 (Worker_TP0 pid=21978) INFO 05-02 00:25:44 [gpu_worker.py:436] Available KV cache memory: 19.31 GiB
