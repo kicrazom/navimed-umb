@@ -57,16 +57,30 @@ def make_prompts(n: int) -> list[str]:
         "Give a practical example of using {} in everyday life:",
     ]
     topics = [
-        "quantum entanglement", "photosynthesis", "machine learning",
-        "the TCP/IP protocol", "black holes", "mRNA vaccines",
-        "distributed systems", "neural plasticity", "supply chain logistics",
-        "tensor parallelism", "climate feedback loops", "the Krebs cycle",
-        "cryptographic hashing", "CRISPR gene editing", "monetary policy",
-        "reinforcement learning", "ocean currents", "magnetic resonance imaging",
-        "fermentation", "GPS triangulation",
+        "quantum entanglement",
+        "photosynthesis",
+        "machine learning",
+        "the TCP/IP protocol",
+        "black holes",
+        "mRNA vaccines",
+        "distributed systems",
+        "neural plasticity",
+        "supply chain logistics",
+        "tensor parallelism",
+        "climate feedback loops",
+        "the Krebs cycle",
+        "cryptographic hashing",
+        "CRISPR gene editing",
+        "monetary policy",
+        "reinforcement learning",
+        "ocean currents",
+        "magnetic resonance imaging",
+        "fermentation",
+        "GPS triangulation",
     ]
-    return [templates[i % len(templates)].format(topics[i % len(topics)])
-            for i in range(n)]
+    return [
+        templates[i % len(templates)].format(topics[i % len(topics)]) for i in range(n)
+    ]
 
 
 def main() -> int:
@@ -79,14 +93,29 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("tp", type=int, help="Tensor parallel size (must be 2 for 27B)")
     ap.add_argument("n", type=int, help="Number of concurrent prompts")
-    ap.add_argument("--quant", choices=["fp8", "bf16"], default="bf16",
-                    help="Quantization variant (default: bf16)")
-    ap.add_argument("--max-len", type=int, default=None,
-                    help="Override max_model_len (default: from DEFAULT_CONFIGS)")
-    ap.add_argument("--util", type=float, default=None,
-                    help="Override gpu_memory_utilization (default: from DEFAULT_CONFIGS)")
-    ap.add_argument("--kv-dtype", default=None,
-                    help="Override kv_cache_dtype (e.g. fp8_e4m3, default: vLLM default)")
+    ap.add_argument(
+        "--quant",
+        choices=["fp8", "bf16"],
+        default="bf16",
+        help="Quantization variant (default: bf16)",
+    )
+    ap.add_argument(
+        "--max-len",
+        type=int,
+        default=None,
+        help="Override max_model_len (default: from DEFAULT_CONFIGS)",
+    )
+    ap.add_argument(
+        "--util",
+        type=float,
+        default=None,
+        help="Override gpu_memory_utilization (default: from DEFAULT_CONFIGS)",
+    )
+    ap.add_argument(
+        "--kv-dtype",
+        default=None,
+        help="Override kv_cache_dtype (e.g. fp8_e4m3, default: vLLM default)",
+    )
     args = ap.parse_args()
 
     from vllm import LLM, SamplingParams
@@ -99,16 +128,20 @@ def main() -> int:
         config["gpu_memory_utilization"] = args.util
 
     if args.tp != 2:
-        print(f"WARNING: Qwen 3.6 27B requires TP=2 on 32 GB GPUs (single-GPU "
-              f"configurations OOM at weight padding stage)")
+        print(
+            "WARNING: Qwen 3.6 27B requires TP=2 on 32 GB GPUs (single-GPU "
+            "configurations OOM at weight padding stage)"
+        )
 
-    print(f"=== Concurrent benchmark: Qwen 3.6 27B {args.quant.upper()} "
-          f"TP={args.tp}, N={args.n} prompts ===")
+    print(
+        f"=== Concurrent benchmark: Qwen 3.6 27B {args.quant.upper()} "
+        f"TP={args.tp}, N={args.n} prompts ==="
+    )
     print(f"    model:                {config['model_path']}")
     print(f"    max_model_len:        {config['max_model_len']}")
     print(f"    gpu_memory_util:      {config['gpu_memory_utilization']}")
     print(f"    kv_cache_dtype:       {args.kv_dtype or 'default'}")
-    print(f"    enforce_eager:        True (mandatory for Qwen 3.5/3.6)")
+    print("    enforce_eager:        True (mandatory for Qwen 3.5/3.6)")
 
     prompts = make_prompts(args.n)
 

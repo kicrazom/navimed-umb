@@ -12,6 +12,7 @@ Sampled:
     - CPU: aggregate utilization %, Tctl temperature (via psutil)
     - Each GPU (rocm-smi): utilization %, edge temp, VRAM used, power
 """
+
 import argparse
 import json
 import re
@@ -44,9 +45,20 @@ def rocm_smi_json() -> dict:
     """Run rocm-smi --json, return parsed dict or {}."""
     try:
         r = subprocess.run(
-            ["rocm-smi", "--json", "--showuse", "--showtemp",
-             "--showmeminfo", "vram", "--showproductname", "--showpower"],
-            capture_output=True, text=True, timeout=3, check=False,
+            [
+                "rocm-smi",
+                "--json",
+                "--showuse",
+                "--showtemp",
+                "--showmeminfo",
+                "vram",
+                "--showproductname",
+                "--showpower",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=3,
+            check=False,
         )
         return json.loads(r.stdout.strip() or "{}")
     except Exception:
@@ -61,8 +73,15 @@ def parse_gpus(raw: dict) -> list[dict]:
         if not m or not isinstance(val, dict):
             continue
         idx = int(m.group(1))
-        g = {"idx": idx, "name": None, "use": None, "temp": None,
-             "vram_used_b": None, "power_w": None, "is_igpu": False}
+        g = {
+            "idx": idx,
+            "name": None,
+            "use": None,
+            "temp": None,
+            "vram_used_b": None,
+            "power_w": None,
+            "is_igpu": False,
+        }
 
         for fn in ("Card Series", "Card series", "Card Model", "Product Name"):
             if fn in val:
@@ -70,20 +89,35 @@ def parse_gpus(raw: dict) -> list[dict]:
                 break
         for fn in ("GPU use (%)", "GPU Activity"):
             if fn in val:
-                try: g["use"] = int(float(val[fn]))
-                except: pass
+                try:
+                    g["use"] = int(float(val[fn]))
+                except Exception:
+                    pass
                 break
-        for fn in ("Temperature (Sensor edge) (C)", "Temperature (Sensor junction) (C)"):
+        for fn in (
+            "Temperature (Sensor edge) (C)",
+            "Temperature (Sensor junction) (C)",
+        ):
             if fn in val:
-                try: g["temp"] = float(val[fn])
-                except: pass
+                try:
+                    g["temp"] = float(val[fn])
+                except Exception:
+                    pass
                 break
-        try: g["vram_used_b"] = int(val.get("VRAM Total Used Memory (B)", 0)) or None
-        except: pass
-        for fn in ("Average Graphics Package Power (W)", "GPU Power (W)", "Socket Power (W)"):
+        try:
+            g["vram_used_b"] = int(val.get("VRAM Total Used Memory (B)", 0)) or None
+        except Exception:
+            pass
+        for fn in (
+            "Average Graphics Package Power (W)",
+            "GPU Power (W)",
+            "Socket Power (W)",
+        ):
             if fn in val:
-                try: g["power_w"] = float(val[fn])
-                except: pass
+                try:
+                    g["power_w"] = float(val[fn])
+                except Exception:
+                    pass
                 break
 
         # Heuristic: iGPU has "Graphics" in name (e.g. "AMD Radeon Graphics") or small VRAM
@@ -98,14 +132,18 @@ def parse_gpus(raw: dict) -> list[dict]:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("output", help="Output JSONL file")
-    ap.add_argument("--interval", type=float, default=1.0, help="Seconds between samples")
+    ap.add_argument(
+        "--interval", type=float, default=1.0, help="Seconds between samples"
+    )
     ap.add_argument("--duration", type=float, default=None, help="Stop after N seconds")
     args = ap.parse_args()
 
     stop = False
+
     def handle_sig(*_):
         nonlocal stop
         stop = True
+
     signal.signal(signal.SIGINT, handle_sig)
     signal.signal(signal.SIGTERM, handle_sig)
 

@@ -18,7 +18,7 @@ def main():
         max_model_len=4096,
         gpu_memory_utilization=0.70,
         enforce_eager=True,
-        tensor_parallel_size=2,   # <-- KLUCZOWA RÓŻNICA vs single GPU
+        tensor_parallel_size=2,  # <-- KLUCZOWA RÓŻNICA vs single GPU
     )
     t_load = time.time() - t0
     print(f"Load time: {t_load:.1f}s")

@@ -38,6 +38,8 @@ fi
 
 # Activate venv if not already
 if [[ -z "${VIRTUAL_ENV:-}" ]]; then
+    # shellcheck source=/dev/null
+    # shellcheck source=/dev/null
     source "$HOME/venvs/vllm/bin/activate"
 fi
 
@@ -92,9 +94,9 @@ run_quant_sweep() {
     echo "  Output dir:           $out_dir"
     echo ""
 
-    local kv_arg=""
+    local kv_arg=()
     if [[ -n "$kv_dtype" ]]; then
-        kv_arg="--kv-dtype $kv_dtype"
+        kv_arg=(--kv-dtype "$kv_dtype")
     fi
 
     for n in "${n_values[@]}"; do
@@ -106,7 +108,7 @@ run_quant_sweep() {
             --quant "$quant" \
             --max-len "$max_len" \
             --util "$util" \
-            $kv_arg \
+            "${kv_arg[@]}" \
             --name "$run_name" \
             --out-dir "$out_dir"
 

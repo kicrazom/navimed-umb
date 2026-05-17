@@ -85,7 +85,9 @@ def parse_record(payload: dict, source_file: str) -> EnvelopeRecord | None:
     if payload.get("schema_version") != EXPECTED_SCHEMA_VERSION:
         logging.warning(
             "%s has schema_version=%s (expected %d); skipping",
-            source_file, payload.get("schema_version"), EXPECTED_SCHEMA_VERSION,
+            source_file,
+            payload.get("schema_version"),
+            EXPECTED_SCHEMA_VERSION,
         )
         return None
     try:
@@ -138,7 +140,8 @@ def select_best_by_throughput(
     is left to manual review of the summary table.
     """
     candidates = [
-        r for r in records
+        r
+        for r in records
         if r.quantization == quantization
         and r.loaded
         and r.sanity_throughput_tok_s is not None
@@ -174,7 +177,8 @@ def format_record_row(record: EnvelopeRecord) -> str:
     )
     tok_s = (
         f"{record.sanity_throughput_tok_s:.2f}"
-        if record.sanity_throughput_tok_s is not None else "—"
+        if record.sanity_throughput_tok_s is not None
+        else "—"
     )
     return (
         f"| `{record.config_id}` | {record.quantization} | {kv_dtype} | "
@@ -219,13 +223,17 @@ def build_summary_markdown(records: list[EnvelopeRecord]) -> str:
 
     near_oom = [r for r in records if r.loaded and r.is_near_oom]
     if near_oom:
-        warnings = "\n## ⚠ Near-OOM configurations\n\n" + "\n".join(
-            f"- `{r.config_id}`: peak {r.peak_vram_max:.2f} GB/GPU"
-            for r in near_oom
-        ) + (
-            "\n\nThese configs loaded but leave little headroom. Avoid for "
-            "Phase 2 sweep at high N — KV cache pressure may trigger "
-            "preemption or runtime OOM.\n"
+        warnings = (
+            "\n## ⚠ Near-OOM configurations\n\n"
+            + "\n".join(
+                f"- `{r.config_id}`: peak {r.peak_vram_max:.2f} GB/GPU"
+                for r in near_oom
+            )
+            + (
+                "\n\nThese configs loaded but leave little headroom. Avoid for "
+                "Phase 2 sweep at high N — KV cache pressure may trigger "
+                "preemption or runtime OOM.\n"
+            )
         )
     else:
         warnings = ""
@@ -236,28 +244,41 @@ def build_summary_markdown(records: list[EnvelopeRecord]) -> str:
 def write_csv(records: list[EnvelopeRecord], output_path: Path) -> None:
     """Write flat CSV for downstream plotting (matplotlib / pandas)."""
     columns = [
-        "config_id", "quantization", "kv_cache_dtype", "max_model_len",
-        "gpu_memory_utilization", "loaded", "error_class", "load_time_s",
-        "peak_vram_gb_max", "kv_cache_tokens", "max_concurrency",
+        "config_id",
+        "quantization",
+        "kv_cache_dtype",
+        "max_model_len",
+        "gpu_memory_utilization",
+        "loaded",
+        "error_class",
+        "load_time_s",
+        "peak_vram_gb_max",
+        "kv_cache_tokens",
+        "max_concurrency",
         "sanity_throughput_tok_s",
     ]
     lines = [",".join(columns)]
     for r in records:
-        lines.append(",".join([
-            r.config_id,
-            r.quantization,
-            r.kv_cache_dtype or "",
-            str(r.max_model_len),
-            f"{r.gpu_memory_utilization:.2f}",
-            str(r.loaded),
-            r.error_class or "",
-            f"{r.load_time_s:.2f}",
-            f"{r.peak_vram_max:.3f}",
-            str(r.kv_cache_tokens) if r.kv_cache_tokens is not None else "",
-            f"{r.max_concurrency:.2f}" if r.max_concurrency is not None else "",
-            f"{r.sanity_throughput_tok_s:.2f}"
-            if r.sanity_throughput_tok_s is not None else "",
-        ]))
+        lines.append(
+            ",".join(
+                [
+                    r.config_id,
+                    r.quantization,
+                    r.kv_cache_dtype or "",
+                    str(r.max_model_len),
+                    f"{r.gpu_memory_utilization:.2f}",
+                    str(r.loaded),
+                    r.error_class or "",
+                    f"{r.load_time_s:.2f}",
+                    f"{r.peak_vram_max:.3f}",
+                    str(r.kv_cache_tokens) if r.kv_cache_tokens is not None else "",
+                    f"{r.max_concurrency:.2f}" if r.max_concurrency is not None else "",
+                    f"{r.sanity_throughput_tok_s:.2f}"
+                    if r.sanity_throughput_tok_s is not None
+                    else "",
+                ]
+            )
+        )
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     logging.info("Wrote CSV: %s", output_path)
 
@@ -269,11 +290,13 @@ def parse_args() -> argparse.Namespace:
     """Parse CLI args. Defaults match navimed-umb repo layout."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--results-dir", type=Path,
+        "--results-dir",
+        type=Path,
         default=Path("benchmarks/results/hardware_envelope"),
     )
     parser.add_argument(
-        "--output-dir", type=Path,
+        "--output-dir",
+        type=Path,
         default=Path("benchmarks/results/hardware_envelope"),
     )
     parser.add_argument("--verbose", "-v", action="store_true")
@@ -305,7 +328,8 @@ def main() -> int:
         elif record.is_near_oom:
             logging.warning(
                 "Near-OOM: %s peak %.2f GB/GPU",
-                record.config_id, record.peak_vram_max,
+                record.config_id,
+                record.peak_vram_max,
             )
 
     args.output_dir.mkdir(parents=True, exist_ok=True)

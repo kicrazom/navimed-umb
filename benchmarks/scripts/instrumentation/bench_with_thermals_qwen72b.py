@@ -9,6 +9,7 @@ script. All output conventions (JSONL, events.json, PNG, bench.log) match the
 Usage:
     python bench_with_thermals_qwen72b.py 2 100 --name tp2-n100 --out-dir thermal-runs/qwen72b-awq/
 """
+
 import argparse
 import json
 import os
@@ -23,7 +24,7 @@ SAMPLER = HERE / "sample_system.py"
 PLOTTER = HERE.parent / "plotting" / "plot_thermals.py"
 BENCHMARK = HERE.parent / "runners" / "test_concurrent_qwen72b_awq.py"
 IDLE_BEFORE_S = 5.0
-IDLE_AFTER_S  = 5.0
+IDLE_AFTER_S = 5.0
 
 
 def main():
@@ -54,7 +55,8 @@ def main():
     print("Starting sampler...")
     sampler_proc = subprocess.Popen(
         [sys.executable, str(SAMPLER), str(jsonl), "--interval", str(args.interval)],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
 
     t_wall_start = time.time()
@@ -65,9 +67,13 @@ def main():
         time.sleep(IDLE_BEFORE_S)
 
         t_bench_start = time.time() - t_wall_start
-        events.append({"t": round(t_bench_start, 2),
-                       "label": f"bench start (TP={args.tp}, N={args.n})",
-                       "color": "#2ca02c"})
+        events.append(
+            {
+                "t": round(t_bench_start, 2),
+                "label": f"bench start (TP={args.tp}, N={args.n})",
+                "color": "#2ca02c",
+            }
+        )
         print(f"Running benchmark (TP={args.tp}, N={args.n})...")
 
         env = os.environ.copy()
@@ -77,13 +83,16 @@ def main():
         with open(bench_log, "w") as f:
             bench_result = subprocess.run(
                 [sys.executable, "-u", str(BENCHMARK), str(args.tp), str(args.n)],
-                stdout=f, stderr=subprocess.STDOUT, env=env, timeout=1800,
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                env=env,
+                timeout=1800,
             )
 
         t_bench_end = time.time() - t_wall_start
-        events.append({"t": round(t_bench_end, 2),
-                       "label": "bench end",
-                       "color": "#d62728"})
+        events.append(
+            {"t": round(t_bench_end, 2), "label": "bench end", "color": "#d62728"}
+        )
         print(f"Benchmark done (rc={bench_result.returncode})")
 
         print(f"Collecting {IDLE_AFTER_S}s cooldown...")
@@ -102,13 +111,30 @@ def main():
     print(f"Events: {events_json}")
 
     print("Generating thermal plot...")
-    subprocess.run([sys.executable, str(PLOTTER), str(jsonl), str(png),
-                    "--events", str(events_json)], check=True)
+    subprocess.run(
+        [
+            sys.executable,
+            str(PLOTTER),
+            str(jsonl),
+            str(png),
+            "--events",
+            str(events_json),
+        ],
+        check=True,
+    )
 
     try:
         bench_text = bench_log.read_text()
         for line in bench_text.splitlines():
-            if any(k in line for k in ("Output throughput", "Requests/second", "Total time", "Load time")):
+            if any(
+                k in line
+                for k in (
+                    "Output throughput",
+                    "Requests/second",
+                    "Total time",
+                    "Load time",
+                )
+            ):
                 print(f"  {line.strip()}")
     except Exception:
         pass

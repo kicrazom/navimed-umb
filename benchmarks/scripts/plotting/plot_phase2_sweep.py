@@ -32,11 +32,11 @@ import matplotlib.ticker as mticker
 LOG_FORMAT: Final[str] = "%(asctime)s [%(levelname)s] %(message)s"
 
 # Color palette — kept consistent across all NaviMed-UMB figures
-COLOR_THROUGHPUT: Final[str] = "#1f77b4"   # blue
-COLOR_TEMP: Final[str] = "#d62728"          # red
-COLOR_POWER: Final[str] = "#ff7f0e"         # orange
-COLOR_EFFICIENCY: Final[str] = "#2ca02c"   # green
-COLOR_KNEE: Final[str] = "#7f7f7f"          # grey
+COLOR_THROUGHPUT: Final[str] = "#1f77b4"  # blue
+COLOR_TEMP: Final[str] = "#d62728"  # red
+COLOR_POWER: Final[str] = "#ff7f0e"  # orange
+COLOR_EFFICIENCY: Final[str] = "#2ca02c"  # green
+COLOR_KNEE: Final[str] = "#7f7f7f"  # grey
 
 
 @dataclass
@@ -115,8 +115,13 @@ def _annotate_knee(
     knee = max(rows, key=lambda r: getattr(r, y_attr))
     ax.axvline(knee.n, color=COLOR_KNEE, linestyle="--", linewidth=1.0, alpha=0.7)
     ax.text(
-        knee.n, ax.get_ylim()[1] * 0.95, label_fmt.format(n=knee.n),
-        rotation=90, va="top", ha="right", fontsize=9,
+        knee.n,
+        ax.get_ylim()[1] * 0.95,
+        label_fmt.format(n=knee.n),
+        rotation=90,
+        va="top",
+        ha="right",
+        fontsize=9,
         color=COLOR_KNEE,
     )
 
@@ -132,14 +137,22 @@ def plot_scaling_curve(
     tput_values = [r.tok_s_out for r in rows]
 
     ax.plot(
-        n_values, tput_values, "o-",
-        color=COLOR_THROUGHPUT, linewidth=2.5, markersize=10, zorder=3,
+        n_values,
+        tput_values,
+        "o-",
+        color=COLOR_THROUGHPUT,
+        linewidth=2.5,
+        markersize=10,
+        zorder=3,
     )
     for r in rows:
         ax.annotate(
             f"{r.tok_s_out:.1f}",
-            xy=(r.n, r.tok_s_out), xytext=(0, 12),
-            textcoords="offset points", ha="center", fontsize=9,
+            xy=(r.n, r.tok_s_out),
+            xytext=(0, 12),
+            textcoords="offset points",
+            ha="center",
+            fontsize=9,
         )
 
     _setup_log_x_axis(ax)
@@ -167,15 +180,25 @@ def plot_thermal_curve(
     temps = [r.t_peak_c for r in rows]
     powers = [r.w_mean for r in rows]
 
-    line_t, = ax_temp.plot(
-        n_values, temps, "s-",
-        color=COLOR_TEMP, linewidth=2.0, markersize=8,
-        label="Temp peak [°C]", zorder=3,
+    (line_t,) = ax_temp.plot(
+        n_values,
+        temps,
+        "s-",
+        color=COLOR_TEMP,
+        linewidth=2.0,
+        markersize=8,
+        label="Temp peak [°C]",
+        zorder=3,
     )
-    line_p, = ax_pow.plot(
-        n_values, powers, "^-",
-        color=COLOR_POWER, linewidth=2.0, markersize=8,
-        label="Power mean [W]", zorder=3,
+    (line_p,) = ax_pow.plot(
+        n_values,
+        powers,
+        "^-",
+        color=COLOR_POWER,
+        linewidth=2.0,
+        markersize=8,
+        label="Power mean [W]",
+        zorder=3,
     )
 
     _setup_log_x_axis(ax_temp)
@@ -204,23 +227,36 @@ def plot_efficiency_curve(
     eff_values = [r.mwh_per_tok for r in rows]
 
     ax.plot(
-        n_values, eff_values, "D-",
-        color=COLOR_EFFICIENCY, linewidth=2.5, markersize=10, zorder=3,
+        n_values,
+        eff_values,
+        "D-",
+        color=COLOR_EFFICIENCY,
+        linewidth=2.5,
+        markersize=10,
+        zorder=3,
     )
     for r in rows:
         ax.annotate(
             f"{r.mwh_per_tok:.3f}",
-            xy=(r.n, r.mwh_per_tok), xytext=(0, 12),
-            textcoords="offset points", ha="center", fontsize=9,
+            xy=(r.n, r.mwh_per_tok),
+            xytext=(0, 12),
+            textcoords="offset points",
+            ha="center",
+            fontsize=9,
         )
 
     # Annotate optimum (lowest mWh/tok)
     optimum = min(rows, key=lambda r: r.mwh_per_tok)
     ax.axvline(optimum.n, color=COLOR_KNEE, linestyle="--", linewidth=1.0, alpha=0.7)
     ax.text(
-        optimum.n, ax.get_ylim()[1] * 0.95,
+        optimum.n,
+        ax.get_ylim()[1] * 0.95,
         f"optimum N={optimum.n}",
-        rotation=90, va="top", ha="right", fontsize=9, color=COLOR_KNEE,
+        rotation=90,
+        va="top",
+        ha="right",
+        fontsize=9,
+        color=COLOR_KNEE,
     )
 
     _setup_log_x_axis(ax)
@@ -228,7 +264,8 @@ def plot_efficiency_curve(
     ax.set_ylabel("Energy per output token [mWh/tok]", fontsize=11)
     ax.set_title(
         f"Energy efficiency — {title_for(meta)}\n(lower is better)",
-        fontsize=12, pad=14,
+        fontsize=12,
+        pad=14,
     )
     fig.tight_layout()
     fig.savefig(output_path, dpi=150, bbox_inches="tight")
@@ -242,11 +279,15 @@ def plot_efficiency_curve(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--csv", type=Path, required=True,
+        "--csv",
+        type=Path,
+        required=True,
         help="results_table.csv from analyze_phase2_sweep.py",
     )
     parser.add_argument(
-        "--output-dir", type=Path, required=True,
+        "--output-dir",
+        type=Path,
+        required=True,
         help="Where to write the three PNG plots",
     )
     parser.add_argument("--verbose", "-v", action="store_true")
@@ -256,7 +297,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO, format=LOG_FORMAT,
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format=LOG_FORMAT,
     )
 
     if not args.csv.exists():

@@ -8,6 +8,7 @@ Usage:
     python sweep_concurrent.py 10,50,200          # custom N values
     python sweep_concurrent.py 10,50,200 1,2      # custom N and TP
 """
+
 import json
 import os
 import subprocess
@@ -47,7 +48,10 @@ def run_single(tp: int, n: int) -> dict:
     t0 = time.time()
     result = subprocess.run(
         ["python", "-u", str(SCRIPT), str(tp), str(n)],
-        capture_output=True, text=True, env=env, timeout=600,
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=600,
     )
     duration = time.time() - t0
 
@@ -123,12 +127,13 @@ def main():
     for tp in tps:
         key = f"tp{tp}"
         print(f"\n=== TP={tp} ===")
-        existing_ns = {r["n_prompts"] for r in data["runs"].get(key, [])}
         for n in ns:
             result = run_single(tp, n)
             if "error" not in result:
                 # Remove any previous result for this N (re-run override)
-                data["runs"][key] = [r for r in data["runs"].get(key, []) if r["n_prompts"] != n]
+                data["runs"][key] = [
+                    r for r in data["runs"].get(key, []) if r["n_prompts"] != n
+                ]
                 data["runs"][key].append(result)
 
         # Sort by N for readable JSON
@@ -140,7 +145,7 @@ def main():
         json.dump(data, f, indent=2)
 
     print(f"\nSaved: {OUTPUT_JSON}")
-    print(f"Regenerate plot: python plot_scaling.py")
+    print("Regenerate plot: python plot_scaling.py")
 
 
 if __name__ == "__main__":

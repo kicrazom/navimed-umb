@@ -38,7 +38,7 @@ SCHEMA_VERSION = 1
 
 # Model HuggingFace ids (separate from local model_path for provenance)
 MODEL_HF_IDS = {
-    "fp8":  "Qwen/Qwen3.6-27B-Instruct-FP8",
+    "fp8": "Qwen/Qwen3.6-27B-Instruct-FP8",
     "bf16": "Qwen/Qwen3.6-27B-Instruct",
 }
 
@@ -51,6 +51,7 @@ class ConfigResult:
     False) get all schema fields populated, with measurement fields
     set to None — downstream consumers can iterate over partial records.
     """
+
     # Identity
     config_id: str
     model: str
@@ -71,9 +72,9 @@ class ConfigResult:
     # Measurements (None when loaded=False)
     load_time_s: Optional[float]
     peak_vram_gb_per_gpu: Optional[list]
-    peak_vram_source: str                       # "rocm_smi" only in v1.5
-    weights_gib_per_gpu: Optional[list]         # always None in v1.5; v2 work
-    kv_cache_gb: Optional[float]                # always None in v1.5; v2 work
+    peak_vram_source: str  # "rocm_smi" only in v1.5
+    weights_gib_per_gpu: Optional[list]  # always None in v1.5; v2 work
+    kv_cache_gb: Optional[float]  # always None in v1.5; v2 work
     kv_cache_tokens: Optional[int]
     max_concurrency: Optional[float]
     sanity_throughput_tok_s: Optional[float]
@@ -93,17 +94,15 @@ class ConfigResult:
 # Format: (quant, max_len, util, kv_cache_dtype)
 PHASE1_CONFIGS = [
     # FP8 — already known good baseline (sanity check)
-    ("fp8",  2048, 0.85, None),
-    ("fp8",  4096, 0.90, None),
-
+    ("fp8", 2048, 0.85, None),
+    ("fp8", 4096, 0.90, None),
     # BF16 — current baseline + exploration
     ("bf16", 1024, 0.95, None),
-    ("bf16",  512, 0.95, None),
-    ("bf16",  512, 0.97, None),
+    ("bf16", 512, 0.95, None),
+    ("bf16", 512, 0.97, None),
     ("bf16", 1024, 0.97, None),
     ("bf16", 2048, 0.97, None),
-    ("bf16",  768, 0.96, None),
-
+    ("bf16", 768, 0.96, None),
     # BF16 with FP8 KV cache — may halve KV footprint
     ("bf16", 1024, 0.95, "fp8_e4m3"),
     ("bf16", 2048, 0.95, "fp8_e4m3"),
@@ -111,7 +110,7 @@ PHASE1_CONFIGS = [
 
 # Local model paths (Path.home() avoids hardcoded usernames)
 MODEL_PATHS = {
-    "fp8":  str(Path.home() / "models/qwen36-27b-fp8"),
+    "fp8": str(Path.home() / "models/qwen36-27b-fp8"),
     "bf16": str(Path.home() / "models/qwen36-27b"),
 }
 
@@ -127,6 +126,7 @@ ENFORCE_EAGER = True
 # rocm-smi VRAM measurement (R9700-only filtering)
 # ============================================================
 
+
 def _rocm_smi_card_series() -> dict:
     """Map card index → Card Series name via `rocm-smi --showproductname --json`.
 
@@ -141,7 +141,9 @@ def _rocm_smi_card_series() -> dict:
     try:
         proc = subprocess.run(
             ["rocm-smi", "--showproductname", "--json"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         data = json.loads(proc.stdout)
     except Exception:
@@ -187,7 +189,9 @@ def _rocm_smi_vram_used_gib(card_indices: list) -> Optional[list]:
     try:
         proc = subprocess.run(
             ["rocm-smi", "--showmeminfo", "vram", "--json"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         data = json.loads(proc.stdout)
     except Exception:
@@ -216,6 +220,7 @@ def _rocm_smi_vram_used_gib(card_indices: list) -> Optional[list]:
 # ============================================================
 # Subprocess probe script generation
 # ============================================================
+
 
 def make_config_id(
     quant: str,
@@ -253,7 +258,7 @@ def make_probe_script(
     model_path = MODEL_PATHS[quant]
     kv_arg = f', kv_cache_dtype="{kv_cache_dtype}"' if kv_cache_dtype else ""
 
-    return f'''
+    return f"""
 import json
 import sys
 import time
@@ -343,12 +348,13 @@ except Exception as _e:
 
 print("===PROBE_RESULT===")
 print(json.dumps(result))
-'''
+"""
 
 
 # ============================================================
 # Provenance capture (versions, GPU info)
 # ============================================================
+
 
 def capture_versions_and_gpu() -> dict:
     """Capture ROCm/vLLM/torch versions and GPU identification once.
@@ -387,7 +393,9 @@ def _read_rocm_version() -> str:
 
 def _utc_now_z() -> str:
     """RFC 3339 UTC timestamp with Z suffix."""
-    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return (
+        datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    )
 
 
 def classify_status(legacy_status: str) -> tuple:
@@ -401,6 +409,7 @@ def classify_status(legacy_status: str) -> tuple:
 # Probe orchestration
 # ============================================================
 
+
 def run_probe(config: tuple, host_info: dict, r9700_indices: list) -> ConfigResult:
     """Run one probe in subprocess, measure VRAM via rocm-smi, parse result."""
     quant, max_len, util, kv_dtype = config
@@ -408,7 +417,7 @@ def run_probe(config: tuple, host_info: dict, r9700_indices: list) -> ConfigResu
 
     print(f"\n{'='*60}")
     print(f"Probing: {config_id}")
-    print('='*60)
+    print("=" * 60)
 
     # Pre-load VRAM baseline (R9700 only)
     vram_pre = _rocm_smi_vram_used_gib(r9700_indices) if r9700_indices else None
@@ -424,7 +433,8 @@ def run_probe(config: tuple, host_info: dict, r9700_indices: list) -> ConfigResu
     env["PYTHONPATH"] = ""
 
     env_snapshot = {
-        k: env.get(k) for k in (
+        k: env.get(k)
+        for k in (
             "VLLM_ROCM_USE_AITER",
             "AMD_SERIALIZE_KERNEL",
             "HIP_LAUNCH_BLOCKING",
@@ -487,11 +497,16 @@ def run_probe(config: tuple, host_info: dict, r9700_indices: list) -> ConfigResu
     # via raw["peak_vram_per_card_gib"]; filter to R9700 indices only.
     peak_vram = None
     child_vram = raw.get("peak_vram_per_card_gib")
-    if vram_pre is not None and isinstance(child_vram, dict) and "error" not in child_vram:
+    if (
+        vram_pre is not None
+        and isinstance(child_vram, dict)
+        and "error" not in child_vram
+    ):
         try:
             post_filtered = [child_vram[f"card{idx}"] for idx in r9700_indices]
-            peak_vram = [round(post - pre, 3)
-                         for pre, post in zip(vram_pre, post_filtered)]
+            peak_vram = [
+                round(post - pre, 3) for pre, post in zip(vram_pre, post_filtered)
+            ]
         except (KeyError, TypeError):
             peak_vram = None
 
@@ -516,7 +531,9 @@ def run_probe(config: tuple, host_info: dict, r9700_indices: list) -> ConfigResu
     )
 
 
-def _build_failed_result(base_fields: dict, error_class: str, error: str) -> ConfigResult:
+def _build_failed_result(
+    base_fields: dict, error_class: str, error: str
+) -> ConfigResult:
     """Construct ConfigResult for cases where subprocess never produced
     a parseable result (timeout or no PROBE_RESULT marker)."""
     return ConfigResult(
@@ -546,6 +563,7 @@ def write_per_config_json(result: ConfigResult) -> Path:
 # Main entry point
 # ============================================================
 
+
 def main():
     """Run all phase 1 probes and save results."""
     print("=" * 70)
@@ -564,10 +582,14 @@ def main():
         print("WARNING: rocm-smi probe failed — peak_vram measurements unavailable")
 
     host_info = capture_versions_and_gpu()
-    print(f"Host: {host_info['gpu_model']} ({host_info['gpu_gcn_arch_name']}) "
-          f"x{host_info['gpu_count']}")
-    print(f"ROCm: {host_info['rocm_version']} | vLLM: {host_info['vllm_version']} "
-          f"| torch: {host_info['torch_version']}")
+    print(
+        f"Host: {host_info['gpu_model']} ({host_info['gpu_gcn_arch_name']}) "
+        f"x{host_info['gpu_count']}"
+    )
+    print(
+        f"ROCm: {host_info['rocm_version']} | vLLM: {host_info['vllm_version']} "
+        f"| torch: {host_info['torch_version']}"
+    )
     print(f"Output dir: {RESULTS_DIR}")
     print()
 
@@ -588,10 +610,12 @@ def main():
             max_conc = result.max_concurrency or 0.0
             tok_s = result.sanity_throughput_tok_s or 0.0
             vram = result.peak_vram_gb_per_gpu or [0, 0]
-            print(f"  ✓ OK — VRAM: {vram} GiB, KV: {kv_tok} tokens, "
-                  f"max_conc: {max_conc:.1f}x, cold tok/s: {tok_s:.2f}")
+            print(
+                f"  ✓ OK — VRAM: {vram} GiB, KV: {kv_tok} tokens, "
+                f"max_conc: {max_conc:.1f}x, cold tok/s: {tok_s:.2f}"
+            )
         else:
-            err_short = (result.error or '')[:100]
+            err_short = (result.error or "")[:100]
             print(f"  ✗ {(result.error_class or 'unknown').upper()}: {err_short}")
         print(f"  → {out_path.name}")
 
@@ -626,9 +650,13 @@ def main():
         default=None,
     )
     if fp8_best:
-        print(f"FP8 best:  {fp8_best.config_id} (max_conc={fp8_best.max_concurrency:.1f}x)")
+        print(
+            f"FP8 best:  {fp8_best.config_id} (max_conc={fp8_best.max_concurrency:.1f}x)"
+        )
     if bf16_best:
-        print(f"BF16 best: {bf16_best.config_id} (max_conc={bf16_best.max_concurrency:.1f}x)")
+        print(
+            f"BF16 best: {bf16_best.config_id} (max_conc={bf16_best.max_concurrency:.1f}x)"
+        )
 
 
 if __name__ == "__main__":
