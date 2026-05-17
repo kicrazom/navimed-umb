@@ -78,3 +78,6 @@ docs/sessions/PLAN-NEXT.md
 
 # Source literature (PDFs of papers the project builds on) — local-only
 literature/
+
+# Claude.ai conversation history backup (local-only)
+history/
