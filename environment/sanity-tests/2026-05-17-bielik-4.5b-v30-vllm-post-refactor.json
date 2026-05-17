@@ -1,0 +1,44 @@
+{
+  "model": "bielik-4.5b-v30",
+  "model_hf_id": "speakleash/Bielik-4.5B-v3.0-Instruct",
+  "model_path": "/home/mozarcik/models/bielik-4.5b-v30",
+  "phase": "1_envelope",
+  "embargo": "PUBLIC",
+  "session_date": "2026-05-17",
+  "purpose": "Post-refactor smoke test of vllm 0.19.0+rocm721 / torch 2.10 stack on lightest Polish model in NaviMed-UMB suite.",
+  "config": {
+    "tensor_parallel_size": 1,
+    "max_model_len": 8192,
+    "gpu_memory_utilization": 0.4,
+    "enforce_eager": true,
+    "dtype": "auto"
+  },
+  "stack": {
+    "rocm_version": "ROCM-SMI version: 4.0.0+fc0010cf6a",
+    "vllm_version": "0.19.0",
+    "torch_version": "2.10.0+git8514f05",
+    "torch_hip_version": "7.2.53211"
+  },
+  "env_vars": {
+    "ROCR_VISIBLE_DEVICES": "0,1",
+    "VLLM_ROCM_USE_AITER": "0",
+    "AMD_SERIALIZE_KERNEL": "1",
+    "HIP_LAUNCH_BLOCKING": "1",
+    "PYTORCH_ALLOC_CONF": "<unset>"
+  },
+  "loaded": true,
+  "load_time_sec": 11.02,
+  "vram_used_gb": 12.643,
+  "vram_per_gpu_gb": [
+    12.586,
+    0.057
+  ],
+  "kv_cache_size_tokens": 46304,
+  "kv_cache_size_gb": null,
+  "max_concurrency": 256,
+  "test_prompt": "Wyjaśnij w 2 zdaniach co to PEEP w wentylacji.",
+  "test_response": "\nPEEP (ang. **Pressure-Equalized Pathologically Elastic Alveoli**) – wentylowanie z dodatnim ciśnieniem końcowo-wydechowym (wydechowym).\nOdpowiada za **utrzymanie sprężystości płuc** i zapobieganie ich zapadaniu się. \n\nAlbo krócej:\n– PEEP – dodatnie ciśnienie końcowo-wydechowe (wydechowe), **utrzymujące sprężystość płuc**.\n– *",
+  "test_response_time_sec": 5.206,
+  "test_output_tokens": 128,
+  "errors": []
+}
