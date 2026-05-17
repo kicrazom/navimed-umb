@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Session 2026-04-26 — gpt-oss-20b on dual R9700: routing API skew blocks MXFP4 path
 
 **Status:** Negative result — model deferred from current sweep.

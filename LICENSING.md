@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Licensing
 
 This repository is **dual-licensed**. Different categories of content fall

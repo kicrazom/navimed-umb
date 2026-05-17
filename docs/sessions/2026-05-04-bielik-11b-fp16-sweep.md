@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Bielik 11B v2.3 FP16 TP=2 — Phase 2 sweep
 
 **Date:** 2026-05-04T22:22:04+02:00

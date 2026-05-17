@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # AI Workstation – BOM & Infrastructure
 
 This repository is a lab logbook documenting the build, configuration, and ongoing development of an AMD-based AI workstation used for local ML inference, research tooling, and system automation.

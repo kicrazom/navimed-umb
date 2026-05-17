@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # 2026-05-02 — TP=2 sanity test
 
 Pre-flight check before Bielik 11B benchmark sessions. Verifies that

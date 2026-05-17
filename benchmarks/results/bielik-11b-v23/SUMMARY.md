@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Bielik 11B v2.3 — Phase 2 sweep summary
 
 **Sweep ID:** bielik-11b-v23-fp16-tp2-max8192

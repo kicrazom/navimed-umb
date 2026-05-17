@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Phase 1 — Hardware Envelope Summary (Qwen 3.6 27B, 2× R9700)
 
 **EMBARGO:** PUBLIC. Envelope data only — single-config measurements, no scaling sweep.

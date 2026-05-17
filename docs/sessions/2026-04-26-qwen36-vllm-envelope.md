@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # 2026-04-26 — Qwen 3.6 27B vLLM envelope on 2× R9700 (gfx1201 / RDNA 4)
 
 **Status:** First documented working configuration of Qwen 3.6 27B (released 2026-04-22)

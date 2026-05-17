@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # 2026-04-29 — Qwen 3.6 27B Phase 2 throughput sweep + universal reporting
 
 **Session goal:** complete v0.2.0 milestone — Phase 1 envelope analysis,

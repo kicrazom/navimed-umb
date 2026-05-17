@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # vLLM Concurrent Throughput - Scaling Curves
 
 Benchmarking tensor-parallelism throughput of vLLM 0.19 on 2x AMD Radeon AI PRO

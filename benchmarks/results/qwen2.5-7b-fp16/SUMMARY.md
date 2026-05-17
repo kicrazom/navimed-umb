@@ -1,8 +1,12 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Phase 2 Scaling Sweep — Qwen/Qwen2.5-7B-Instruct
 
-**Configuration:** `FP16 TP=1/2 max_len=4096 util=0.70 KV=auto`  
-**Backend:** `vllm-0.19.0+rocm721`  
-**Tuning:** `stock`  
+**Configuration:** `FP16 TP=1/2 max_len=4096 util=0.70 KV=auto`
+**Backend:** `vllm-0.19.0+rocm721`
+**Tuning:** `stock`
 **N reruns per cell (n_runs):** 1 (v0.2.0 exploratory; Tier A n=10 deferred per METHODOLOGY §7.4)
 
 ## ⚠ Embargo classification

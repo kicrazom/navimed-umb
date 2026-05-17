@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Methodology
 
 Cross-cutting protocol notes for every study under [`results/`](../results/).

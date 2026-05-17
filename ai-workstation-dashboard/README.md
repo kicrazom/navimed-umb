@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # AI Workstation Dashboard
 System-level monitoring dashboard for local AI/LLM workstations with multi-GPU (ROCm) support.
 Built for Ryzen 9 9950X3D + 2× Radeon AI PRO R9700 + Kubuntu 24.04.

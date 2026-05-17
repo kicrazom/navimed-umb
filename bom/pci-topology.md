@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # PCIe Topology
 
 Source: `lspci` on Kubuntu 24.04

@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Environment manifests
 
 Snapshots of the software and system environment used for benchmarks

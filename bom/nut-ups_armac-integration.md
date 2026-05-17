@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # ARMAC PF1 UPS -- NUT Integration Guide
 
 ## Model

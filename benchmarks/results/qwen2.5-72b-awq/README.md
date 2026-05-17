@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Qwen 2.5 72B AWQ — Plan B pilot
 
 vLLM 0.19.0+rocm721 serving `Qwen/Qwen2.5-72B-Instruct-AWQ` on 2× R9700

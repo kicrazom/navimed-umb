@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Benchmarks
 
 ![The battle of the models in AMD kingdom on vLLM-powered horses, commencing at dawn...](assets/battle_of_LLM_models_gemini.png)

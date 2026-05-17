@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # AI Usage Disclosure
 
 > **Document version**: 1.1 (released with `navimed-umb` v0.2.0)

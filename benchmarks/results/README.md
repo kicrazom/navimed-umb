@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Benchmark Results — Embargo Policy
 
 This directory holds outputs from `benchmarks/scripts/` runs.

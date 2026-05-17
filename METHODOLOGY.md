@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # NaviMed-UMB Benchmark Methodology
 
 **Document version:** 1.0 (2026-04-29)

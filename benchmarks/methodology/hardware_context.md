@@ -1,3 +1,7 @@
+---
+parent: "[[10_Projekty/navimed-umb/_index|navimed-umb]]"
+---
+
 # Hardware context
 
 Specifics of the workstation that surface in benchmark configuration
