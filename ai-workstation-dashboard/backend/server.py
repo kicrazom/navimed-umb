@@ -16,7 +16,7 @@ import re
 import socket
 import subprocess
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -43,7 +43,9 @@ class GpuInfo:
 
 def run_cmd(cmd: list[str], timeout: int = 3) -> str:
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=False)
+        r = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout, check=False
+        )
         return (r.stdout or "").strip()
     except Exception:
         return ""
@@ -60,6 +62,7 @@ ROCM_SMI = find_rocm_smi()
 
 
 # ── Static system info (cached) ─────────────────────────────────────────────
+
 
 def _get_static():
     os_name = ""
@@ -103,7 +106,10 @@ def _get_static():
     ram_modules = []
     dmi_out = ""
     # Try without sudo first, then with sudo
-    for cmd in [["dmidecode", "-t", "memory"], ["sudo", "-n", "dmidecode", "-t", "memory"]]:
+    for cmd in [
+        ["dmidecode", "-t", "memory"],
+        ["sudo", "-n", "dmidecode", "-t", "memory"],
+    ]:
         dmi_out = run_cmd(cmd)
         if dmi_out and "Size:" in dmi_out:
             break
@@ -114,7 +120,11 @@ def _get_static():
             line = line.strip()
             if line.startswith("Size:") and "No Module" not in line:
                 current["size"] = line.split(":", 1)[1].strip()
-            elif line.startswith("Type:") and "Unknown" not in line and "Correction" not in line:
+            elif (
+                line.startswith("Type:")
+                and "Unknown" not in line
+                and "Correction" not in line
+            ):
                 current["type"] = line.split(":", 1)[1].strip()
             elif line.startswith("Configured Memory Speed:") and "Unknown" not in line:
                 current["speed"] = line.split(":", 1)[1].strip()
@@ -165,9 +175,19 @@ STATIC = _get_static()
 
 # ── GPU parsing ──────────────────────────────────────────────────────────────
 
+
 def parse_gpus_json() -> list[GpuInfo]:
-    raw = run_cmd([ROCM_SMI, "--json", "--showuse", "--showtemp",
-                   "--showmeminfo", "vram", "--showproductname"])
+    raw = run_cmd(
+        [
+            ROCM_SMI,
+            "--json",
+            "--showuse",
+            "--showtemp",
+            "--showmeminfo",
+            "vram",
+            "--showproductname",
+        ]
+    )
     if not raw:
         return []
     try:
@@ -182,26 +202,46 @@ def parse_gpus_json() -> list[GpuInfo]:
             continue
         gpu = GpuInfo(index=int(m.group(1)))
 
-        for fn in ("Card Series", "Card series", "Card Model", "Card model", "Product Name"):
+        for fn in (
+            "Card Series",
+            "Card series",
+            "Card Model",
+            "Card model",
+            "Product Name",
+        ):
             if fn in val:
                 gpu.name = str(val[fn]).strip()
                 break
         for fn in ("GPU use (%)", "GPU Activity"):
             if fn in val:
-                try: gpu.use_percent = int(float(val[fn]))
-                except: pass
+                try:
+                    gpu.use_percent = int(float(val[fn]))
+                except Exception:
+                    pass
                 break
-        for fn in ("Temperature (Sensor edge) (C)", "Temperature (Sensor junction) (C)", "Temperature"):
+        for fn in (
+            "Temperature (Sensor edge) (C)",
+            "Temperature (Sensor junction) (C)",
+            "Temperature",
+        ):
             if fn in val:
-                try: gpu.temp_c = float(val[fn])
-                except: pass
+                try:
+                    gpu.temp_c = float(val[fn])
+                except Exception:
+                    pass
                 break
-        try: gpu.vram_total_b = int(val.get("VRAM Total Memory (B)", 0)) or None
-        except: pass
-        try: gpu.vram_used_b = int(val.get("VRAM Total Used Memory (B)", 0)) or None
-        except: pass
+        try:
+            gpu.vram_total_b = int(val.get("VRAM Total Memory (B)", 0)) or None
+        except Exception:
+            pass
+        try:
+            gpu.vram_used_b = int(val.get("VRAM Total Used Memory (B)", 0)) or None
+        except Exception:
+            pass
 
-        if "Graphics" in gpu.name or (gpu.vram_total_b and gpu.vram_total_b < 4 * 1024**3):
+        if "Graphics" in gpu.name or (
+            gpu.vram_total_b and gpu.vram_total_b < 4 * 1024**3
+        ):
             gpu.gpu_type = "integrated"
         gpus.append(gpu)
 
@@ -223,7 +263,8 @@ def parse_gpus_text() -> list[GpuInfo]:
             idx = int(m.group(1))
             gd.setdefault(idx, GpuInfo(index=idx)).use_percent = int(m.group(2))
     for line in out["temp"].splitlines():
-        if "emp" not in line: continue
+        if "emp" not in line:
+            continue
         m = re.search(r"GPU\[(\d+)\].*?(\d+(?:\.\d+)?)", line)
         if m:
             idx = int(m.group(1))
@@ -234,7 +275,8 @@ def parse_gpus_text() -> list[GpuInfo]:
             idx = int(m.group(1))
             g = gd.setdefault(idx, GpuInfo(index=idx))
             g.name = m.group(2).strip()
-            if "Graphics" in g.name: g.gpu_type = "integrated"
+            if "Graphics" in g.name:
+                g.gpu_type = "integrated"
     for line in out["vram"].splitlines():
         t = re.search(r"GPU\[(\d+)\].*Total(?! Used).*?:\s*(\d+)", line)
         u = re.search(r"GPU\[(\d+)\].*Used.*?:\s*(\d+)", line)
@@ -252,6 +294,7 @@ def get_gpus() -> list[GpuInfo]:
 
 
 # ── Metrics snapshot ─────────────────────────────────────────────────────────
+
 
 def get_cpu_temp() -> Optional[float]:
     try:
@@ -274,8 +317,14 @@ def get_top_procs(limit: int = 12) -> list[dict]:
         try:
             cpu = p.cpu_percent(interval=None)
             mem = p.memory_info().rss
-            rows.append({"pid": p.pid, "name": p.info.get("name") or "?",
-                         "cpu": round(cpu, 1), "mem_mib": round(mem / (1024**2), 1)})
+            rows.append(
+                {
+                    "pid": p.pid,
+                    "name": p.info.get("name") or "?",
+                    "cpu": round(cpu, 1),
+                    "mem_mib": round(mem / (1024**2), 1),
+                }
+            )
         except Exception:
             continue
     rows.sort(key=lambda x: (x["cpu"], x["mem_mib"]), reverse=True)
@@ -314,14 +363,16 @@ def build_snapshot() -> dict:
             usage = psutil.disk_usage(part.mountpoint)
             if usage.total < 100 * 1024**2:  # skip tiny partitions (<100MB)
                 continue
-            disk_partitions.append({
-                "device": part.device,
-                "mount": part.mountpoint,
-                "fs": part.fstype,
-                "used_gib": round(usage.used / (1024**3), 2),
-                "total_gib": round(usage.total / (1024**3), 2),
-                "percent": usage.percent,
-            })
+            disk_partitions.append(
+                {
+                    "device": part.device,
+                    "mount": part.mountpoint,
+                    "fs": part.fstype,
+                    "used_gib": round(usage.used / (1024**3), 2),
+                    "total_gib": round(usage.total / (1024**3), 2),
+                    "percent": usage.percent,
+                }
+            )
         except PermissionError:
             continue
 
@@ -351,19 +402,25 @@ def build_snapshot() -> dict:
 # ── FastAPI ──────────────────────────────────────────────────────────────────
 
 app = FastAPI(title="AI Workstation Dashboard")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+)
 
 FRONTEND = Path(__file__).parent / "frontend"
 
 if (FRONTEND / "index.html").exists():
+
     @app.get("/")
     async def root():
         return FileResponse(FRONTEND / "index.html")
+
     app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
+
 
 @app.get("/api/snapshot")
 async def snapshot():
     return build_snapshot()
+
 
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
@@ -379,12 +436,15 @@ async def ws_endpoint(ws: WebSocket):
 # Warm up
 psutil.cpu_percent(interval=None)
 for p in psutil.process_iter():
-    try: p.cpu_percent(interval=None)
-    except: pass
+    try:
+        p.cpu_percent(interval=None)
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":
     import uvicorn
+
     print("┌──────────────────────────────────────────────┐")
     print("│  AI Workstation Dashboard                    │")
     print("│  http://0.0.0.0:8000       ws://…:8000/ws    │")

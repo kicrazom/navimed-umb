@@ -3,8 +3,8 @@
 Build a 2x3 grid of thermal charts from Plan A runs.
 Shows TP=1 vs TP=2 at increasing concurrency (N=500, 2000, 3000).
 """
+
 import json
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -17,10 +17,10 @@ def main():
 
     # Selected representative runs: plateau + max N for both TP configs
     runs = [
-        ("tp1-n500",  "TP=1, N=500 (plateau start)"),
+        ("tp1-n500", "TP=1, N=500 (plateau start)"),
         ("tp1-n2000", "TP=1, N=2000 (plateau mid)"),
         ("tp1-n3000", "TP=1, N=3000 (plateau max)"),
-        ("tp2-n500",  "TP=2, N=500 (plateau start)"),
+        ("tp2-n500", "TP=2, N=500 (plateau start)"),
         ("tp2-n2000", "TP=2, N=2000 (plateau mid)"),
         ("tp2-n3000", "TP=2, N=3000 (plateau max, 131s run)"),
     ]
@@ -41,9 +41,16 @@ def main():
         img_path = thermal_dir / f"{run_name}-thermals.png"
 
         if not img_path.exists():
-            ax.text(0.5, 0.5, f"Missing:\n{img_path.name}",
-                    ha="center", va="center", fontsize=11, color="red",
-                    transform=ax.transAxes)
+            ax.text(
+                0.5,
+                0.5,
+                f"Missing:\n{img_path.name}",
+                ha="center",
+                va="center",
+                fontsize=11,
+                color="red",
+                transform=ax.transAxes,
+            )
             ax.set_axis_off()
             continue
 
@@ -52,12 +59,18 @@ def main():
         ax.set_axis_off()
 
         throughput = tput.get(run_name, "?")
-        title = f"{label}  —  {throughput:.0f} tok/s" if isinstance(throughput, (int, float)) else label
+        title = (
+            f"{label}  —  {throughput:.0f} tok/s"
+            if isinstance(throughput, (int, float))
+            else label
+        )
         ax.set_title(title, fontsize=12, fontweight="bold", pad=8)
 
     fig.suptitle(
         "Thermal timelines: TP=1 (top row) vs TP=2 (bottom row) at increasing concurrency",
-        fontsize=14, fontweight="bold", y=0.995
+        fontsize=14,
+        fontweight="bold",
+        y=0.995,
     )
 
     plt.tight_layout(rect=[0, 0, 1, 0.98])

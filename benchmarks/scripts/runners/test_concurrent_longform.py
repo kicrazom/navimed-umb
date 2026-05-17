@@ -2,6 +2,7 @@
 Concurrent benchmark — LONG FORM output (max_tokens=1024).
 Powinno pokazać realne skalowanie TP=2 (długi decode = amortyzacja komunikacji).
 """
+
 import sys
 import time
 from vllm import LLM, SamplingParams
@@ -16,16 +17,26 @@ def make_prompts(n: int) -> list[str]:
         "Walk through {} step-by-step, from foundational ideas to contemporary developments, with examples:",
     ]
     topics = [
-        "transformer attention mechanisms", "RNA splicing regulation",
-        "distributed consensus protocols", "neural coding in the visual cortex",
-        "quantum error correction", "supply chain resilience",
-        "CRISPR off-target effects", "reinforcement learning policy gradients",
-        "plate tectonics feedback loops", "cryptographic zero-knowledge proofs",
-        "mRNA vaccine thermostability", "tensor network methods in physics",
-        "circadian rhythm molecular biology", "carbon capture technologies",
-        "graph neural networks for chemistry", "climate sensitivity estimation",
-        "prokaryotic vs eukaryotic gene regulation", "bandwidth-delay product in networking",
-        "large language model alignment", "gene therapy delivery vectors",
+        "transformer attention mechanisms",
+        "RNA splicing regulation",
+        "distributed consensus protocols",
+        "neural coding in the visual cortex",
+        "quantum error correction",
+        "supply chain resilience",
+        "CRISPR off-target effects",
+        "reinforcement learning policy gradients",
+        "plate tectonics feedback loops",
+        "cryptographic zero-knowledge proofs",
+        "mRNA vaccine thermostability",
+        "tensor network methods in physics",
+        "circadian rhythm molecular biology",
+        "carbon capture technologies",
+        "graph neural networks for chemistry",
+        "climate sensitivity estimation",
+        "prokaryotic vs eukaryotic gene regulation",
+        "bandwidth-delay product in networking",
+        "large language model alignment",
+        "gene therapy delivery vectors",
     ]
     prompts = []
     for i in range(n):

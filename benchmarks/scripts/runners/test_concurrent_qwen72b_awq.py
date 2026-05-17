@@ -13,6 +13,7 @@ Based on test_concurrent.py (Qwen 7B) with adjustments for 72B AWQ:
   - All vLLM code wrapped in main() to avoid spawn-multiprocessing recursion
     (vLLM TP>=2 uses 'spawn' which re-imports this module per worker)
 """
+
 import sys
 import time
 import os
@@ -32,16 +33,30 @@ def make_prompts(n: int) -> list[str]:
         "Give a practical example of using {} in everyday life:",
     ]
     topics = [
-        "quantum entanglement", "photosynthesis", "machine learning",
-        "the TCP/IP protocol", "black holes", "mRNA vaccines",
-        "distributed systems", "neural plasticity", "supply chain logistics",
-        "tensor parallelism", "climate feedback loops", "the Krebs cycle",
-        "cryptographic hashing", "CRISPR gene editing", "monetary policy",
-        "reinforcement learning", "ocean currents", "magnetic resonance imaging",
-        "fermentation", "GPS triangulation",
+        "quantum entanglement",
+        "photosynthesis",
+        "machine learning",
+        "the TCP/IP protocol",
+        "black holes",
+        "mRNA vaccines",
+        "distributed systems",
+        "neural plasticity",
+        "supply chain logistics",
+        "tensor parallelism",
+        "climate feedback loops",
+        "the Krebs cycle",
+        "cryptographic hashing",
+        "CRISPR gene editing",
+        "monetary policy",
+        "reinforcement learning",
+        "ocean currents",
+        "magnetic resonance imaging",
+        "fermentation",
+        "GPS triangulation",
     ]
-    return [templates[i % len(templates)].format(topics[i % len(topics)])
-            for i in range(n)]
+    return [
+        templates[i % len(templates)].format(topics[i % len(topics)]) for i in range(n)
+    ]
 
 
 def main() -> int:
@@ -52,9 +67,11 @@ def main() -> int:
     n_prompts = int(sys.argv[2]) if len(sys.argv) > 2 else 100
 
     if tp_size != 2:
-        print(f"WARNING: Qwen 72B AWQ requires TP=2 (39 GB > 32 GB single-GPU)")
+        print("WARNING: Qwen 72B AWQ requires TP=2 (39 GB > 32 GB single-GPU)")
 
-    print(f"=== Concurrent benchmark: Qwen 72B AWQ TP={tp_size}, N={n_prompts} prompts ===")
+    print(
+        f"=== Concurrent benchmark: Qwen 72B AWQ TP={tp_size}, N={n_prompts} prompts ==="
+    )
 
     prompts = make_prompts(n_prompts)
 

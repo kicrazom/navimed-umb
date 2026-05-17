@@ -4,6 +4,7 @@ Uruchamianie:
     python test_concurrent.py 1 100   # TP=1, 100 promptów
     python test_concurrent.py 2 100   # TP=2, 100 promptów
 """
+
 import sys
 import time
 from vllm import LLM, SamplingParams
@@ -22,13 +23,26 @@ def make_prompts(n: int) -> list[str]:
         "Give a practical example of using {} in everyday life:",
     ]
     topics = [
-        "quantum entanglement", "photosynthesis", "machine learning",
-        "the TCP/IP protocol", "black holes", "mRNA vaccines",
-        "distributed systems", "neural plasticity", "supply chain logistics",
-        "tensor parallelism", "climate feedback loops", "the Krebs cycle",
-        "cryptographic hashing", "CRISPR gene editing", "monetary policy",
-        "reinforcement learning", "ocean currents", "magnetic resonance imaging",
-        "fermentation", "GPS triangulation",
+        "quantum entanglement",
+        "photosynthesis",
+        "machine learning",
+        "the TCP/IP protocol",
+        "black holes",
+        "mRNA vaccines",
+        "distributed systems",
+        "neural plasticity",
+        "supply chain logistics",
+        "tensor parallelism",
+        "climate feedback loops",
+        "the Krebs cycle",
+        "cryptographic hashing",
+        "CRISPR gene editing",
+        "monetary policy",
+        "reinforcement learning",
+        "ocean currents",
+        "magnetic resonance imaging",
+        "fermentation",
+        "GPS triangulation",
     ]
     prompts = []
     for i in range(n):

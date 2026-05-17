@@ -30,9 +30,7 @@ from typing import Final
 
 LOG_FORMAT: Final[str] = "%(asctime)s [%(levelname)s] %(message)s"
 
-RE_RUN_NAME = re.compile(
-    r"^(?:(?P<quant>\w+)-)?tp(?P<tp>\d+)-n(?P<n>\d+)-bench\.log$"
-)
+RE_RUN_NAME = re.compile(r"^(?:(?P<quant>\w+)-)?tp(?P<tp>\d+)-n(?P<n>\d+)-bench\.log$")
 
 RE_PROMPTS = re.compile(r"^Prompts:\s+(\d+)", re.MULTILINE)
 RE_INPUT_TOTAL = re.compile(r"^Input tokens total:\s+(\d+)", re.MULTILINE)
@@ -121,15 +119,11 @@ class RunRecord:
     def w_per_tok(self) -> float:
         if self.bench.output_tokens_total == 0:
             return 0.0
-        energy_wh = (
-            self.thermal.power_mean_w_total * self.bench.total_time_s / 3600.0
-        )
+        energy_wh = self.thermal.power_mean_w_total * self.bench.total_time_s / 3600.0
         return energy_wh / self.bench.output_tokens_total
 
 
-def _grep_one(
-    pattern: re.Pattern, text: str, default: str | None = None
-) -> str:
+def _grep_one(pattern: re.Pattern, text: str, default: str | None = None) -> str:
     m = pattern.search(text)
     if m:
         return m.group(1)
@@ -204,8 +198,7 @@ def parse_thermals_jsonl(
         raise ValueError(f"thermals.jsonl {path.name} has no in-window samples")
 
     r9700_indices = [
-        g["idx"] for g in samples_in_window[0]["gpus"]
-        if not g.get("is_igpu", False)
+        g["idx"] for g in samples_in_window[0]["gpus"] if not g.get("is_igpu", False)
     ]
 
     summary = ThermalSummary(
@@ -215,12 +208,12 @@ def parse_thermals_jsonl(
     )
     for gpu_idx in r9700_indices:
         vram_series = [
-            _bytes_to_gb(s["gpus"][gpu_idx]["vram_used_b"])
-            for s in samples_in_window
+            _bytes_to_gb(s["gpus"][gpu_idx]["vram_used_b"]) for s in samples_in_window
         ]
         temp_series = [s["gpus"][gpu_idx]["temp"] for s in samples_in_window]
         power_series = [
-            s["gpus"][gpu_idx]["power_w"] for s in samples_in_window
+            s["gpus"][gpu_idx]["power_w"]
+            for s in samples_in_window
             if s["gpus"][gpu_idx]["power_w"] is not None
         ]
         summary.vram_peak_gb_per_gpu.append(max(vram_series) if vram_series else 0.0)
@@ -231,7 +224,7 @@ def parse_thermals_jsonl(
 
 
 def _bytes_to_gb(b: int) -> float:
-    return b / (1024 ** 3)
+    return b / (1024**3)
 
 
 def discover_runs(thermal_runs_dir: Path) -> list[Path]:
@@ -266,48 +259,68 @@ def load_run(bench_log_path: Path) -> RunRecord | None:
 
 
 CSV_COLUMNS: Final[list[str]] = [
-    "model", "quant", "backend", "TP", "max_len", "util", "KV_dtype", "N",
+    "model",
+    "quant",
+    "backend",
+    "TP",
+    "max_len",
+    "util",
+    "KV_dtype",
+    "N",
     "n_runs",
-    "tok_s_out", "tok_s_tot", "total_s", "req_s",
-    "VRAM_peak_GB", "T_peak_C", "W_mean", "W_peak", "W_per_tok_Wh",
-    "load_time_s", "input_tok_total", "output_tok_total", "output_tok_mean",
+    "tok_s_out",
+    "tok_s_tot",
+    "total_s",
+    "req_s",
+    "VRAM_peak_GB",
+    "T_peak_C",
+    "W_mean",
+    "W_peak",
+    "W_per_tok_Wh",
+    "load_time_s",
+    "input_tok_total",
+    "output_tok_total",
+    "output_tok_mean",
     "tuning",
 ]
 
 
-def format_csv_row(
-    rec: RunRecord, model: str, backend: str, tuning: str
-) -> str:
-    return ",".join([
-        model,
-        rec.bench.quant,
-        backend,
-        str(rec.bench.tp),
-        str(rec.bench.max_model_len),
-        f"{rec.bench.gpu_memory_util:.2f}",
-        rec.bench.kv_cache_dtype,
-        str(rec.bench.n_prompts),
-        "1",
-        f"{rec.bench.output_throughput_tok_s:.2f}",
-        f"{rec.bench.total_throughput_tok_s:.2f}",
-        f"{rec.bench.total_time_s:.2f}",
-        f"{rec.bench.req_per_s:.3f}",
-        f"{rec.thermal.vram_peak_gb_max:.2f}",
-        f"{rec.thermal.temp_peak_c_max:.0f}",
-        f"{rec.thermal.power_mean_w_total:.0f}",
-        f"{rec.thermal.power_peak_w_total:.0f}",
-        f"{rec.w_per_tok:.6f}",
-        f"{rec.bench.load_time_s:.1f}",
-        str(rec.bench.input_tokens_total),
-        str(rec.bench.output_tokens_total),
-        f"{rec.bench.output_tokens_mean:.1f}",
-        tuning,
-    ])
+def format_csv_row(rec: RunRecord, model: str, backend: str, tuning: str) -> str:
+    return ",".join(
+        [
+            model,
+            rec.bench.quant,
+            backend,
+            str(rec.bench.tp),
+            str(rec.bench.max_model_len),
+            f"{rec.bench.gpu_memory_util:.2f}",
+            rec.bench.kv_cache_dtype,
+            str(rec.bench.n_prompts),
+            "1",
+            f"{rec.bench.output_throughput_tok_s:.2f}",
+            f"{rec.bench.total_throughput_tok_s:.2f}",
+            f"{rec.bench.total_time_s:.2f}",
+            f"{rec.bench.req_per_s:.3f}",
+            f"{rec.thermal.vram_peak_gb_max:.2f}",
+            f"{rec.thermal.temp_peak_c_max:.0f}",
+            f"{rec.thermal.power_mean_w_total:.0f}",
+            f"{rec.thermal.power_peak_w_total:.0f}",
+            f"{rec.w_per_tok:.6f}",
+            f"{rec.bench.load_time_s:.1f}",
+            str(rec.bench.input_tokens_total),
+            str(rec.bench.output_tokens_total),
+            f"{rec.bench.output_tokens_mean:.1f}",
+            tuning,
+        ]
+    )
 
 
 def write_csv(
-    records: list[RunRecord], output_path: Path,
-    model: str, backend: str, tuning: str,
+    records: list[RunRecord],
+    output_path: Path,
+    model: str,
+    backend: str,
+    tuning: str,
 ) -> None:
     lines = [",".join(CSV_COLUMNS)]
     lines.extend(format_csv_row(r, model, backend, tuning) for r in records)
@@ -330,7 +343,10 @@ def format_summary_row(rec: RunRecord) -> str:
 
 
 def build_summary_markdown(
-    records: list[RunRecord], model: str, backend: str, tuning: str,
+    records: list[RunRecord],
+    model: str,
+    backend: str,
+    tuning: str,
 ) -> str:
     if not records:
         return "# No runs to report\n"
@@ -399,8 +415,7 @@ def build_summary_markdown(
     )
 
     observations = (
-        "\n\n## Engineering observations (PUBLIC)\n\n"
-        + "\n".join(obs_lines) + "\n"
+        "\n\n## Engineering observations (PUBLIC)\n\n" + "\n".join(obs_lines) + "\n"
     )
     return header + rows + observations
 
@@ -419,7 +434,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO, format=LOG_FORMAT,
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format=LOG_FORMAT,
     )
 
     if not args.thermal_runs_dir.exists():
@@ -439,7 +455,10 @@ def main() -> int:
             records.append(rec)
             logging.info(
                 "Parsed %s: quant=%s TP=%d N=%d → %.1f tok/s, VRAM %.1f GB, %d W mean",
-                log_path.name, rec.bench.quant, rec.bench.tp, rec.bench.n_prompts,
+                log_path.name,
+                rec.bench.quant,
+                rec.bench.tp,
+                rec.bench.n_prompts,
                 rec.bench.output_throughput_tok_s,
                 rec.thermal.vram_peak_gb_max,
                 rec.thermal.power_mean_w_total,

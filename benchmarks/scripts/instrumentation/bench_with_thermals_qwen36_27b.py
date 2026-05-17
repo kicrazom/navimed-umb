@@ -40,14 +40,27 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("tp", type=int, help="Tensor parallel size (must be 2 for 27B)")
     ap.add_argument("n", type=int, help="Number of concurrent prompts")
-    ap.add_argument("--quant", choices=["fp8", "bf16"], default="bf16",
-                    help="Quantization variant (default: bf16)")
-    ap.add_argument("--max-len", type=int, default=None,
-                    help="Override max_model_len for inner benchmark")
-    ap.add_argument("--util", type=float, default=None,
-                    help="Override gpu_memory_utilization for inner benchmark")
-    ap.add_argument("--kv-dtype", default=None,
-                    help="Override kv_cache_dtype for inner benchmark")
+    ap.add_argument(
+        "--quant",
+        choices=["fp8", "bf16"],
+        default="bf16",
+        help="Quantization variant (default: bf16)",
+    )
+    ap.add_argument(
+        "--max-len",
+        type=int,
+        default=None,
+        help="Override max_model_len for inner benchmark",
+    )
+    ap.add_argument(
+        "--util",
+        type=float,
+        default=None,
+        help="Override gpu_memory_utilization for inner benchmark",
+    )
+    ap.add_argument(
+        "--kv-dtype", default=None, help="Override kv_cache_dtype for inner benchmark"
+    )
     ap.add_argument("--name", help="Run name (default: <quant>-tpX-nY)")
     ap.add_argument("--out-dir", default=".", help="Output directory")
     ap.add_argument("--interval", type=float, default=1.0, help="Sampler interval")
@@ -74,7 +87,8 @@ def main():
     print("Starting sampler...")
     sampler_proc = subprocess.Popen(
         [sys.executable, str(SAMPLER), str(jsonl), "--interval", str(args.interval)],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
 
     t_wall_start = time.time()
@@ -85,21 +99,32 @@ def main():
         time.sleep(IDLE_BEFORE_S)
 
         t_bench_start = time.time() - t_wall_start
-        events.append({"t": round(t_bench_start, 2),
-                       "label": f"bench start ({args.quant.upper()}, "
-                                f"TP={args.tp}, N={args.n})",
-                       "color": "#2ca02c"})
+        events.append(
+            {
+                "t": round(t_bench_start, 2),
+                "label": f"bench start ({args.quant.upper()}, "
+                f"TP={args.tp}, N={args.n})",
+                "color": "#2ca02c",
+            }
+        )
 
-        print(f"Running benchmark ({args.quant.upper()}, "
-              f"TP={args.tp}, N={args.n})...")
+        print(
+            f"Running benchmark ({args.quant.upper()}, " f"TP={args.tp}, N={args.n})..."
+        )
         env = os.environ.copy()
         # For 27B both quantizations TP=2 mandatory — do not mask GPUs
         env.pop("ROCR_VISIBLE_DEVICES", None)
 
         # Build inner benchmark command
-        cmd = [sys.executable, "-u", str(BENCHMARK),
-               str(args.tp), str(args.n),
-               "--quant", args.quant]
+        cmd = [
+            sys.executable,
+            "-u",
+            str(BENCHMARK),
+            str(args.tp),
+            str(args.n),
+            "--quant",
+            args.quant,
+        ]
         if args.max_len is not None:
             cmd += ["--max-len", str(args.max_len)]
         if args.util is not None:
@@ -109,13 +134,17 @@ def main():
 
         with open(bench_log, "w") as f:
             bench_result = subprocess.run(
-                cmd, stdout=f, stderr=subprocess.STDOUT, env=env, timeout=1800,
+                cmd,
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                env=env,
+                timeout=1800,
             )
 
         t_bench_end = time.time() - t_wall_start
-        events.append({"t": round(t_bench_end, 2),
-                       "label": "bench end",
-                       "color": "#d62728"})
+        events.append(
+            {"t": round(t_bench_end, 2), "label": "bench end", "color": "#d62728"}
+        )
         print(f"Benchmark done (rc={bench_result.returncode})")
 
         print(f"Collecting {IDLE_AFTER_S}s cooldown...")
@@ -134,14 +163,30 @@ def main():
     print(f"Events: {events_json}")
 
     print("Generating thermal plot...")
-    subprocess.run([sys.executable, str(PLOTTER), str(jsonl), str(png),
-                    "--events", str(events_json)], check=True)
+    subprocess.run(
+        [
+            sys.executable,
+            str(PLOTTER),
+            str(jsonl),
+            str(png),
+            "--events",
+            str(events_json),
+        ],
+        check=True,
+    )
 
     try:
         bench_text = bench_log.read_text()
         for line in bench_text.splitlines():
-            if any(k in line for k in ("Output throughput", "Requests/second",
-                                        "Total time", "Load time")):
+            if any(
+                k in line
+                for k in (
+                    "Output throughput",
+                    "Requests/second",
+                    "Total time",
+                    "Load time",
+                )
+            ):
                 print(f"  {line.strip()}")
     except Exception:
         pass

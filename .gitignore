@@ -64,3 +64,17 @@ logbook/raw_logs/
 
 # Local-only session continuation notes (private)
 SESSION_RESUME.md
+
+# Claude Code local-only files
+.claude/settings.local.json
+.claude/local/
+.claude/cache/
+
+# Embargoed benchmark results — DO NOT COMMIT until paper acceptance
+benchmarks/results/
+
+# Embargoed planning doc — contains throughput refs
+docs/sessions/PLAN-NEXT.md
+
+# Source literature (PDFs of papers the project builds on) — local-only
+literature/

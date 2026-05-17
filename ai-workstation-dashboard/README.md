@@ -89,4 +89,3 @@ cd ~/ai-dashboard
 .venv/bin/pip install --upgrade -r backend/requirements.txt
 sudo systemctl restart ai-dashboard   # if using systemd
 ```
-

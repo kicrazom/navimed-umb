@@ -17,6 +17,7 @@ What it does:
   6. Writes events.json with benchmark start/end markers
   7. Calls plot_thermals.py
 """
+
 import argparse
 import json
 import os
@@ -31,7 +32,7 @@ SAMPLER = HERE / "sample_system.py"
 PLOTTER = HERE.parent / "plotting" / "plot_thermals.py"
 BENCHMARK = Path.home() / "benchmarks" / "test_concurrent.py"
 IDLE_BEFORE_S = 5.0
-IDLE_AFTER_S  = 5.0
+IDLE_AFTER_S = 5.0
 
 
 def main():
@@ -64,7 +65,8 @@ def main():
     print("Starting sampler...")
     sampler_proc = subprocess.Popen(
         [sys.executable, str(SAMPLER), str(jsonl), "--interval", str(args.interval)],
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
 
     t_wall_start = time.time()
@@ -77,9 +79,13 @@ def main():
 
         # 3. Benchmark
         t_bench_start = time.time() - t_wall_start
-        events.append({"t": round(t_bench_start, 2),
-                       "label": f"bench start (TP={args.tp}, N={args.n})",
-                       "color": "#2ca02c"})
+        events.append(
+            {
+                "t": round(t_bench_start, 2),
+                "label": f"bench start (TP={args.tp}, N={args.n})",
+                "color": "#2ca02c",
+            }
+        )
         print(f"Running benchmark (TP={args.tp}, N={args.n})...")
 
         env = os.environ.copy()
@@ -91,13 +97,16 @@ def main():
         with open(bench_log, "w") as f:
             bench_result = subprocess.run(
                 [sys.executable, "-u", str(BENCHMARK), str(args.tp), str(args.n)],
-                stdout=f, stderr=subprocess.STDOUT, env=env, timeout=900,
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                env=env,
+                timeout=900,
             )
 
         t_bench_end = time.time() - t_wall_start
-        events.append({"t": round(t_bench_end, 2),
-                       "label": "bench end",
-                       "color": "#d62728"})
+        events.append(
+            {"t": round(t_bench_end, 2), "label": "bench end", "color": "#d62728"}
+        )
         print(f"Benchmark done (rc={bench_result.returncode})")
 
         # 4. Cooldown capture
@@ -120,14 +129,26 @@ def main():
 
     # 7. Plot
     print("Generating thermal plot...")
-    subprocess.run([sys.executable, str(PLOTTER), str(jsonl), str(png),
-                    "--events", str(events_json)], check=True)
+    subprocess.run(
+        [
+            sys.executable,
+            str(PLOTTER),
+            str(jsonl),
+            str(png),
+            "--events",
+            str(events_json),
+        ],
+        check=True,
+    )
 
     # Also print throughput from bench log if available
     try:
         bench_text = bench_log.read_text()
         for line in bench_text.splitlines():
-            if any(k in line for k in ("Output throughput", "Requests/second", "Total time")):
+            if any(
+                k in line
+                for k in ("Output throughput", "Requests/second", "Total time")
+            ):
                 print(f"  {line.strip()}")
     except Exception:
         pass

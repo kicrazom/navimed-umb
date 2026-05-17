@@ -10,6 +10,7 @@ Based on test_dual_gpu_tp.py (Qwen 7B sanity) with adjustments for:
   - AWQ dtype (auto-detect)
   - Higher gpu_memory_utilization (0.92) — 72B AWQ requires most VRAM
 """
+
 import time
 import os
 from vllm import LLM, SamplingParams
@@ -27,10 +28,10 @@ def main():
     t0 = time.time()
     llm = LLM(
         model=os.path.expanduser("~/models/qwen25-72b-awq"),
-        dtype="auto",                       # AWQ handles its own dtype
+        dtype="auto",  # AWQ handles its own dtype
         max_model_len=4096,
-        gpu_memory_utilization=0.92,        # 72B AWQ ~39 GB / 2 GPU = ~20 GB each
-        enforce_eager=True,                 # gfx1201 HSA_STATUS workaround
+        gpu_memory_utilization=0.92,  # 72B AWQ ~39 GB / 2 GPU = ~20 GB each
+        enforce_eager=True,  # gfx1201 HSA_STATUS workaround
         tensor_parallel_size=2,
     )
     t_load = time.time() - t0

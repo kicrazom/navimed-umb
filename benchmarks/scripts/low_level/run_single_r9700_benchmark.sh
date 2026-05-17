@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 # ROCm + PyTorch benchmark script for Radeon AI PRO R9700
@@ -7,6 +6,8 @@
 set -e
 
 echo "Activating ROCm Python environment..."
+# shellcheck source=/dev/null
+# shellcheck source=/dev/null
 source ~/venvs/rocm72/bin/activate
 
 echo "Creating benchmark script..."
