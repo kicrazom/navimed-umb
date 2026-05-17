@@ -1,0 +1,73 @@
+{
+  "model": "bielik-11b-v30",
+  "model_hf_id": "speakleash/Bielik-11B-v3.0-Instruct",
+  "model_path": "/home/mozarcik/models/bielik-11b-v30",
+  "phase": "1_envelope",
+  "embargo": "PUBLIC",
+  "session_date": "2026-05-17",
+  "purpose": "Phase 1 envelope sanity test of bielik-11b-v30 (BF16, TP=1) on dual-R9700 / vLLM 0.19.0+rocm721 stack via OpenAI-compatible vllm serve endpoint.",
+  "transport": "vllm-serve-openai-api",
+  "config": {
+    "tensor_parallel_size": 1,
+    "max_model_len": 8192,
+    "gpu_memory_utilization": 0.9,
+    "enforce_eager": true,
+    "dtype": "bfloat16",
+    "port": 8100,
+    "port_note": "Port 8100 used because :8000 was occupied by long-running ai-dashboard (pid 2554, started ~08:51 prior); see issues section."
+  },
+  "stack": {
+    "rocm_version": "ROCM-SMI version: 4.0.0+fc0010cf6a (ROCM-SMI-LIB 7.8.0)",
+    "vllm_version": "0.19.0+rocm721",
+    "torch_version": "2.10.0+git8514f05",
+    "torch_hip_version": "7.2.53211"
+  },
+  "env_vars": {
+    "ROCR_VISIBLE_DEVICES": "0,1",
+    "VLLM_ROCM_USE_AITER": "0",
+    "AMD_SERIALIZE_KERNEL": "1",
+    "HIP_LAUNCH_BLOCKING": "1",
+    "PYTORCH_ALLOC_CONF": "<unset>"
+  },
+  "loaded": true,
+  "load_time_sec": 27,
+  "load_time_breakdown": {
+    "weights_load_sec": 11.65,
+    "model_loading_total_sec": 11.81,
+    "init_engine_profile_kv_warmup_sec": 2.04,
+    "end_to_end_serve_start_to_ready_sec": 27,
+    "method": "wall-clock from vllm-banner timestamp 21:53:58 to 'Application startup complete' 21:54:25; corroborated by curl-poll on /v1/models"
+  },
+  "vram_used_gb": 28.877,
+  "vram_per_gpu_gb": [
+    28.877,
+    0.056
+  ],
+  "vram_per_gpu_note": "rocm-smi --showmeminfo vram --csv sampled after model load with request idle. card0 = primary (TP=1), card1 = essentially empty as expected. card2 (iGPU RAPHAEL) excluded per ROCR_VISIBLE_DEVICES.",
+  "model_footprint_worker_gb": 20.9,
+  "kv_cache_available_gb": 7.17,
+  "kv_cache_size_tokens": 37584,
+  "kv_cache_size_gb": null,
+  "kv_cache_gb_note": "vLLM 0.19 introspection path does not expose gpu_cache_size_bytes directly; available_gb (7.17) is from worker init log, not from cache geometry. Same gap as 4.5B record — to be patched in v0.3 sanity runner.",
+  "max_concurrency": 4.59,
+  "max_concurrency_note": "'Maximum concurrency for 8192 tokens per request' from vLLM kv_cache_utils. Compare to 4.5B which reported 5.65x.",
+  "test_prompt": "Wyjaśnij krótko czym jest PEEP w wentylacji mechanicznej.",
+  "test_response": "PEEP (ang. Positive End-Expiratory Pressure), czyli dodatnie ciśnienie końcowo-wydechowe, to technika stosowana w wentylacji mechanicznej, mająca na celu utrzymanie otwartych pęcherzyków płucnych podczas wydechu. PEEP jest stosowany w celu zapobiegania zapadaniu się pęcherzyków płucnych (atelektazji) i poprawy wymiany gazowej u pacj",
+  "test_response_time_sec": 8.664,
+  "test_response_time_note": "End-to-end curl POST → JSON response, includes HTTP roundtrip + tokenization. Truncated at max_tokens=128 (finish_reason=length).",
+  "test_input_tokens": 33,
+  "test_output_tokens": 128,
+  "test_total_tokens": 161,
+  "vllm_engine_avg_generation_tok_s": 12.8,
+  "vllm_engine_avg_prompt_tok_s": 3.3,
+  "throughput_note": "Engine-side averages from vllm loggers.py at 21:54:45 (single-prompt window). NOT a scaling claim — Phase 1 baseline only, per METHODOLOGY §5.1 and §11.1.",
+  "errors": [],
+  "issues_encountered": [
+    "Initial launch attempted '--disable-log-requests' flag (per task spec); vllm 0.19 has removed/renamed this flag: 'vllm: error: unrecognized arguments: --disable-log-requests'. Retry without the flag succeeded.",
+    "Port :8000 was occupied by user's long-running ai-dashboard server (python3 /home/mozarcik/ai-dashboard/.venv/bin/python3 server.py, pid 2554, ~9h uptime). Test was relocated to port :8100; not killed."
+  ],
+  "kill_method": "SIGTERM to recorded PID from /tmp/bielik-11b-v30.pid; clean exit in 2 s (no SIGKILL needed, no pkill used).",
+  "started_at": "2026-05-17T19:53:52Z",
+  "ready_at": "2026-05-17T19:54:27Z",
+  "completed_at": "2026-05-17T19:55:18Z"
+}
