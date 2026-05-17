@@ -14,11 +14,13 @@ PORT="${PORT:-8000}"
 mkdir -p "$LOG_DIR"
 
 # Common vLLM flags — keep consistent across runs for reproducibility
+# Note: --disable-log-requests removed in vLLM 0.19 (silently rejected as
+# unrecognized argument). Verified empirically during bielik-11b-v30 sanity
+# 2026-05-17. Use --uvicorn-log-level=warning instead if needed.
 COMMON_FLAGS=(
   --port "$PORT"
   --max-model-len 8192
   --gpu-memory-utilization 0.9
-  --disable-log-requests
 )
 
 # gfx1201 stability: TP=2 needs enforce_eager for hybrid-attention families
