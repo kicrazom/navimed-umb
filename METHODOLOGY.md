@@ -70,25 +70,72 @@ Every benchmark JSON record captures the full software stack version triple (`ro
 
 ## 4. Model suite
 
-The benchmark suite covers thirteen models, deliberately mixing international (Qwen, Mistral, Mixtral) and Polish-language (Bielik, PLLuM) families. Polish models are the platform's community-differentiating contribution; no other public benchmark targets RDNA 4 with these models.
+The benchmark suite covers twenty-one generation models, deliberately mixing international (Qwen, Mistral, Mixtral, Kimi) and Polish-language (Bielik, PLLuM) families. Polish models are the platform's community-differentiating contribution; no other public benchmark targets RDNA 4 with these models. The suite expanded substantially during Phase 2 v0.3 (2026-05-17): refreshed Bielik 11B v3.0 stack, added Bielik 4.5B v3.0 (smallest envelope), Bielik-PL variant (Polish-focused fine-tune), Qwen 3.5 9B (replacing Qwen 2.5 7B baseline), refreshed Llama-PLLuM 70B trio (base/chat/instruct), and added Kimi-Dev 72B (Qwen2.5-72B base) as direct competitor to Qwen2.5-72B-AWQ.
 
-| # | Model | Params | Quant | TP | Family | Notes |
+### 4.1 Qwen family
+
+| # | Model | Params | Quant | TP | Status | Notes |
 |---|---|---|---|---|---|---|
-| 1 | `Qwen/Qwen2.5-7B-Instruct` | 7B | BF16 | 1 or 2 | Qwen 2.5 | TP=2 harmful below high N |
-| 2 | `Qwen/Qwen2.5-72B-Instruct-AWQ` | 72B | AWQ-4bit | 2 | Qwen 2.5 | TP=2 mandatory |
-| 3 | `Qwen/Qwen3.6-27B` | 27B | BF16 | 2 | Qwen 3.6 | Hybrid attention, eager only |
-| 4 | `Qwen/Qwen3.6-27B-FP8` | 27B | FP8 | 2 | Qwen 3.6 | No FP8 kernels on R9700 |
-| 5 | `speakleash/Bielik-11B-v2.3-Instruct` | 11B | FP16 | 1 or 2 | Bielik (PL) | |
-| 6 | `speakleash/Bielik-11B-v2.3-Instruct-AWQ` | 11B | AWQ-4bit | 1 | Bielik (PL) | |
-| 7 | `CYFRAGOVPL/Llama-PLLuM-8B-instruct` | 8B | BF16 | 1 | PLLuM (PL) | Llama base |
-| 8 | `CYFRAGOVPL/PLLuM-12B-chat` | 12B | BF16 | 1 or 2 | PLLuM (PL) | Mistral base |
-| 9 | `CYFRAGOVPL/Llama-PLLuM-70B-chat-250801` | 70B | BF16 | 2 | PLLuM (PL) | Finale |
-| 10 | `mistralai/Mistral-Nemo-Instruct-2407` | 12B | BF16 | 1 or 2 | Mistral | |
-| 11 | `TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ` | 47B (MoE) | AWQ-4bit | 2 | Mixtral | |
+| 1 | `Qwen/Qwen2.5-7B-Instruct` | 7B | BF16 | 1 or 2 | ready | TP=2 harmful below high N |
+| 2 | `Qwen/Qwen2.5-72B-Instruct-AWQ` | 72B | AWQ-4bit | 2 | ready | TP=2 mandatory |
+| 3 | `Qwen/Qwen3.5-9B` | 9B | BF16 | 1 or 2 | downloading | Replacing Qwen 2.5 7B baseline (v0.3) |
+| 4 | `Qwen/Qwen3.6-27B` | 27B | BF16 | 2 | ready | Hybrid attention, `enforce_eager=True` mandatory |
+| 5 | `Qwen/Qwen3.6-27B-FP8` | 27B | FP8 | 2 | ready | No FP8 kernels on R9700 (~75% slower than BF16) |
 
-Model HF identifiers for Qwen 3.6 family use no `-Instruct` suffix (i.e. `Qwen/Qwen3.6-27B` and `Qwen/Qwen3.6-27B-FP8`). PLLuM naming is family-dependent: `Llama-PLLuM-` for Llama-based variants (8B, 70B), bare `PLLuM-` for the Mistral-based 12B.
+### 4.2 Bielik family (PL)
+
+| # | Model | Params | Quant | TP | Status | Notes |
+|---|---|---|---|---|---|---|
+| 6 | `speakleash/Bielik-11B-v2.3-Instruct` | 11B | FP16 | 1 or 2 | ready | v2.3 baseline (April 2026) |
+| 7 | `speakleash/Bielik-11B-v2.3-Instruct-AWQ` | 11B | AWQ-4bit | 1 | ready | v2.3 quantized baseline |
+| 8 | `speakleash/Bielik-4.5B-v3.0-Instruct` | 4.5B | BF16 | 1 | ready | v0.3 sweep — smallest envelope (sanity test PASS 2026-05-17) |
+| 9 | `speakleash/Bielik-11B-v3.0` | 11B | BF16 | 1 or 2 | ready | v3.0 BF16 refresh |
+| 10 | `speakleash/Bielik-11B-v3.0-Instruct-AWQ` | 11B | AWQ-4bit | 1 | downloading | v3.0 quantized refresh (v0.3) |
+| 11 | `speakleash/Bielik-PL-11B-v3.0-Instruct` | 11B | BF16 | 1 or 2 | downloading | **GATED** on HF (Polish-focused fine-tune; multilingual base is #9) |
+
+### 4.3 PLLuM family (PL)
+
+| # | Model | Params | Quant | TP | Status | Notes |
+|---|---|---|---|---|---|---|
+| 12 | `CYFRAGOVPL/Llama-PLLuM-8B-instruct` | 8B | BF16 | 1 | ready | Llama base |
+| 13 | `CYFRAGOVPL/PLLuM-12B-chat` | 12B | BF16 | 1 or 2 | ready | Mistral base |
+| 14 | `CYFRAGOVPL/Llama-PLLuM-70B-base` | 70B | BF16 | 2 | ready | Earlier checkpoint |
+| 15 | `CYFRAGOVPL/Llama-PLLuM-70B-instruct` | 70B | BF16 | 2 | ready | Earlier checkpoint |
+| 16 | `CYFRAGOVPL/Llama-PLLuM-70B-chat` | 70B | BF16 | 2 | ready | Earlier checkpoint |
+| 17 | `CYFRAGOVPL/Llama-PLLuM-70B-base-250801` | 70B | BF16 | 2 | downloading | v0.3 refresh |
+| 18 | `CYFRAGOVPL/Llama-PLLuM-70B-chat-250801` | 70B | BF16 | 2 | downloading | v0.3 refresh (Finale) |
+
+### 4.4 International (Mistral / Mixtral / Kimi)
+
+| # | Model | Params | Quant | TP | Status | Notes |
+|---|---|---|---|---|---|---|
+| 19 | `mistralai/Mistral-Nemo-Instruct-2407` | 12B | BF16 | 1 or 2 | ready | |
+| 20 | `TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ` | 47B (MoE) | AWQ-4bit | 2 | ready | |
+| 21 | `moonshotai/Kimi-Dev-72B` | 72B | BF16→AWQ-marlin | 2 | downloading | Qwen2.5-72B base, no public AWQ — local quant w/ AutoAWQ |
+
+### 4.5 Naming conventions
+
+- Qwen 3.5 / 3.6 family: no `-Instruct` suffix (i.e. `Qwen/Qwen3.6-27B`, `Qwen/Qwen3.5-9B`).
+- PLLuM naming is family-dependent: `Llama-PLLuM-` for Llama-based variants (8B, 70B), bare `PLLuM-` for the Mistral-based 12B.
+- Bielik PL vs base: `Bielik-11B-v3.0` is multilingual (PL + EN + 30 EU), `Bielik-PL-11B-v3.0-Instruct` is Polish-focused fine-tune (different training, smaller multilingual scope).
+- Kimi-Dev 72B has no public AWQ as of 2026-05-17 — locally quantized via AutoAWQ + served with `--quantization awq_marlin --enforce-eager`.
+
+### 4.6 Phase 2 v0.3 follow-up suite (separate manuscript track)
+
+Three follow-up contenders (Phase B from `scripts/sweep_phase2_v0.3.sh`) are downloaded into the same `~/models/` tree but benchmarked separately (different manuscript, different embargo lift date):
+- **Kimi-Dev-72B** (above) — head-to-head vs Qwen2.5-72B-AWQ
+- **Kimi-Linear-48B-A3B-Instruct** — MoE, linear attention, requires `--no-enable-prefix-caching`
+- **Qwen3.6-35B-A3B-FP8** — MoE benchmark
+
+A multimodal probe suite (Phase C — Kimi-VL-A3B-Thinking-2506, Llama-4-Scout-17B-16E-Instruct) is scoped for Broncho-Nome work and tagged `VL` in the benchmark dataset.
+
+### 4.7 Lemonade Server reference (planned v0.4)
 
 A future v0.4 phase will repeat the suite under Lemonade Server (AMD-sponsored, GGUF native, OpenAI-compatible API at `localhost:13305`) for stack-level comparison: vLLM as server-grade (high-N AWQ throughput) vs Lemonade as desktop-grade (low-N GGUF latency).
+
+### 4.8 Out-of-scope artifacts in `~/models/`
+
+`~/models/bge-m3` (BAAI/bge-m3, embedding pooling model) is present in the model tree but is NOT part of the CDSS generation benchmark suite — it backs the LLM Wiki retrieval layer (separate vault, separate concern).
 
 ---
 
