@@ -81,3 +81,11 @@ literature/
 
 # Claude.ai conversation history backup (local-only)
 history/
+
+# Obsidian vault artifacts — navimed-umb is also a Vaults-main subfolder.
+# Folder notes + Claude import metadata live on disk for Obsidian navigation
+# but must NOT pollute the paper/code git repo.
+_index.md
+*_index.md
+_claude_ai_metadata.md
+.obsidian/
