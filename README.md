@@ -2,7 +2,7 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19851346.svg)](https://doi.org/10.5281/zenodo.19851346)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.2.0)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.3.0)
 
 Engineering log of a local AI / LLM workstation build — hardware, power
 infrastructure, ROCm environment, and reproducible benchmarks for
@@ -141,6 +141,25 @@ for the full per-N table, embargo classification, and methodological humility
 statement. [`METHODOLOGY.md`](METHODOLOGY.md) v1.0 documents the universal
 Phase 1/Phase 2 protocol applied across all 13 models in the suite.
 
+## v0.3.0 release
+
+This release expands the benchmark scope toward the Phase 2 v0.3 campaign.
+METHODOLOGY §4 grows from 11 to 21 models (Qwen 3.5/3.6, Bielik v3.0 family,
+PLLuM, Mistral/Mixtral, Kimi); the PLLuM-70B rows are corrected to reflect
+that BF16 weights exceed the 64 GB aggregate VRAM of 2× R9700, requiring
+AWQ-4bit quantisation (Phase 3).
+
+It adds the Phase 2 v0.3 sweep harness — TP=1 parallel (co-located
+dual-instance) and isolated TP=1/TP=2 runners with thermal/power
+instrumentation — and the Bielik v3.0 family environment envelope
+(4.5B, 11B, PL-11B sanity-test PASS, TP=1 and TP=2). Tooling additions:
+AI workstation dashboard v1.1.0, vLLM 0.19 compatibility fixes, and
+repo hardening (pre-commit, detect-secrets, canonical licensing).
+
+Raw Phase 2 scaling data remains under publication embargo per
+[`METHODOLOGY.md`](METHODOLOGY.md) §11; methodology and environment
+manifests are public.
+
 ## v0.2.0 release
 
 This release introduces the universal Phase 1 envelope + Phase 2 scaling sweep
@@ -190,6 +209,8 @@ is in preparation: see [`paper/`](paper/).
 - Qwen 3.6 27B envelope on R9700 / gfx1201 (2026-04-26, **v0.1.0**)
 - Phase 2 scaling sweep — Qwen 3.6 27B BF16 (N=10..1000), exploratory (2026-04-29)
 - METHODOLOGY.md v1.0 — universal Phase 1/Phase 2 protocol (2026-04-29, **v0.2.0**)
+- Bielik v3.0 family envelope — 4.5B, 11B, PL-11B sanity PASS (2026-05-17/19)
+- Phase 2 v0.3 sweep harness + 21-model suite (2026-05-20, **v0.3.0**)
 
 ## AI assistance
 

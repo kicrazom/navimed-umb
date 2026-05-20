@@ -1,8 +1,8 @@
 # AI Usage Disclosure
 
-> **Document version**: 1.1 (released with `navimed-umb` v0.2.0)
+> **Document version**: 1.2 (released with `navimed-umb` v0.3.0)
 > **Author**: Łukasz Minarowski, MD, PhD
-> **Last updated**: 2026-05-01
+> **Last updated**: 2026-05-20
 
 This document discloses the AI tools used during the development of
 this repository and the associated preprint, the roles those tools
@@ -170,6 +170,7 @@ versions remain in git history.
 |---|---|---|
 | 1.0 | v0.1.0 | Initial disclosure: Claude Opus 4.7 (web + CLI), GPT-5.5 Deep Thinking (web). |
 | 1.1 | v0.2.0 | Replaced PENDING DOI placeholder with assigned concept DOI (10.5281/zenodo.19851346). Added §1 "Commit attribution transparency" documenting two pre-v0.1.0 `Co-Authored-By: Claude` commits intentionally retained for Zenodo immutability. |
+| 1.2 | v0.3.0 | No tooling-profile change: same models (Claude Opus 4.7 web + CLI, GPT-5.5 Deep Thinking web). Version bump to track the v0.3.0 release (version DOI 10.5281/zenodo.20317011). |
 
 ---
 

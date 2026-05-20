@@ -8,8 +8,8 @@ authors:
     orcid: "https://orcid.org/0000-0002-2536-3508"
     affiliation: "Department of Respiratory Physiopathology, Medical University of Białystok, Poland"
     email: "lukasz.minarowski@umb.edu.pl"
-date-released: "2026-04-29"
-version: "0.2.0"
+date-released: "2026-05-20"
+version: "0.3.0"
 license: "CC-BY-4.0"
 repository-code: "https://github.com/kicrazom/navimed-umb"
 keywords:
