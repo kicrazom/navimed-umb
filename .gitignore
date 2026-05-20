@@ -76,6 +76,10 @@ benchmarks/results/
 # Embargoed planning doc — contains throughput refs
 docs/sessions/PLAN-NEXT.md
 
+# AWQ calibration corpus — local-only. Third-party copyrighted ChPL/SmPC PDFs;
+# input data for Phase 3 quantization, not redistributable in a CC-BY-4.0 repo.
+calibration/
+
 # Source literature (PDFs of papers the project builds on) — local-only
 literature/
 
