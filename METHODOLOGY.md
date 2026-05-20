@@ -78,7 +78,7 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 |---|---|---|---|---|---|---|
 | 1 | `Qwen/Qwen2.5-7B-Instruct` | 7B | BF16 | 1 or 2 | ready | TP=2 harmful below high N |
 | 2 | `Qwen/Qwen2.5-72B-Instruct-AWQ` | 72B | AWQ-4bit | 2 | ready | TP=2 mandatory |
-| 3 | `Qwen/Qwen3.5-9B` | 9B | BF16 | 1 or 2 | downloading | Replacing Qwen 2.5 7B baseline (v0.3) |
+| 3 | `Qwen/Qwen3.5-9B` | 9B | BF16 | 1 or 2 | ready | Replacing Qwen 2.5 7B baseline (v0.3) |
 | 4 | `Qwen/Qwen3.6-27B` | 27B | BF16 | 2 | ready | Hybrid attention, `enforce_eager=True` mandatory |
 | 5 | `Qwen/Qwen3.6-27B-FP8` | 27B | FP8 | 2 | ready | No FP8 kernels on R9700 (~75% slower than BF16) |
 
@@ -90,8 +90,8 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 | 7 | `speakleash/Bielik-11B-v2.3-Instruct-AWQ` | 11B | AWQ-4bit | 1 | ready | v2.3 quantized baseline |
 | 8 | `speakleash/Bielik-4.5B-v3.0-Instruct` | 4.5B | BF16 | 1 | ready | v0.3 sweep — smallest envelope (sanity test PASS 2026-05-17) |
 | 9 | `speakleash/Bielik-11B-v3.0` | 11B | BF16 | 1 or 2 | ready | v3.0 BF16 refresh |
-| 10 | `speakleash/Bielik-11B-v3.0-Instruct-AWQ` | 11B | AWQ-4bit | 1 | downloading | v3.0 quantized refresh (v0.3) |
-| 11 | `speakleash/Bielik-PL-11B-v3.0-Instruct` | 11B | BF16 | 1 or 2 | downloading | **GATED** on HF (Polish-focused fine-tune; multilingual base is #9) |
+| 10 | `speakleash/Bielik-11B-v3.0-Instruct-AWQ` | 11B | AWQ-4bit | 1 | ready | v3.0 quantized refresh (v0.3) |
+| 11 | `speakleash/Bielik-PL-11B-v3.0-Instruct` | 11B | BF16 | 1 or 2 | ready | **GATED** on HF, access granted (Polish-focused fine-tune; multilingual base is #9) |
 
 ### 4.3 PLLuM family (PL)
 
@@ -99,11 +99,11 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 |---|---|---|---|---|---|---|
 | 12 | `CYFRAGOVPL/Llama-PLLuM-8B-instruct` | 8B | BF16 | 1 | ready | Llama base |
 | 13 | `CYFRAGOVPL/PLLuM-12B-chat` | 12B | BF16 | 1 or 2 | ready | Mistral base |
-| 14 | `CYFRAGOVPL/Llama-PLLuM-70B-base` | 70B | BF16 | 2 | ready | Earlier checkpoint |
-| 15 | `CYFRAGOVPL/Llama-PLLuM-70B-instruct` | 70B | BF16 | 2 | ready | Earlier checkpoint |
-| 16 | `CYFRAGOVPL/Llama-PLLuM-70B-chat` | 70B | BF16 | 2 | ready | Earlier checkpoint |
-| 17 | `CYFRAGOVPL/Llama-PLLuM-70B-base-250801` | 70B | BF16 | 2 | downloading | v0.3 refresh |
-| 18 | `CYFRAGOVPL/Llama-PLLuM-70B-chat-250801` | 70B | BF16 | 2 | downloading | v0.3 refresh (Finale) |
+| 14 | `CYFRAGOVPL/Llama-PLLuM-70B-base` | 70B | BF16→AWQ-4bit | 2 | AWQ required | Earlier checkpoint; BF16 (~140 GB) exceeds 64 GB aggregate VRAM (2× R9700) — OOM; AWQ-4bit quant required (Phase 3) |
+| 15 | `CYFRAGOVPL/Llama-PLLuM-70B-instruct` | 70B | BF16→AWQ-4bit | 2 | AWQ required | Earlier checkpoint; BF16 OOM on 2× R9700 — AWQ-4bit quant required (Phase 3) |
+| 16 | `CYFRAGOVPL/Llama-PLLuM-70B-chat` | 70B | BF16→AWQ-4bit | 2 | AWQ required | Earlier checkpoint; BF16 OOM on 2× R9700 — AWQ-4bit quant required (Phase 3) |
+| 17 | `CYFRAGOVPL/Llama-PLLuM-70B-base-250801` | 70B | BF16→AWQ-4bit | 2 | AWQ required | v0.3 refresh; BF16 OOM on 2× R9700 — AWQ-4bit quant required (Phase 3) |
+| 18 | `CYFRAGOVPL/Llama-PLLuM-70B-chat-250801` | 70B | BF16→AWQ-4bit | 2 | AWQ required | v0.3 refresh (Finale); BF16 OOM on 2× R9700 — AWQ-4bit quant required (Phase 3) |
 
 ### 4.4 International (Mistral / Mixtral / Kimi)
 
@@ -111,7 +111,7 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 |---|---|---|---|---|---|---|
 | 19 | `mistralai/Mistral-Nemo-Instruct-2407` | 12B | BF16 | 1 or 2 | ready | |
 | 20 | `TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ` | 47B (MoE) | AWQ-4bit | 2 | ready | |
-| 21 | `moonshotai/Kimi-Dev-72B` | 72B | BF16→AWQ-marlin | 2 | downloading | Qwen2.5-72B base, no public AWQ — local quant w/ AutoAWQ |
+| 21 | `moonshotai/Kimi-Dev-72B` | 72B | BF16→AWQ-marlin | 2 | ready | Qwen2.5-72B base, no public AWQ — local quant w/ AutoAWQ |
 
 ### 4.5 Naming conventions
 
