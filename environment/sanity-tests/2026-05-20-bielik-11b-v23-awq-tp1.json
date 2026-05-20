@@ -1,0 +1,18 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "bielik-11b-v23-awq",
+  "tensor_parallel_size": 1,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "6.076835",
+    "model_footprint_gib": "6.98",
+    "kv_cache_tokens": "110,880",
+    "max_concurrency_8192tok": "13.54",
+    "sanity_response_time_sec": "30.692421398"
+  },
+  "verdict": "PASS",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code batch_sanity_v0.3.sh"
+}

@@ -1,0 +1,20 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "mixtral-8x7b-awq",
+  "tensor_parallel_size": 2,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "21.039375",
+    "model_footprint_gib": "11.73",
+    "kv_cache_tokens": "266,000",
+    "max_concurrency_8192tok": "43.18",
+    "sanity_response_time_sec": "9.428141532"
+  },
+  "verdict": "FAIL",
+  "response_status": "degenerate",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code recovery 2a standalone diagnosis",
+  "note": "NIE false-fail w sensie parsera. Infra OK (load 21s, KV 266k, maxc 43x, HTTP 200) ale inference broken: model generuje wylacznie token_id=0 (<unk> spam), content pusty, finish_reason=length. Potwierdzone w 3 konfiguracjach: awq_marlin TP2, awq(Triton) TP2, awq TP1 — zawsze all-zero output. MoE experts AWQ falls back to 'Moe WNA16 kernels' (AWQMoeMarlin nieobslugiwany) — degenerate na gfx1201/ROCm vLLM 0.19.0. Klasa problemu jak FP8-on-R9700: kernel/hardware incompat, NIE fixowalne serve-flagami."
+}

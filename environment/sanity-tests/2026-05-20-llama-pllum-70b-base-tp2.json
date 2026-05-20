@@ -1,0 +1,1 @@
+{"test_type":"sanity","model":"llama-pllum-70b-base","tensor_parallel_size":2,"verdict":"FAIL","reason":"readiness timeout / process died","raw_log":"/home/mozarcik/Vaults-main/10_Projekty/0001-navimed-umb/environment/sanity-tests/2026-05-20-llama-pllum-70b-base-vllm-tp2.log"}

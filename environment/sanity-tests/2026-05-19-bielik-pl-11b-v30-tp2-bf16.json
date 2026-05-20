@@ -1,0 +1,36 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-19",
+  "model": "speakleash/Bielik-PL-11B-v3.0-Instruct",
+  "model_local_path": "/home/mozarcik/models/bielik-pl-11b-v30-instruct",
+  "dtype": "bfloat16",
+  "tensor_parallel_size": 2,
+  "gpu": "2x AMD Radeon AI PRO R9700 (gfx1201, 32 GiB GDDR6)",
+  "vllm_version": "0.19.0",
+  "config": {
+    "port": 8100,
+    "max_model_len": 8192,
+    "gpu_memory_utilization": 0.9,
+    "enforce_eager": true,
+    "served_model_name": "bielik-pl-11b-v30-instruct"
+  },
+  "metrics": {
+    "load_weights_sec": 8.70,
+    "model_loading_sec": 8.890719,
+    "model_footprint_gib_per_worker": 10.46,
+    "available_kv_cache_gib": 17.55,
+    "kv_cache_tokens": 183968,
+    "max_concurrency_8192tok": 22.46,
+    "init_engine_sec": 6.75,
+    "sanity_response_time_sec": 8.18,
+    "completion_tokens": 128,
+    "prompt_tokens": 32,
+    "total_tokens": 160
+  },
+  "sanity_prompt": "Rozwiń skrót PEEP w kontekście wentylacji mechanicznej i wyjaśnij jego rolę.",
+  "verdict": "PASS",
+  "notes": "Model load + serve + generation OK. PEEP expansion correct (EN: Positive End-Expiratory Pressure). Off-protocol capability note: Polish translation confabulated ('Kościóło-Wydechowe' instead of correct 'Końcowo-Wydechowe') — see lab log §6, NOT for publication per METHODOLOGY §11.3.",
+  "embargo": "PUBLIC engineering metrics only (METHODOLOGY §11.1). No Phase 2 scaling, no cross-model comparison numbers (§11.3 — Polish models stricter embargo).",
+  "raw_log": "environment/sanity-tests/2026-05-19-bielik-pl-11b-v30-vllm-tp2-bf16.log",
+  "orchestrated_by": "Claude Code (Opus 4.7, 1M context)"
+}

@@ -1,0 +1,19 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "mistral-nemo-instruct-2407",
+  "tensor_parallel_size": 1,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "12.474422",
+    "model_footprint_gib": "22.95",
+    "kv_cache_tokens": "31,824",
+    "max_concurrency_8192tok": "3.88",
+    "sanity_response_time_sec": "7.004075997"
+  },
+  "verdict": "PASS",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code recovery 2d standalone re-run",
+  "note": "Batch v0.3 FAIL was false-fail: 0-byte log, process never started (transient batch infra — insufficient GPU release after prior model). Standalone re-run: ready ~45s, HTTP 200, valid PL response."
+}

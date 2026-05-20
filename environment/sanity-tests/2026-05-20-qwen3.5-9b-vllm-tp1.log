@@ -1,0 +1,107 @@
+(APIServer pid=59253) INFO 05-20 01:05:53 [utils.py:299]
+(APIServer pid=59253) INFO 05-20 01:05:53 [utils.py:299]        █     █     █▄   ▄█
+(APIServer pid=59253) INFO 05-20 01:05:53 [utils.py:299]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.19.0
+(APIServer pid=59253) INFO 05-20 01:05:53 [utils.py:299]   █▄█▀ █     █     █     █  model   /home/mozarcik/models/qwen3.5-9b
+(APIServer pid=59253) INFO 05-20 01:05:53 [utils.py:299]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=59253) INFO 05-20 01:05:53 [utils.py:299]
+(APIServer pid=59253) INFO 05-20 01:05:53 [utils.py:233] non-default args: {'model_tag': '/home/mozarcik/models/qwen3.5-9b', 'port': 8100, 'model': '/home/mozarcik/models/qwen3.5-9b', 'max_model_len': 8192, 'enforce_eager': True, 'served_model_name': ['qwen3.5-9b']}
+(APIServer pid=59253) WARNING 05-20 01:05:53 [envs.py:1744] Unknown vLLM environment variable detected: VLLM_VENV
+(APIServer pid=59253) INFO 05-20 01:05:53 [model.py:549] Resolved architecture: Qwen3_5ForConditionalGeneration
+(APIServer pid=59253) INFO 05-20 01:05:53 [model.py:1678] Using max model len 8192
+(APIServer pid=59253) [transformers] `Qwen2VLImageProcessorFast` is deprecated. The `Fast` suffix for image processors has been removed; use `Qwen2VLImageProcessor` instead.
+(APIServer pid=59253) INFO 05-20 01:05:54 [config.py:281] Setting attention block size to 528 tokens to ensure that attention page size is >= mamba page size.
+(APIServer pid=59253) INFO 05-20 01:05:54 [config.py:312] Padding mamba page size by 0.76% to ensure that mamba page size and attention page size are exactly equal.
+(APIServer pid=59253) INFO 05-20 01:05:54 [vllm.py:790] Asynchronous scheduling is enabled.
+(APIServer pid=59253) WARNING 05-20 01:05:54 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+(APIServer pid=59253) WARNING 05-20 01:05:54 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+(APIServer pid=59253) INFO 05-20 01:05:54 [vllm.py:1025] Cudagraph is disabled under eager mode
+(APIServer pid=59253) INFO 05-20 01:05:54 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+(APIServer pid=59253) Traceback (most recent call last):
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/bin/vllm", line 6, in <module>
+(APIServer pid=59253)     sys.exit(main())
+(APIServer pid=59253)              ^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/cli/main.py", line 75, in main
+(APIServer pid=59253)     args.dispatch_function(args)
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/cli/serve.py", line 122, in cmd
+(APIServer pid=59253)     uvloop.run(run_server(args))
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=59253)     return __asyncio.run(
+(APIServer pid=59253)            ^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+(APIServer pid=59253)     return runner.run(main)
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=59253)     return self._loop.run_until_complete(task)
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=59253)     return await main
+(APIServer pid=59253)            ^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 670, in run_server
+(APIServer pid=59253)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 684, in run_server_worker
+(APIServer pid=59253)     async with build_async_engine_client(
+(APIServer pid=59253)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=59253)     return await anext(self.gen)
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 100, in build_async_engine_client
+(APIServer pid=59253)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=59253)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=59253)     return await anext(self.gen)
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 136, in build_async_engine_client_from_engine_args
+(APIServer pid=59253)     async_llm = AsyncLLM.from_vllm_config(
+(APIServer pid=59253)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 225, in from_vllm_config
+(APIServer pid=59253)     return cls(
+(APIServer pid=59253)            ^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 143, in __init__
+(APIServer pid=59253)     self.input_processor = InputProcessor(self.vllm_config, renderer)
+(APIServer pid=59253)                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/v1/engine/input_processor.py", line 61, in __init__
+(APIServer pid=59253)     mm_budget = MultiModalBudget(vllm_config, mm_registry)
+(APIServer pid=59253)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/multimodal/encoder_budget.py", line 87, in __init__
+(APIServer pid=59253)     all_mm_max_toks_per_item = get_mm_max_toks_per_item(
+(APIServer pid=59253)                                ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/multimodal/encoder_budget.py", line 25, in get_mm_max_toks_per_item
+(APIServer pid=59253)     max_tokens_per_item = processor.info.get_mm_max_tokens_per_item(
+(APIServer pid=59253)                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/model_executor/models/qwen2_vl.py", line 825, in get_mm_max_tokens_per_item
+(APIServer pid=59253)     max_image_tokens = self.get_max_image_tokens()
+(APIServer pid=59253)                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/model_executor/models/qwen2_vl.py", line 968, in get_max_image_tokens
+(APIServer pid=59253)     image_processor = self.get_image_processor()
+(APIServer pid=59253)                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py", line 699, in get_image_processor
+(APIServer pid=59253)     return self.get_hf_processor(**kwargs).image_processor
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/model_executor/models/qwen3_vl.py", line 692, in get_hf_processor
+(APIServer pid=59253)     return self.ctx.get_hf_processor(
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/multimodal/processing/context.py", line 204, in get_hf_processor
+(APIServer pid=59253)     return cached_processor_from_config(
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/transformers_utils/processor.py", line 355, in cached_processor_from_config
+(APIServer pid=59253)     return cached_get_processor_without_dynamic_kwargs(
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/transformers_utils/processor.py", line 312, in cached_get_processor_without_dynamic_kwargs
+(APIServer pid=59253)     processor = cached_get_processor(
+(APIServer pid=59253)                 ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/transformers_utils/processor.py", line 198, in get_processor
+(APIServer pid=59253)     processor = processor_cls.from_pretrained(
+(APIServer pid=59253)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/processing_utils.py", line 1429, in from_pretrained
+(APIServer pid=59253)     args = cls._get_arguments_from_pretrained(pretrained_model_name_or_path, processor_dict, **kwargs)
+(APIServer pid=59253)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/processing_utils.py", line 1558, in _get_arguments_from_pretrained
+(APIServer pid=59253)     sub_processor = auto_processor_class.from_pretrained(
+(APIServer pid=59253)                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/models/auto/image_processing_auto.py", line 572, in from_pretrained
+(APIServer pid=59253)     raise initial_exception
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/models/auto/image_processing_auto.py", line 559, in from_pretrained
+(APIServer pid=59253)     config_dict, _ = ImageProcessingMixin.get_image_processor_dict(
+(APIServer pid=59253)                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=59253)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/image_processing_base.py", line 334, in get_image_processor_dict
+(APIServer pid=59253)     raise OSError(
+(APIServer pid=59253) OSError: Can't load image processor for '/home/mozarcik/models/qwen3.5-9b'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure '/home/mozarcik/models/qwen3.5-9b' is the correct path to a directory containing a preprocessor_config.json file

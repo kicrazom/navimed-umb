@@ -1,0 +1,21 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "qwen36-27b-fp8",
+  "tensor_parallel_size": 2,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "11.950607",
+    "model_footprint_gib": "15.35",
+    "kv_cache_tokens": "79,184",
+    "max_concurrency_8192tok": "28.86",
+    "sanity_response_time_sec": "24.529735881"
+  },
+  "verdict": "PASS",
+  "response_status": "ok",
+  "fp8_path": "native vLLM fp8 (Fp8LinearMethod, ChannelWiseTorchFP8ScaledMMLinearKernel, W8A8 Block FP8) — NIE compressed-tensors. compressed-tensors<5 conflict NIE dotyczy modeli quant_method=fp8.",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code recovery Faza 1 FP8-path test",
+  "note": "FP8 path dziala na transformers 5.8.1. W8A8 FP8 kernel config nietuningowany dla gfx1201 (sub-optimal perf — zgodne z METHODOLOGY §5 'no FP8 kernels R9700'). Funkcjonalnie OK, output koherentny."
+}

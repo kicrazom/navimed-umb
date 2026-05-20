@@ -1,0 +1,55 @@
+(APIServer pid=64885) INFO 05-20 01:14:03 [utils.py:299]
+(APIServer pid=64885) INFO 05-20 01:14:03 [utils.py:299]        █     █     █▄   ▄█
+(APIServer pid=64885) INFO 05-20 01:14:03 [utils.py:299]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.19.0
+(APIServer pid=64885) INFO 05-20 01:14:03 [utils.py:299]   █▄█▀ █     █     █     █  model   /home/mozarcik/models/kimi-dev-72b
+(APIServer pid=64885) INFO 05-20 01:14:03 [utils.py:299]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=64885) INFO 05-20 01:14:03 [utils.py:299]
+(APIServer pid=64885) INFO 05-20 01:14:03 [utils.py:233] non-default args: {'model_tag': '/home/mozarcik/models/kimi-dev-72b', 'port': 8100, 'model': '/home/mozarcik/models/kimi-dev-72b', 'max_model_len': 8192, 'quantization': 'awq_marlin', 'enforce_eager': True, 'served_model_name': ['kimi-dev-72b'], 'tensor_parallel_size': 2}
+(APIServer pid=64885) WARNING 05-20 01:14:03 [envs.py:1744] Unknown vLLM environment variable detected: VLLM_VENV
+(APIServer pid=64885) INFO 05-20 01:14:03 [model.py:549] Resolved architecture: Qwen2ForCausalLM
+(APIServer pid=64885) INFO 05-20 01:14:03 [model.py:1678] Using max model len 8192
+(APIServer pid=64885) [aiter] import [module_aiter_enum] under /home/mozarcik/venvs/vllm/lib/python3.12/site-packages/aiter/jit/module_aiter_enum.so
+(APIServer pid=64885) Traceback (most recent call last):
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/bin/vllm", line 6, in <module>
+(APIServer pid=64885)     sys.exit(main())
+(APIServer pid=64885)              ^^^^^^
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/cli/main.py", line 75, in main
+(APIServer pid=64885)     args.dispatch_function(args)
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/cli/serve.py", line 122, in cmd
+(APIServer pid=64885)     uvloop.run(run_server(args))
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=64885)     return __asyncio.run(
+(APIServer pid=64885)            ^^^^^^^^^^^^^^
+(APIServer pid=64885)   File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+(APIServer pid=64885)     return runner.run(main)
+(APIServer pid=64885)            ^^^^^^^^^^^^^^^^
+(APIServer pid=64885)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=64885)     return self._loop.run_until_complete(task)
+(APIServer pid=64885)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64885)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=64885)     return await main
+(APIServer pid=64885)            ^^^^^^^^^^
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 670, in run_server
+(APIServer pid=64885)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 684, in run_server_worker
+(APIServer pid=64885)     async with build_async_engine_client(
+(APIServer pid=64885)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=64885)     return await anext(self.gen)
+(APIServer pid=64885)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 100, in build_async_engine_client
+(APIServer pid=64885)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=64885)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=64885)     return await anext(self.gen)
+(APIServer pid=64885)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 124, in build_async_engine_client_from_engine_args
+(APIServer pid=64885)     vllm_config = engine_args.create_engine_config(usage_context=usage_context)
+(APIServer pid=64885)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/engine/arg_utils.py", line 1967, in create_engine_config
+(APIServer pid=64885)     config = VllmConfig(
+(APIServer pid=64885)              ^^^^^^^^^^^
+(APIServer pid=64885)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/pydantic/_internal/_dataclasses.py", line 121, in __init__
+(APIServer pid=64885)     s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+(APIServer pid=64885) pydantic_core._pydantic_core.ValidationError: 1 validation error for VllmConfig
+(APIServer pid=64885)   Value error, Cannot find the config file for awq_marlin [type=value_error, input_value=ArgsKwargs((), {'model_co... 'shutdown_timeout': 0}), input_type=ArgsKwargs]
+(APIServer pid=64885)     For further information visit https://errors.pydantic.dev/2.13/v/value_error

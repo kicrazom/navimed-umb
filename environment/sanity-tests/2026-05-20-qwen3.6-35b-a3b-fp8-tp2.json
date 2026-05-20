@@ -1,0 +1,27 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "qwen3.6-35b-a3b-fp8",
+  "tensor_parallel_size": 2,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "NA",
+    "model_footprint_gib": "NA",
+    "kv_cache_tokens": "NA",
+    "max_concurrency_8192tok": "NA",
+    "sanity_response_time_sec": "NA"
+  },
+  "verdict": "FAIL",
+  "fail_class": "environment-limited",
+  "response_status": "process_died_during_load",
+  "walltime_sec": 50,
+  "root_cause": "NotImplementedError: No FP8 MoE backend supports the deployment configuration. Raised in vllm/model_executor/layers/fused_moe/oracle/fp8.py:406 (select_fp8_moe_backend) during model construction (Fp8MoEMethod.__init__). vLLM 0.19.0+rocm721 has no FP8 MoE kernel backend supported on gfx1201/ROCm: DEEPGEMM/MARLIN/VLLM_CUTLASS all fail is_supported_config; AITER backend is removed from AVAILABLE_BACKENDS because METHODOLOGY-mandated VLLM_ROCM_USE_AITER=0 (set in scripts/_env.sh §3.1).",
+  "fp8_path": "MoE-FP8 path — distinct from dense FP8. Model is Qwen3_5MoeForConditionalGeneration (256 experts / 8 per tok, num_hidden_layers=40), routes through Fp8MoEMethod -> select_fp8_moe_backend. This is NOT the Fp8LinearMethod dense path used by qwen36-27b-fp8 (which PASSed via ChannelWiseTorchFP8ScaledMMLinearKernel). Dense FP8 has a Torch fallback kernel; FP8-MoE has no ROCm/gfx1201 backend in vLLM 0.19.",
+  "distinct_from_mixtral_moe_awq": "Different failure mode than mixtral-8x7b-awq (that was a sanity-parse false-fail; model itself loaded). Here the model genuinely cannot construct — hard NotImplementedError at load, no inference attempted.",
+  "completeness_check": "Model fully downloaded and verified: 40/40 layers-*.safetensors + model.safetensors.index.json + mtp.safetensors + outside.safetensors present, 0 .incomplete files, no live hf download process, 35 GB on disk. config.json quant_method=fp8. Download is NOT the cause of FAIL.",
+  "remediation_options": "(1) AITER FP8-MoE backend — would require VLLM_ROCM_USE_AITER=1, contravenes METHODOLOGY §3.1 and known gfx1201 AITER instability (fix pending ROCm 7.3+); not a sanctioned change. (2) Re-quantize the model to AWQ (awq_marlin has working MoE path on ROCm — same route used for mixtral-8x7b-awq and planned kimi-dev) — requires source BF16 weights + AutoAWQ, parallel to recovery Faza 3. (3) Wait for vLLM build with gfx1201 FP8-MoE kernels (METHODOLOGY §3 risk #8 'vLLM version drift'). Escalate decision to Lukasz.",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code recovery Faza 1+2 domkniecie — qwen3.6-35b-a3b-fp8 MoE-FP8 sanity",
+  "methodology_ref": "§4.6 Phase 2 v0.3 follow-up suite; §5 No FP8 kernels on R9700"
+}

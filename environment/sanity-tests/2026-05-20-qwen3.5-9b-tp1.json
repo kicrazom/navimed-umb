@@ -1,0 +1,12 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "qwen3.5-9b",
+  "tensor_parallel_size": 1,
+  "verdict": "FAIL",
+  "response_status": "not_runnable",
+  "reason": "Model NIE pobrany — katalog 3.4 MB, brak wag (model.safetensors-*-of-00004 tylko jako .lock + .incomplete w .cache), brak tokenizer.json i preprocessor_config.json. Recovery-plan framing (dodaj preprocessor_config.json / vLLM flag wylaczajacy multimodal) NIEAKTUALNY: (1) brak wag wiec vLLM i tak nie wystartuje, (2) qwen3.5-9b to GENUINE multimodal (model_type=qwen3_5, Qwen3_5ForConditionalGeneration, vision_config+image_token_id+video_token_id) — wylaczanie multimodal byloby bledne. Wymagany pelny re-download (~18-20 GB: 4 shardy safetensors + tokenizer + preprocessor_config).",
+  "raw_log": "environment/sanity-tests/2026-05-20-qwen3.5-9b-vllm-tp1.log",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code recovery 2b diagnosis"
+}

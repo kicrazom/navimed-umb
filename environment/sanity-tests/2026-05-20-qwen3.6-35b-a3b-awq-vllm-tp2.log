@@ -1,0 +1,44 @@
+=== qwen3.6-35b-a3b-awq sanity TP2 — 2026-05-20 ===
+repo: cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit
+
+VERDICT: BLOCKED (environment-limited) — sanity NOT executed, model never downloaded.
+
+--- download attempt timeline (6 attempts, none completed) ---
+21:01  hf download (xet, mw8)          -> SIGTERM 143 @14min, 0 shards (xet lock-deadlock)
+21:15  hf download (xet, mw8) retry    -> SIGTERM 143 @1min, lock contention
+21:15  hf download (non-xet, mw4)*     -> silent death ~1.5 GB    (*parallel session)
+21:21  5x parallel curl*              -> all died ~3.9 GB partial (*parallel session)
+21:29  setsid sequential curl          -> died mid shard-1
+21:34  setsid+nohup wget -c --tries=0  -> survived ~13min, throughput collapsed to
+                                          4-25 KB/s (ETA 9-10h), then crashed when
+                                          target dir was deleted by parallel session
+
+--- FINAL STATE ---
+~/models/qwen3.6-35b-a3b-awq/ DELETED — directory no longer exists.
+Parallel navimed session removed both qwen3.6-35b-a3b-awq and kimi-dev-72b-awq dirs.
+Nothing on disk for this model.
+
+--- root cause ---
+Two navimed sessions worked the same models in parallel and contended on:
+  - WiFi bandwidth: parallel 'hf download Kimi-Dev-72B-AWQ --max-workers 8' (PID 68348,
+    261 sockets to cas-bridge.xethub.hf.co) starved qwen3.6 wget to ~127 KB/s, then 4-25 KB/s.
+  - hf lock files: shared --local-dir -> repeated 'Still waiting to acquire lock' deadlocks.
+  - directory lifecycle: parallel session's cleanup rmdir'd this agent's wget -O target.
+hf-xet 1.4.3 is broken on host: deadlocks on own *.safetensors.lock, writes 10 MiB stubs.
+Ethernet down (enp15s0/enp16s0 all-zero); all traffic on WiFi wlp14s0.
+
+--- model (verified before deletion) ---
+Repo cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit EXISTS, valid. 5 shards, ~24.45 GB remote total
+(shards 1-4 ~5.37 GB, shard 5 ~2.98 GB). arch=Qwen3_5MoeForConditionalGeneration,
+model_type=qwen3_5_moe, 256 experts, quant_method=compressed-tensors (AWQ int4 g32 via
+llm-compressor, recipe.yaml). NOTE: quant is compressed-tensors, NOT plain 'awq' — vLLM
+auto-detects compressed-tensors; do NOT force --quantization awq_marlin.
+
+--- sanity test ---
+NOT RUN. Model never fully on disk. vLLM serve TP2 --enforce-eager not started.
+Open question (degenerate-vs-ok vs mixtral-8x7b-awq AWQ-MoE precedent) UNRESOLVED.
+
+--- next-session prereqs ---
+1. Serialize downloads — one session at a time (parallel contention is the blocker).
+2. Restore ethernet and/or fix hf-xet on host.
+3. Fresh download, then sanity TP2, classify ok/degenerate/fail. No AITER.

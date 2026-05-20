@@ -1,0 +1,18 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "pllum-12b-chat",
+  "tensor_parallel_size": 1,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "13.187900",
+    "model_footprint_gib": "22.95",
+    "kv_cache_tokens": "31,824",
+    "max_concurrency_8192tok": "3.88",
+    "sanity_response_time_sec": "7.032924464"
+  },
+  "verdict": "PASS",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code batch_sanity_v0.3.sh"
+}

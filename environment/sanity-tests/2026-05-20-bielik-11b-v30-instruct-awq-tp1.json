@@ -1,0 +1,19 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "bielik-11b-v30-instruct-awq",
+  "tensor_parallel_size": 1,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "3.833915",
+    "model_footprint_gib": "6.0",
+    "kv_cache_tokens": "115,984",
+    "max_concurrency_8192tok": "14.16",
+    "sanity_response_time_sec": "24.646026451"
+  },
+  "verdict": "PASS",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code recovery 2c standalone re-run",
+  "note": "Batch v0.3 FAIL was stale: model files (tokenizer.json, index, safetensors) completed download 07:07-07:20, AFTER batch run at 01:07. Standalone re-run on complete model: ready ~37s, tokenizer OK."
+}

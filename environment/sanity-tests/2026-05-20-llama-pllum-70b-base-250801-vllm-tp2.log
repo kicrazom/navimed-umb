@@ -1,0 +1,87 @@
+(APIServer pid=64374) INFO 05-20 01:13:19 [utils.py:299]
+(APIServer pid=64374) INFO 05-20 01:13:19 [utils.py:299]        █     █     █▄   ▄█
+(APIServer pid=64374) INFO 05-20 01:13:19 [utils.py:299]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.19.0
+(APIServer pid=64374) INFO 05-20 01:13:19 [utils.py:299]   █▄█▀ █     █     █     █  model   /home/mozarcik/models/llama-pllum-70b-base-250801
+(APIServer pid=64374) INFO 05-20 01:13:19 [utils.py:299]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=64374) INFO 05-20 01:13:19 [utils.py:299]
+(APIServer pid=64374) INFO 05-20 01:13:19 [utils.py:233] non-default args: {'model_tag': '/home/mozarcik/models/llama-pllum-70b-base-250801', 'port': 8100, 'model': '/home/mozarcik/models/llama-pllum-70b-base-250801', 'max_model_len': 8192, 'enforce_eager': True, 'served_model_name': ['llama-pllum-70b-base-250801'], 'tensor_parallel_size': 2}
+(APIServer pid=64374) WARNING 05-20 01:13:19 [envs.py:1744] Unknown vLLM environment variable detected: VLLM_VENV
+(APIServer pid=64374) INFO 05-20 01:13:19 [model.py:549] Resolved architecture: LlamaForCausalLM
+(APIServer pid=64374) INFO 05-20 01:13:19 [model.py:1678] Using max model len 8192
+(APIServer pid=64374) INFO 05-20 01:13:19 [vllm.py:790] Asynchronous scheduling is enabled.
+(APIServer pid=64374) WARNING 05-20 01:13:19 [vllm.py:848] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+(APIServer pid=64374) WARNING 05-20 01:13:19 [vllm.py:859] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+(APIServer pid=64374) INFO 05-20 01:13:19 [vllm.py:1025] Cudagraph is disabled under eager mode
+(APIServer pid=64374) INFO 05-20 01:13:19 [compilation.py:290] Enabled custom fusions: norm_quant, act_quant
+(APIServer pid=64374) Traceback (most recent call last):
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/bin/vllm", line 6, in <module>
+(APIServer pid=64374)     sys.exit(main())
+(APIServer pid=64374)              ^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/cli/main.py", line 75, in main
+(APIServer pid=64374)     args.dispatch_function(args)
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/cli/serve.py", line 122, in cmd
+(APIServer pid=64374)     uvloop.run(run_server(args))
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=64374)     return __asyncio.run(
+(APIServer pid=64374)            ^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+(APIServer pid=64374)     return runner.run(main)
+(APIServer pid=64374)            ^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=64374)     return self._loop.run_until_complete(task)
+(APIServer pid=64374)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=64374)     return await main
+(APIServer pid=64374)            ^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 670, in run_server
+(APIServer pid=64374)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 684, in run_server_worker
+(APIServer pid=64374)     async with build_async_engine_client(
+(APIServer pid=64374)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=64374)     return await anext(self.gen)
+(APIServer pid=64374)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 100, in build_async_engine_client
+(APIServer pid=64374)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=64374)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=64374)     return await anext(self.gen)
+(APIServer pid=64374)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/entrypoints/openai/api_server.py", line 136, in build_async_engine_client_from_engine_args
+(APIServer pid=64374)     async_llm = AsyncLLM.from_vllm_config(
+(APIServer pid=64374)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 225, in from_vllm_config
+(APIServer pid=64374)     return cls(
+(APIServer pid=64374)            ^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/v1/engine/async_llm.py", line 135, in __init__
+(APIServer pid=64374)     self.renderer = renderer = renderer_from_config(self.vllm_config)
+(APIServer pid=64374)                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/renderers/registry.py", line 83, in renderer_from_config
+(APIServer pid=64374)     tokenizer = cached_tokenizer_from_config(model_config, **kwargs)
+(APIServer pid=64374)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/tokenizers/registry.py", line 227, in cached_tokenizer_from_config
+(APIServer pid=64374)     return cached_get_tokenizer(
+(APIServer pid=64374)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/tokenizers/registry.py", line 210, in get_tokenizer
+(APIServer pid=64374)     tokenizer = tokenizer_cls_.from_pretrained(tokenizer_name, *args, **kwargs)
+(APIServer pid=64374)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/tokenizers/hf.py", line 110, in from_pretrained
+(APIServer pid=64374)     raise e
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/vllm/tokenizers/hf.py", line 85, in from_pretrained
+(APIServer pid=64374)     tokenizer = AutoTokenizer.from_pretrained(
+(APIServer pid=64374)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/models/auto/tokenization_auto.py", line 837, in from_pretrained
+(APIServer pid=64374)     return tokenizer_class.from_pretrained(pretrained_model_name_or_path, *inputs, **kwargs)
+(APIServer pid=64374)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 1743, in from_pretrained
+(APIServer pid=64374)     return cls._from_pretrained(
+(APIServer pid=64374)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 1933, in _from_pretrained
+(APIServer pid=64374)     tokenizer = cls(*init_inputs, **init_kwargs)
+(APIServer pid=64374)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=64374)   File "/home/mozarcik/venvs/vllm/lib/python3.12/site-packages/transformers/tokenization_utils_tokenizers.py", line 376, in __init__
+(APIServer pid=64374)     raise ValueError(
+(APIServer pid=64374) ValueError: Couldn't instantiate the backend tokenizer from one of:
+(APIServer pid=64374) (1) a `tokenizers` library serialization file,
+(APIServer pid=64374) (2) a slow tokenizer instance to convert or
+(APIServer pid=64374) (3) an equivalent slow tokenizer class to instantiate and convert.
+(APIServer pid=64374) You need to have sentencepiece or tiktoken installed to convert a slow tokenizer to a fast one.

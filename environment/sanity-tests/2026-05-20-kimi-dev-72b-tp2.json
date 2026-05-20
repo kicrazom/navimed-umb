@@ -1,0 +1,1 @@
+{"test_type":"sanity","model":"kimi-dev-72b","tensor_parallel_size":2,"verdict":"FAIL","reason":"readiness timeout / process died","raw_log":"/home/mozarcik/Vaults-main/10_Projekty/0001-navimed-umb/environment/sanity-tests/2026-05-20-kimi-dev-72b-vllm-tp2.log"}

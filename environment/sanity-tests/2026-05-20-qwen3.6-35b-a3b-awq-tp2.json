@@ -1,0 +1,31 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "qwen3.6-35b-a3b-awq",
+  "hf_repo": "cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit",
+  "tensor_parallel_size": 2,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "NA",
+    "model_footprint_gib": "NA",
+    "kv_cache_tokens": "NA",
+    "max_concurrency_8192tok": "NA",
+    "sanity_response_time_sec": "NA"
+  },
+  "verdict": "BLOCKED",
+  "fail_class": "environment-limited",
+  "response_status": "not_tested_model_not_downloaded",
+  "blocker": "Model download could not complete. Repo cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit EXISTS and is valid (5 safetensors shards, total ~24.45 GB remote, weight_map 95427 entries; quant_method=compressed-tensors, AWQ int4 g32 via llm-compressor per recipe.yaml; arch Qwen3_5MoeForConditionalGeneration, 256 experts). All non-shard files downloaded OK (config.json, tokenizer, index, recipe, chat_template). Shards stuck at ~4.0 GB / ~24.45 GB total (each shard 0.78-0.90 GB of ~5.37 GB).",
+  "root_cause": "Bandwidth contention + broken hf-xet on host. A PARALLEL navimed session is running `hf download abhishekchohan/Kimi-Dev-72B-AWQ --max-workers 8` (PID 68348) holding 261 sockets to cas-bridge.xethub.hf.co and saturating the WiFi link. Measured: WiFi RX ~6.8 MB/s aggregate, but qwen3.6 wget file-growth only ~127 KB/s — bandwidth starved by the kimi-dev xet download. Separately, hf-xet 1.4.3 itself is broken on this host: every xet attempt deadlocks on its own *.safetensors.lock files (log: 'Still waiting to acquire lock' 60s+, never progresses) and writes only 10 MiB placeholder stubs; the kimi-dev xet download is in the same stalled state (1.7 MB on disk despite 261 open sockets).",
+  "download_attempts": "6 attempts, none completed: (1) hf download xet mw8 -> SIGTERM 143 ~14min, 0 shards; (2) hf download xet mw8 -> SIGTERM 143 ~1min, lock-contention with #3; (3) hf download non-xet mw4 (parallel session) -> silent death ~1.5GB; (4) 5x parallel curl (parallel session) -> all died ~3.9GB; (5) setsid sequential curl (this agent, detached) -> died mid shard-1; (6) setsid+nohup wget -c --tries=0 (this agent, detached) -> survived ~13min but throughput collapsed to 4-25 KB/s (wget ETA 9-10h) under kimi-dev xet contention, then CRASHED when its target directory was deleted out from under it.",
+  "directory_deleted": "FINAL STATE: ~/models/qwen3.6-35b-a3b-awq/ no longer exists. The parallel navimed session deleted BOTH ~/models/qwen3.6-35b-a3b-awq AND ~/models/kimi-dev-72b-awq (both gone from ~/models/). The concurrent session created, retried, and ultimately cleaned up these partial downloads; that rmdir removed this agent's wget -O target mid-write. Two sessions were working the same models in parallel and contending on bandwidth, hf lock files, and finally directory lifecycle. Nothing on qwen3.6-35b-a3b-awq remains on disk.",
+  "infra_context": "Matches known navimed infra blocker (memory: project_navimed_download_watchdog 'HF download stalls'; project_navimed_2026-05-19_next 'infra fix - watchdog restore, ethernet'). Ethernet (enp15s0/enp16s0) is DOWN — all traffic on WiFi wlp14s0 (SiecSzatanaSerduszko, signal 60, 270 Mbit/s link but real throughput unstable and contended). No OOM killer active; no system reaper found.",
+  "sanity_test": "NOT EXECUTED — model weights incomplete on disk (4.0/24.45 GB). vLLM serve TP2 --quantization awq_marlin --enforce-eager could not be run.",
+  "open_question": "Whether Qwen3.6-35B-A3B-AWQ (AWQ-MoE, 256 experts) degenerates like mixtral-8x7b-awq (AWQMoeMarlin unsupported on gfx1201 -> WNA16 fallback -> all-zero <unk> output) REMAINS UNRESOLVED. Note: this repo is quant_method=compressed-tensors (NOT plain awq) so vLLM would auto-detect compressed-tensors, not awq_marlin; the MoE-kernel risk class is the same as mixtral.",
+  "next_action": "PREREQ: serialize downloads — only one navimed session should drive HF downloads at a time (parallel sessions contend on WiFi bandwidth + hf lock files + dir lifecycle). PREREQ: restore ethernet (eliminates WiFi contention) and/or fix hf-xet on host. THEN: fresh `hf download cyankiwi/Qwen3.6-35B-A3B-AWQ-4bit` (~24.45 GB), then sanity vLLM serve TP2 --enforce-eager (let vLLM auto-detect compressed-tensors quant — do NOT force awq_marlin), classify ok/degenerate/fail. METHODOLOGY-compliant, no AITER.",
+  "walltime_sec": 2820,
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code navimed subagent — qwen3.6-35b-a3b-awq sanity (FP8 replacement candidate eval)",
+  "methodology_ref": "§4.6 Phase 2 v0.3 follow-up; recovery-plan 2026-05-20 — AWQ candidate for qwen3.6-35b-a3b-fp8 (FP8-MoE unsupported gfx1201)"
+}

@@ -1,0 +1,18 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-20",
+  "model": "llama-pllum-8b-instruct",
+  "tensor_parallel_size": 1,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "9.817511",
+    "model_footprint_gib": "15.06",
+    "kv_cache_tokens": "104,256",
+    "max_concurrency_8192tok": "12.73",
+    "sanity_response_time_sec": "5.718612970"
+  },
+  "verdict": "PASS",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code batch_sanity_v0.3.sh"
+}
