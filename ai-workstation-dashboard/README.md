@@ -1,4 +1,4 @@
-# AI Workstation Dashboard
+# AI Workstation Dashboard · v1.1.0
 System-level monitoring dashboard for local AI/LLM workstations with multi-GPU (ROCm) support.
 Built for Ryzen 9 9950X3D + 2× Radeon AI PRO R9700 + Kubuntu 24.04.
 
@@ -23,6 +23,7 @@ Open **http://localhost:8000** in your browser.
 - **GPUs** — all detected GPUs (2× discrete R9700 + iGPU) — load %, temp, VRAM, sparklines
 - **Processes** — top 12 by CPU usage
 - **CPU Temperature** — dedicated panel with 60s history graph
+- **Network / Download** — RX (download) & TX (upload) throughput in MB/s, 60s download line chart, link status (interface, up/down, negotiated speed)
 
 ## Architecture
 
@@ -89,3 +90,11 @@ cd ~/ai-dashboard
 .venv/bin/pip install --upgrade -r backend/requirements.txt
 sudo systemctl restart ai-dashboard   # if using systemd
 ```
+
+## Changelog
+
+### v1.1.0 — 2026-05-20
+- New **Network / Download** panel — RX/TX throughput (MB/s), 60s auto-scaled download line chart, link status (interface, state, negotiated speed). Backend `get_network()` via `psutil.net_io_counters`.
+
+### v1.0.0
+- Initial monitoring dashboard — CPU, RAM/Swap, Disk, GPUs (multi-GPU ROCm), top processes, CPU temperature; FastAPI + WebSocket, self-contained frontend.

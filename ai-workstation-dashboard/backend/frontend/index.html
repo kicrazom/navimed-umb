@@ -178,11 +178,40 @@
   </div>
 </div>
 
+<!-- Row 4: Network — download line chart + link status -->
+<div class="grid2-1">
+  <div class="card">
+    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--orange),transparent)"></div>
+    <div class="card-title" style="color:var(--orange)"><span class="icon">🌐</span> NETWORK — DOWNLOAD</div>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+      <span class="big-num" style="color:var(--orange)" id="net-rx-big">--</span>
+      <span class="label">MB/s download</span>
+    </div>
+    <div class="sparkline-wrap"><svg class="spark" id="spark-net" viewBox="0 0 100 100" preserveAspectRatio="none" height="60"></svg></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dark);margin-top:4px"><span>0 MB/s</span><span id="net-scale-max">peak --</span></div>
+  </div>
+
+  <div class="card">
+    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--orange),transparent)"></div>
+    <div class="card-title" style="color:var(--orange)"><span class="icon">📡</span> LINK</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="stat-box"><div class="val" style="color:var(--orange)" id="net-rx-stat">--</div><div class="lbl">RX MB/s</div></div>
+      <div class="stat-box"><div class="val" style="color:var(--cyan)" id="net-tx-stat">--</div><div class="lbl">TX MB/s</div></div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail"><span style="color:var(--text-muted)">Iface </span><span id="net-iface">--</span></div>
+      <div class="detail"><span style="color:var(--text-muted)">State </span><span id="net-state">--</span></div>
+      <div class="detail"><span style="color:var(--text-muted)">Link </span><span id="net-speed">--</span></div>
+      <div class="detail"><span style="color:var(--text-muted)">Upload </span><span id="net-tx-inline">--</span></div>
+    </div>
+  </div>
+</div>
+
 <div class="footer" id="footer">◆ Connecting to backend... · Refresh 1s</div>
 
 <script>
 const HIST_LEN = 60;
-const hist = { cpu: [], ram: [], temp: [], gpu: {} };
+const hist = { cpu: [], ram: [], temp: [], net: [], gpu: {} };
 
 function pushHist(arr, val) {
   arr.push(val);
@@ -352,13 +381,35 @@ function updateDash(d) {
   ctBig.textContent = ct != null ? ct.toFixed(1) + '°C' : 'n/a';
   ctBig.style.color = ct != null ? tempColor(ct) : 'var(--text-dim)';
 
+  // Network panel — download line chart + link status
+  const net = d.network || {};
+  const rx = net.rx_mbps ?? 0;
+  const tx = net.tx_mbps ?? 0;
+  document.getElementById('net-rx-big').textContent = rx.toFixed(2);
+  document.getElementById('net-rx-stat').textContent = rx.toFixed(2);
+  document.getElementById('net-tx-stat').textContent = tx.toFixed(2);
+  document.getElementById('net-tx-inline').textContent = tx.toFixed(2) + ' MB/s';
+  document.getElementById('net-iface').textContent = net.iface || 'n/a';
+  const stEl = document.getElementById('net-state');
+  stEl.textContent = net.link_up ? 'up' : 'down';
+  stEl.style.color = net.link_up ? 'var(--green)' : 'var(--red)';
+  document.getElementById('net-speed').textContent =
+    net.link_speed_mbps > 0 ? net.link_speed_mbps + ' Mbit/s' : 'n/a';
+
   pushHist(hist.cpu, d.cpu_percent);
   pushHist(hist.ram, d.ram_percent);
   if (ct != null) pushHist(hist.temp, ct);
+  pushHist(hist.net, rx);
+
+  // Auto-scale download chart: peak of rolling buffer, min floor 1 MB/s
+  const netMax = Math.max(1, ...hist.net) * 1.15;
+  document.getElementById('net-scale-max').textContent =
+    'peak ' + Math.max(0, ...hist.net).toFixed(2) + ' MB/s';
 
   makeSpark(document.getElementById('spark-cpu'), hist.cpu, 100, '#22d3ee');
   makeSpark(document.getElementById('spark-ram'), hist.ram, 100, '#a78bfa');
   makeSpark(document.getElementById('spark-temp'), hist.temp, 105, '#f87171');
+  makeSpark(document.getElementById('spark-net'), hist.net, netMax, '#f59e0b');
 
   document.getElementById('footer').textContent = `◆ Live from ${d.hostname} · Refresh 1s · ${t.toLocaleDateString('pl-PL')}`;
 }

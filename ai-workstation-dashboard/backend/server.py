@@ -311,6 +311,82 @@ def get_cpu_temp() -> Optional[float]:
     return None
 
 
+def _pick_primary_iface() -> Optional[str]:
+    """Choose the most relevant non-loopback interface (prefer one that is up)."""
+    stats = psutil.net_if_stats()
+    candidates = [name for name in stats if name != "lo"]
+    if not candidates:
+        return None
+    up = [name for name in candidates if stats[name].isup]
+    pool = up or candidates
+
+    # Prefer wired/wireless names over virtual bridges/docker/veth
+    def rank(name: str) -> int:
+        low = name.lower()
+        if low.startswith(("en", "eth")):
+            return 0
+        if low.startswith(("wl", "wlan")):
+            return 1
+        if low.startswith(("br", "docker", "veth", "virbr", "tun", "tap")):
+            return 3
+        return 2
+
+    pool.sort(key=rank)
+    return pool[0]
+
+
+# Network throughput state — (timestamp, bytes_recv, bytes_sent) of last poll
+_net_prev: Optional[tuple[float, int, int]] = None
+
+
+def get_network() -> dict:
+    """Network status + throughput (RX = download, TX = upload) in MB/s.
+
+    Throughput is computed as delta(bytes) / delta(time) between polls, so the
+    first call after startup returns 0.0 until a baseline exists.
+    """
+    global _net_prev
+    now = time.time()
+    iface = _pick_primary_iface()
+
+    link_up = False
+    link_speed = 0
+    if iface:
+        try:
+            st = psutil.net_if_stats()[iface]
+            link_up = st.isup
+            link_speed = st.speed  # Mbit/s (0 if undetermined)
+        except Exception:
+            pass
+
+    rx_mbps = 0.0
+    tx_mbps = 0.0
+    try:
+        io = psutil.net_io_counters()  # system-wide cumulative counters
+        cur_recv, cur_sent = io.bytes_recv, io.bytes_sent
+        if _net_prev is not None:
+            dt = now - _net_prev[0]
+            if dt > 0:
+                d_recv = cur_recv - _net_prev[1]
+                d_sent = cur_sent - _net_prev[2]
+                # Guard against counter resets (e.g. iface restart)
+                if d_recv >= 0:
+                    rx_mbps = round(d_recv / dt / (1024**2), 3)
+                if d_sent >= 0:
+                    tx_mbps = round(d_sent / dt / (1024**2), 3)
+        _net_prev = (now, cur_recv, cur_sent)
+    except Exception:
+        pass
+
+    return {
+        "iface": iface or "n/a",
+        "link_up": link_up,
+        "link_speed_mbps": link_speed,
+        "rx_mbps": rx_mbps,
+        "tx_mbps": tx_mbps,
+    }
+
+
 def get_top_procs(limit: int = 12) -> list[dict]:
     rows = []
     for p in psutil.process_iter(["pid", "name"]):
@@ -394,6 +470,7 @@ def build_snapshot() -> dict:
         "disk_total_gib": round(dk.total / (1024**3), 2),
         "disk_percent": dk.percent,
         "disk_partitions": disk_partitions,
+        "network": get_network(),
         "gpus": [asdict(g) for g in get_gpus()],
         "processes": get_top_procs(),
     }
@@ -435,6 +512,7 @@ async def ws_endpoint(ws: WebSocket):
 
 # Warm up
 psutil.cpu_percent(interval=None)
+get_network()  # establish network throughput baseline
 for p in psutil.process_iter():
     try:
         p.cpu_percent(interval=None)
