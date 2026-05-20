@@ -110,7 +110,7 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 | # | Model | Params | Quant | TP | Status | Notes |
 |---|---|---|---|---|---|---|
 | 19 | `mistralai/Mistral-Nemo-Instruct-2407` | 12B | BF16 | 1 or 2 | ready | |
-| 20 | `TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ` | 47B (MoE) | AWQ-4bit | 2 | ready | |
+| 20 | `TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ` | 47B (MoE) | AWQ-4bit | 2 | inference broken | AWQMoeMarlin MoE-expert kernel unsupported on gfx1201; WNA16 fallback yields degenerate all-`<unk>` output. Excluded from Phase 2 sweep (sanity 2026-05-20). |
 | 21 | `moonshotai/Kimi-Dev-72B` | 72B | BF16→AWQ-marlin | 2 | ready | Qwen2.5-72B base, no public AWQ — local quant w/ AutoAWQ |
 
 ### 4.5 Naming conventions
