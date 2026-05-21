@@ -1,6 +1,6 @@
 # NaviMed-UMB Benchmark Methodology
 
-**Document version:** 1.0 (2026-04-29)
+**Document version:** 1.1 (2026-05-21)
 **Maintainer:** Łukasz Minarowski, UMB Białystok (ORCID 0000-0002-2536-3508)
 **Repository:** https://github.com/kicrazom/navimed-umb
 **License:** CC-BY-4.0 (text), MIT (code)
@@ -41,12 +41,17 @@ The system exposes three GPUs to ROCm: `card0` and `card1` are the R9700 pair, `
 
 | Layer | Version | Notes |
 |---|---|---|
-| ROCm | 7.2.0 | Native install, not Docker |
+| ROCm | 7.2.0 | Native install, not Docker. AITER OFF (§3.1); AITER experiment deferred to ROCm 7.3+ |
 | vLLM | 0.19.0+rocm721 | gfx1201 supported as of this build |
+| transformers | 5.8.1 | **Stack v0.3+** — required for `qwen3_5` architecture (Qwen 3.5 + 3.6 families), absent from transformers 4.57.x. vLLM 0.19 declares `<5,>=4.56` but accepts 5.8.1 empirically (12 models PASS sanity, 2026-05-20/21). v0.1–v0.2 used transformers 4.57.x |
 | PyTorch | 2.10.0+git8514f05 | Bundled with vLLM wheel |
 | flash_attn | 2.8.3 | Bundled |
 | triton | 3.6.0 | Bundled |
 | Python venv | `~/venvs/vllm/` | Always activated before any benchmark command |
+
+> **Errata (2026-05-21, recovery session):** transformers 5.8.1 adopted as the v0.3+ stack. transformers 4.57.x does not ship the `qwen3_5` architecture (covers Qwen 3.5 9B and Qwen 3.6 27B/35B-A3B); `qwen3_5` first appears in transformers 5.x. vLLM 0.19's declared upper pin (`transformers<5`) is conservative — empirically 5.8.1 runs correctly (12 models passed batch sanity 2026-05-20/21). The transformers bump does **not** invalidate prior Phase 2 scaling results: throughput/knee/plateau are vLLM-engine properties, independent of the transformers version (see §5.2 errata). ROCm remains 7.2.x; AITER stays OFF per §3.1 — the AITER experiment is deferred until ROCm 7.3+.
+
+> **Caveat — FP8 path:** `compressed-tensors 0.14.0.1` declares `transformers<5.0.0`, a dependency conflict with the v0.3+ stack. FP8 / compressed-tensors models (Qwen 3.6 27B-FP8, Qwen 3.6 35B-A3B-FP8, Bielik AWQ via compressed-tensors) were verified to still load and run under transformers 5.8.1 despite the declared conflict — confirmed by Phase 2 sweeps of qwen36-27b-fp8 and bielik-11b-v30-instruct-awq (2026-05-21).
 
 ### 3.1 Mandatory environment variables for gfx1201
 
@@ -78,7 +83,7 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 |---|---|---|---|---|---|---|
 | 1 | `Qwen/Qwen2.5-7B-Instruct` | 7B | BF16 | 1 or 2 | ready | TP=2 harmful below high N |
 | 2 | `Qwen/Qwen2.5-72B-Instruct-AWQ` | 72B | AWQ-4bit | 2 | ready | TP=2 mandatory |
-| 3 | `Qwen/Qwen3.5-9B` | 9B | BF16 | 1 or 2 | ready | Multimodal (VL, `vision_config`) — served text-only for this suite. Replaces Qwen 2.5 7B baseline (v0.3); sanity PASS 2026-05-21 |
+| 3 | `Qwen/Qwen3.5-9B` | 9B | BF16 | 1 or 2 | PASS | Genuine multimodal (`Qwen3_5ForConditionalGeneration`) — served text-only for this suite; loads on transformers 5.8.1 with no multimodal-disable flag. Requires `qwen3_5` arch (transformers 5.x, §3). Replaces Qwen 2.5 7B baseline (v0.3). Sanity PASS 2026-05-21: load 4.8 s, KV 68 640 tok, max_conc 27.5×. Earlier batch FAIL (2026-05-20) was an incomplete 3.4 MB stub download — NOT an image-processor issue |
 | 4 | `Qwen/Qwen3.6-27B` | 27B | BF16 | 2 | ready | Hybrid attention, `enforce_eager=True` mandatory |
 | 5 | `Qwen/Qwen3.6-27B-FP8` | 27B | FP8 | 2 | ready | No FP8 kernels on R9700 (~75% slower than BF16) |
 
@@ -99,11 +104,13 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 |---|---|---|---|---|---|---|
 | 12 | `CYFRAGOVPL/Llama-PLLuM-8B-instruct` | 8B | BF16 | 1 | ready | Llama base |
 | 13 | `CYFRAGOVPL/PLLuM-12B-chat` | 12B | BF16 | 1 or 2 | ready | Mistral base |
-| 14 | `CYFRAGOVPL/Llama-PLLuM-70B-base` | 70B | BF16→AWQ-4bit | 2 | AWQ required | Earlier checkpoint; BF16 (~140 GB) exceeds 64 GB aggregate VRAM (2× R9700) — OOM; AWQ-4bit quant required (Phase 3) |
-| 15 | `CYFRAGOVPL/Llama-PLLuM-70B-instruct` | 70B | BF16→AWQ-4bit | 2 | AWQ required | Earlier checkpoint; BF16 OOM on 2× R9700 — AWQ-4bit quant required (Phase 3) |
-| 16 | `CYFRAGOVPL/Llama-PLLuM-70B-chat` | 70B | BF16→AWQ-4bit | 2 | AWQ required | Earlier checkpoint; BF16 OOM on 2× R9700 — AWQ-4bit quant required (Phase 3) |
-| 17 | `CYFRAGOVPL/Llama-PLLuM-70B-base-250801` | 70B | BF16→AWQ-4bit | 2 | AWQ required | v0.3 refresh; BF16 OOM on 2× R9700 — AWQ-4bit quant required (Phase 3) |
-| 18 | `CYFRAGOVPL/Llama-PLLuM-70B-chat-250801` | 70B | BF16→AWQ-4bit | 2 | AWQ required | v0.3 refresh (Finale); BF16 OOM on 2× R9700 — AWQ-4bit quant required (Phase 3) |
+| 14 | `CYFRAGOVPL/Llama-PLLuM-70B-base` | 70B | BF16→AWQ | 2 | AWQ required, routed to AMD | Earlier checkpoint; BF16 132 GB > 64 GB VRAM (2× R9700) — not deployable locally. See PLLuM-70B errata below |
+| 15 | `CYFRAGOVPL/Llama-PLLuM-70B-instruct` | 70B | BF16→AWQ | 2 | AWQ required, routed to AMD | Earlier checkpoint; BF16 132 GB > 64 GB VRAM — see PLLuM-70B errata below |
+| 16 | `CYFRAGOVPL/Llama-PLLuM-70B-chat` | 70B | BF16→AWQ | 2 | AWQ required, routed to AMD | Earlier checkpoint; BF16 132 GB > 64 GB VRAM — see PLLuM-70B errata below |
+| 17 | `CYFRAGOVPL/Llama-PLLuM-70B-base-250801` | 70B | BF16→AWQ | 2 | AWQ required, routed to AMD | v0.3 refresh; BF16 132 GB > 64 GB VRAM — see PLLuM-70B errata below |
+| 18 | `CYFRAGOVPL/Llama-PLLuM-70B-chat-250801` | 70B | BF16→AWQ | 2 | AWQ required, routed to AMD | v0.3 refresh (Finale); BF16 132 GB > 64 GB VRAM — see PLLuM-70B errata below |
+
+> **Errata (2026-05-21) — PLLuM-70B #14–18 quantization routing.** All five Llama-PLLuM-70B checkpoints in BF16 occupy ~132 GB, exceeding the 64 GB aggregate VRAM of the 2× R9700 pair — they are not deployable locally and require AWQ-4bit quantization (~40 GB). Local AWQ quantization of a 70B model **is technically feasible** on this hardware: AutoAWQ proceeds layer-wise / sequentially (or with CPU offload), at roughly 2 h/model. The decision to route these quantizations to the AMD developer program instead is a **resource-allocation choice** — it uses awarded external compute and reserves the local GPU pair for sweep work — **not a technical necessity**. Operating rule: models whose deployable form exceeds 64 GB VRAM are routed to AMD compute for quantization. Quantized checkpoints, once produced, re-enter the suite for local Phase 1/Phase 2.
 
 ### 4.4 International (Mistral / Mixtral / Kimi)
 
@@ -111,19 +118,26 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 |---|---|---|---|---|---|---|
 | 19 | `mistralai/Mistral-Nemo-Instruct-2407` | 12B | BF16 | 1 or 2 | ready | |
 | 20 | `TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ` | 47B (MoE) | AWQ-4bit | 2 | inference broken | AWQMoeMarlin MoE-expert kernel unsupported on gfx1201; WNA16 fallback yields degenerate all-`<unk>` output. Excluded from Phase 2 sweep (sanity 2026-05-20). |
-| 21 | `moonshotai/Kimi-Dev-72B` | 72B | BF16→AWQ-marlin | 2 | ready | Qwen2.5-72B base, no public AWQ — local quant w/ AutoAWQ |
+| 21 | `abhishekchohan/Kimi-Dev-72B-AWQ` | 72B | AWQ-4bit | — | not deployable on 2× R9700, routed to AMD | Dense, Qwen2.5-72B base. Pre-quantized AWQ (40 GB) downloaded. **Cannot be served on 2× R9700** — see Kimi-Dev-72B-AWQ errata below |
+
+> **Errata (2026-05-21) — Kimi-Dev-72B-AWQ #21 not deployable on 2× R9700.** The original plan was to locally quantize `moonshotai/Kimi-Dev-72B` (BF16, no public AWQ at the time). A pre-quantized community AWQ (`abhishekchohan/Kimi-Dev-72B-AWQ`, dense, Qwen2.5-72B base, ~40 GB) was subsequently found and downloaded. **Finding: this checkpoint cannot be served on the 2× R9700 pair, at any TP.**
+>
+> - **TP=2** → `ValueError: The input size is not aligned with the quantized weight shape` in `model.layers.*.mlp.down_proj` (`RowParallelLinear`). The `intermediate_size` is 29568; AWQ `group_size` is 128. Per-shard input dimension is 29568 / 2 = 14784, i.e. 14784 / 128 = 115.5 groups — non-integer, so the RowParallel shard boundary does not align with the AWQ group boundary. (Equivalently: 29568 / 128 = 231 groups, an odd multiple of 128 that cannot be split evenly across 2 shards.) vLLM additionally logs the AWQMarlin fallback to unoptimized AWQ kernels for `down_proj`.
+> - **TP=1** → the full 40 GB weight exceeds the 32 GB VRAM of a single R9700 → OOM.
+>
+> **Methodological note:** "a ready-made AWQ checkpoint from HF" is **not** a guarantee of deployability on a given GPU count. Deployability requires alignment of `shard_dim × group_size × TP` — a constraint independent of total VRAM. Kimi-Dev-72B-AWQ is therefore routed to AMD compute (MI300X, TP=1, 192 GB HBM) rather than served locally.
 
 ### 4.5 Naming conventions
 
 - Qwen 3.5 / 3.6 family: no `-Instruct` suffix (i.e. `Qwen/Qwen3.6-27B`, `Qwen/Qwen3.5-9B`).
 - PLLuM naming is family-dependent: `Llama-PLLuM-` for Llama-based variants (8B, 70B), bare `PLLuM-` for the Mistral-based 12B.
 - Bielik PL vs base: `Bielik-11B-v3.0` is multilingual (PL + EN + 30 EU), `Bielik-PL-11B-v3.0-Instruct` is Polish-focused fine-tune (different training, smaller multilingual scope).
-- Kimi-Dev 72B has no public AWQ as of 2026-05-17 — locally quantized via AutoAWQ + served with `--quantization awq_marlin --enforce-eager`.
+- Kimi-Dev 72B: a pre-quantized community AWQ (`abhishekchohan/Kimi-Dev-72B-AWQ`) is used as of 2026-05-21, superseding the earlier local-AutoAWQ plan. This checkpoint is not deployable on 2× R9700 (alignment failure, §4.4 errata) and is routed to AMD compute.
 
 ### 4.6 Phase 2 v0.3 follow-up suite (separate manuscript track)
 
 Three follow-up contenders (Phase B from `scripts/sweep_phase2_v0.3.sh`) are downloaded into the same `~/models/` tree but benchmarked separately (different manuscript, different embargo lift date):
-- **Kimi-Dev-72B** (above) — head-to-head vs Qwen2.5-72B-AWQ
+- **Kimi-Dev-72B-AWQ** (above) — head-to-head vs Qwen2.5-72B-AWQ; not deployable on 2× R9700 (§4.4 errata), routed to AMD
 - **Kimi-Linear-48B-A3B-Instruct** — MoE, linear attention, requires `--no-enable-prefix-caching`
 - **Qwen3.6-35B-A3B-FP8** — MoE benchmark
 
@@ -175,6 +189,14 @@ Each N value is one independent run with full model load and 15-second cooldown 
 **Output location:** `benchmarks/results/<model>/thermal-runs/<quant>-tp<TP>-n<N>-{bench.log,events.json,thermals.jsonl,thermals.png}`
 
 **Embargo:** Mixed. Engineering observations (knee position, preemption onset, thermal envelope) are PUBLIC. Concrete scaling numbers (throughput@N, P50/P95/P99 latency, KV cache curves, cross-model comparisons) are EMBARGOED until paper acceptance. The split is enforced per artifact, not per file — see §11.
+
+> **Errata (2026-05-21) — Phase 2 v0.3 scaling sweep complete; knee model corrected.** The Phase 2 scaling sweep ran across 12 models (44 N-points total; every N-point completed `OK`). Knee and plateau were localized for each model. This errata records two methodological corrections; concrete throughput numbers remain EMBARGOED (§11.2).
+>
+> **(1) Correction to the v0.2.0 knee model.** v0.2.0 hypothesized that the throughput knee occurs at `N ≈ 8× the engine's max_concurrency` estimate. **This is wrong.** The knee is **compute-saturation-driven, not KV-exhaustion-driven.** Counterexample from the sweep: BF16 models with an engine `max_concurrency` estimate of ~4.2× show their knee at N ≈ 500, not at N ≈ 34 (= 8 × 4.2). The `max_concurrency` estimate bounds KV-cache headroom; it does not predict where aggregate throughput saturates compute. The corrected model recognizes **two regimes** (numbers below are knee/plateau positions — engineering observations, PUBLIC per §11.1 — not throughput values):
+>   - **bf16 / fp16 models:** knee at N ≈ 500, plateau throughput in the 2100–3800 tok/s band.
+>   - **AWQ / FP8 / compressed-tensors models:** knee at N ≈ 200–450, plateau in the 380–1070 tok/s band.
+>
+> **(2) Quantized models are slower than BF16 on gfx1201.** AWQ, FP8, and compressed-tensors models run **4–10× slower** than BF16 on the R9700, attributable to the absence of AITER and to sub-optimal FP8 W8A8 kernels on gfx1201. This is consistent with — and extends — the FP8-inversion finding of the v0.1 hardware-envelope paper (FP8 ~75% slower than BF16 for Qwen 3.6 27B): the slowdown generalizes across the quantized model classes, not just FP8. The knee/plateau bands in (1) reflect this: the quantized regime's lower plateau is a kernel-efficiency artifact of the current ROCm 7.2 / vLLM 0.19 stack, not a property of the quantization formats themselves.
 
 ---
 
@@ -311,7 +333,7 @@ The platform operates under a structured embargo policy distinguishing engineeri
 - All scripts (runners, orchestrators, analysis, plotting)
 - Methodology document (this file)
 - AI disclosure structure
-- Knee-position observations ("knee occurs at N ≈ max_concurrency from Phase 1")
+- Knee-position observations (knee is compute-saturation-driven — bf16/fp16 knee N ≈ 500, AWQ/FP8/compressed-tensors knee N ≈ 200–450; see §5.2 errata. The earlier "knee ≈ N × max_concurrency" model is retracted)
 
 ### 11.2 EMBARGOED artifacts (until paper acceptance)
 
@@ -351,14 +373,15 @@ Every benchmark session, every result-generating step is explicitly labeled at t
 |---|---|---|
 | v0.1.0 | Hardware envelope paper, Qwen 3.6 27B | Released 2026-04-26, DOI 10.5281/zenodo.19851347 |
 | v0.2.0 | Phase 2 scaling sweep, Qwen 3.6 27B (BF16 + FP8) | In progress 2026-04-29 |
-| v0.3.0 | Remaining model suite, Phase 1 + Phase 2 | Planned |
+| v0.3.0 | Remaining model suite, Phase 1 + Phase 2 | In progress 2026-05-21 — Phase 2 scaling sweep done (12 models, 44 N-points); 70B AWQ quantizations routed to AMD compute |
 | v0.4.0 | Lemonade Server cross-stack comparison | Planned post-v0.3 |
 | v0.5.0 | Undervolted re-run (-75 mV / +15 W) of full suite | Planned |
 
-This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.0) and are recorded in the changelog at the bottom of this file.
+This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.1) and are recorded in the changelog at the bottom of this file.
 
 ---
 
 ## Changelog
 
+- **1.1 (2026-05-21):** Recovery-session errata. §3: transformers 5.8.1 adopted as the v0.3+ stack (required for `qwen3_5` arch; vLLM 0.19 accepts it empirically — 12 models PASS), AITER deferred to ROCm 7.3+, FP8/compressed-tensors caveat documented. §4 #3 qwen3.5-9b: status FAIL→PASS (earlier FAIL was an incomplete stub download, not an image-processor defect). §4 #14–18 PLLuM-70B: BF16 132 GB exceeds 64 GB VRAM — local AWQ quant is feasible (~2 h/model) but routed to AMD compute as a resource-allocation choice. §4 #21 Kimi-Dev-72B-AWQ: switched to pre-quantized `abhishekchohan/Kimi-Dev-72B-AWQ`; finding — not deployable on 2× R9700 (TP=2 group-alignment failure in `mlp.down_proj`, intermediate_size 29568; TP=1 OOM), routed to AMD. §5.2: Phase 2 v0.3 sweep complete (12 models, 44 N-points); v0.2.0 "knee ≈ N × max_concurrency" model retracted — knee is compute-saturation-driven (bf16/fp16 knee N≈500, AWQ/FP8/compressed-tensors knee N≈200–450); quantized models 4–10× slower than BF16 on gfx1201. §11.1 knee-observation line updated accordingly. Embargo policy (§11) unchanged.
 - **1.0 (2026-04-29):** Initial consolidated methodology. Synthesizes engineering practice from v0.1.0 release, Capitelli-style reporting schema, Kim et al. (2026) AI disclosure framework, Lerchner (2026) methodological humility position, and embargo policy operational since 2026-04-28. Authoritative for v0.2.0 and onward.
