@@ -1,0 +1,21 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-21",
+  "model": "qwen3.5-9b",
+  "tensor_parallel_size": 1,
+  "extra_flags": "",
+  "enforce_eager": true,
+  "gpu": "GPU1 (ROCR_VISIBLE_DEVICES=1)",
+  "metrics": {
+    "model_loading_sec": "4.832422",
+    "model_footprint_gib": "17.74",
+    "kv_cache_tokens": "68,640",
+    "max_concurrency_8192tok": "27.53",
+    "sanity_response_time_sec": "6.798"
+  },
+  "verdict": "PASS",
+  "response_status": "ok",
+  "note": "qwen3.5-9b is a multimodal (VL) model served text-only; sanity post full re-download (recovery Faza 2). Earlier batch FAIL was an incomplete download, not a config issue.",
+  "embargo": "PUBLIC engineering 11.1",
+  "orchestrated_by": "Claude Code manual sanity (recovery Faza 2, 2026-05-21)"
+}

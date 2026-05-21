@@ -78,7 +78,7 @@ The benchmark suite covers twenty-one generation models, deliberately mixing int
 |---|---|---|---|---|---|---|
 | 1 | `Qwen/Qwen2.5-7B-Instruct` | 7B | BF16 | 1 or 2 | ready | TP=2 harmful below high N |
 | 2 | `Qwen/Qwen2.5-72B-Instruct-AWQ` | 72B | AWQ-4bit | 2 | ready | TP=2 mandatory |
-| 3 | `Qwen/Qwen3.5-9B` | 9B | BF16 | 1 or 2 | ready | Replacing Qwen 2.5 7B baseline (v0.3) |
+| 3 | `Qwen/Qwen3.5-9B` | 9B | BF16 | 1 or 2 | ready | Multimodal (VL, `vision_config`) — served text-only for this suite. Replaces Qwen 2.5 7B baseline (v0.3); sanity PASS 2026-05-21 |
 | 4 | `Qwen/Qwen3.6-27B` | 27B | BF16 | 2 | ready | Hybrid attention, `enforce_eager=True` mandatory |
 | 5 | `Qwen/Qwen3.6-27B-FP8` | 27B | FP8 | 2 | ready | No FP8 kernels on R9700 (~75% slower than BF16) |
 
