@@ -1,0 +1,19 @@
+This directory contains a source-derived calibration dataset.
+
+Underlying source text:
+- EMA-published SmPC / Product Information text: © European Medicines Agency,
+  reproduced under EMA's content-reproduction policy with source acknowledgment.
+- URPL / Polish national product-information text, where present: subject to
+  applicable source-specific public-sector information reuse rules and original
+  provenance.
+
+Compilation, selection, extraction scripts, chunking logic and dataset structure:
+© Łukasz Minarowski / navimed-umb.
+
+This directory (`calibration/`) is NOT distributed under the repository's root
+CC-BY-4.0 (text) or MIT (code) licenses. The dataset as a whole is distributed
+under source-specific reuse terms. It is not distributed under CC-BY-4.0 or
+CC-BY-NC-4.0.
+
+Users are responsible for preserving source attribution and checking
+source-specific restrictions before redistribution or downstream use.

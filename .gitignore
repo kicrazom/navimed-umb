@@ -76,9 +76,11 @@ benchmarks/results/
 # Embargoed planning doc — contains throughput refs
 docs/sessions/PLAN-NEXT.md
 
-# AWQ calibration corpus — local-only. Third-party copyrighted ChPL/SmPC PDFs;
-# input data for Phase 3 quantization, not redistributable in a CC-BY-4.0 repo.
-calibration/
+# AWQ calibration corpus — corpus.jsonl + catalogue + extraction script ARE
+# committed (see calibration/LICENSE — source-specific terms, NOT root CC-BY-4.0).
+# Raw third-party SmPC PDFs and the text-only backup stay local-only:
+calibration/clinical-pl/chpl_raw/
+calibration/clinical-pl/corpus.text-only.bak.jsonl
 
 # Source literature (PDFs of papers the project builds on) — local-only
 literature/

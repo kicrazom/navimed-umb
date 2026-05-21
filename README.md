@@ -231,6 +231,10 @@ This repository uses **dual licensing**:
 - **Documentation, methodology, lab logs, and benchmark findings**
   are licensed under [Creative Commons Attribution 4.0 International
   (CC BY 4.0)](LICENSE).
+- **The `calibration/` dataset** is derived from third-party regulatory
+  documents (EMA-published SmPC / Product Information) and is governed by
+  [`calibration/LICENSE`](calibration/LICENSE) — source-specific reuse terms,
+  **not** the root CC-BY-4.0 / MIT licenses.
 
 For citation, see [`CITATION.cff`](CITATION.cff) or use the
 "Cite this repository" button on GitHub.
