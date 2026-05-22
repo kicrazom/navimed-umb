@@ -63,7 +63,7 @@ if [[ ! -d "$MODEL_PATH" ]]; then
     exit 1
 fi
 
-stale_pids="$(pgrep -af 'vllm serve|test_concurrent_bielik' 2>/dev/null || true)"
+stale_pids="$(pgrep -af 'vllm serve|run_concurrent.py bielik-11b-v30' 2>/dev/null || true)"
 if [[ -n "$stale_pids" ]]; then
     echo "ERROR: stale vllm processes present — refusing to start:" >&2
     echo "$stale_pids" >&2

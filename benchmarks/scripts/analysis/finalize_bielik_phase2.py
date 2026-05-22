@@ -88,7 +88,7 @@ class RunRecord:
 
 
 def parse_bench_log(path: Path) -> dict:
-    """Parse the inner test_concurrent_bielik_11b.py stdout."""
+    """Parse the inner run_concurrent.py bielik-11b stdout."""
     data: dict = {}
     text = path.read_text(errors="ignore")
     patterns = {
