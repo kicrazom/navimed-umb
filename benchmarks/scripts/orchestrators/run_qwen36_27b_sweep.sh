@@ -27,12 +27,12 @@ REPO_ROOT="$HOME/navimed-umb"
 SCRIPTS_DIR="$REPO_ROOT/benchmarks/scripts"
 RESULTS_DIR="$REPO_ROOT/benchmarks/results"
 
-WRAPPER="$SCRIPTS_DIR/instrumentation/bench_with_thermals_qwen36_27b.py"
+WRAPPER="$SCRIPTS_DIR/instrumentation/bench_with_thermals.py"
+WRAPPER_MODEL="qwen36-27b"
 
 # Validate scripts exist
 if [[ ! -f "$WRAPPER" ]]; then
     echo "ERROR: missing $WRAPPER"
-    echo "Did you copy bench_with_thermals_qwen36_27b.py to instrumentation/?"
     exit 1
 fi
 
@@ -104,7 +104,7 @@ run_quant_sweep() {
         echo ""
         echo "--- Running: $run_name ---"
 
-        python3 "$WRAPPER" 2 "$n" \
+        python3 "$WRAPPER" "$WRAPPER_MODEL" 2 "$n" \
             --quant "$quant" \
             --max-len "$max_len" \
             --util "$util" \

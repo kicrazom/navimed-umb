@@ -31,8 +31,9 @@ unset PYTORCH_ALLOC_CONF
 export VLLM_ROCM_USE_AITER=0
 export AMD_SERIALIZE_KERNEL=1
 export HIP_LAUNCH_BLOCKING=1
-# Note: bench_with_thermals_bielik_11b.py pops ROCR_VISIBLE_DEVICES
-# before launching inner benchmark, but we set it for the wrapper itself.
+# Note: bench_with_thermals.py pops ROCR_VISIBLE_DEVICES before launching the
+# inner benchmark (always_pop policy for bielik-11b), but we set it for the
+# wrapper itself.
 export ROCR_VISIBLE_DEVICES=0,1
 
 # Activate venv if not already
@@ -128,8 +129,8 @@ for N in "${N_LADDER[@]}"; do
     # Capture per-run start/end in lab log
     RUN_START=$(date +%s)
 
-    python3 benchmarks/scripts/instrumentation/bench_with_thermals_bielik_11b.py \
-        "$TP" "$N" \
+    python3 benchmarks/scripts/instrumentation/bench_with_thermals.py \
+        bielik-11b "$TP" "$N" \
         --quant "$QUANT" \
         --max-len "$MAX_LEN" \
         --util "$UTIL" \

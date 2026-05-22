@@ -155,8 +155,8 @@ for TP in "${TP_LADDER[@]}"; do
             # Single replication. We use 'continue' on failure rather than abort
             # so a transient HIP OOM at large N does not kill the whole sweep.
             if python3 \
-                "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals_bielik_11b_v30.py" \
-                "$TP" "$N" \
+                "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals.py" \
+                bielik-11b-v30 "$TP" "$N" \
                 --quant "$QUANT" \
                 --max-len "$MAX_LEN" \
                 --util "$UTIL" \
