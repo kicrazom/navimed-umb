@@ -76,11 +76,10 @@ for tp in "${TP_VALUES[@]}"; do
         echo "--- Run $RUN_IDX/$TOTAL_RUNS: $NAME ---" | tee -a "$SUMMARY"
         echo "Time: $(date +%H:%M:%S) | Elapsed: $(( ($(date +%s) - GLOBAL_START) / 60 ))min" | tee -a "$SUMMARY"
 
-        ### Kill any lingering vLLM processes from a previous failed run
-        pkill -f EngineCore 2>/dev/null || true
-        pkill -f test_concurrent_qwen72b 2>/dev/null || true
-        pkill -f sample_system 2>/dev/null || true
-        sleep 2
+        # Kill any lingering vLLM EngineCore from a previous failed run.
+        # kill_port.sh (setsid, port-based) — NEVER pkill -f: it matches its
+        # own command line and collateral-kills the orchestrator (exit 144).
+        bash "$REPO_ROOT/scripts/kill_port.sh" 8100 >/dev/null 2>&1 || true
 
         python "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals_qwen72b.py" "$tp" "$n" \
             --name "$NAME" --out-dir "$OUT_DIR" 2>&1 | \
