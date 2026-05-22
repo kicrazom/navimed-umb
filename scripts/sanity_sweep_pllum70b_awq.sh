@@ -1,30 +1,52 @@
 #!/usr/bin/env bash
 # =============================================================================
 # sanity_sweep_pllum70b_awq.sh
-# Sanity + Phase 2 sweep dla 8 modeli AWQ Llama-PLLuM-70B (compressed-tensors
-# W4A16), kwantyzowanych na AMD compute (§4.3 errata).
+# Three-stage test runner for the 8 AWQ Llama-PLLuM-70B checkpoints
+# (compressed-tensors W4A16), quantized on AMD compute (§4.3 errata).
 #
-# Per model:
-#   1. SANITY  — vllm serve TP=2 + AITER off + krótki probe → JSON record + log.
-#   2. SWEEP   — TYLKO gdy sanity PASS → throughput_scaling_phase2.py (knee/plateau).
+# THREE EXPLICIT STAGES — each launched on its own. There is NO auto-chain:
+# the long, embargoed sweep starts only after a human reviews the Gate-2 probe.
 #
-# Reużycie:
-#   - scripts/_env.sh           — env §3.1 (AITER off, ROCR_VISIBLE_DEVICES, venv)
-#   - scripts/kill_port.sh      — izolowany cleanup procesów (NIE pkill -f)
-#   - batch_sanity_v0.3.sh      — logika serve/poll/probe/klasyfikacja odpowiedzi
-#   - throughput_scaling_phase2.py — sweep harness (METHODOLOGY §5.2/§6/§7)
+#   --stage sanity   Gate 1 — Hardware envelope. vllm serve TP=2, poll
+#                    readiness, single probe, 3-state classify -> JSON + log.
+#                    PUBLIC §11.1. Default stage if --stage is omitted.
 #
-# METHODOLOGY-compliant: TP=2 mandatory dla 70B (§4.3), enforce_eager (§3.2
-# conservative default), embargo split per artefakt (sanity PUBLIC §11.1,
-# sweep numbers EMBARGOED §11.2).
+#   --stage probe    Gate 2 — AWQ-QA Polish coherence probe. For every model
+#                    with a sanity JSON verdict PASS, runs
+#                    scripts/awq_coherence_probe.py: ~5 varied Polish prompts,
+#                    mechanical auto-flags (language / non-degeneracy /
+#                    length), raw outputs retained for human spot-check.
+#                    Vehicle-integrity check, NOT a model-quality eval —
+#                    METHODOLOGY §8 boundary preserved. PUBLIC §11.1.
 #
-# Idempotent: model z istniejącym JSON sanity recordem jest pomijany; sweep
-# z istniejącym scaling/results_table.csv jest pomijany.
+#   --stage sweep    Gate 3 — Phase 2 scaling sweep via
+#                    throughput_scaling_phase2.py (knee / plateau). Runs ONLY
+#                    for models that are BOTH sanity-PASS AND coherence-probe
+#                    PASS. MUST be launched explicitly, after Gate-2 review.
+#                    Output EMBARGOED §11.2 / §11.3 (Polish models, scoop risk).
 #
-# Użycie:
-#   bash scripts/sanity_sweep_pllum70b_awq.sh              # sanity + sweep
-#   bash scripts/sanity_sweep_pllum70b_awq.sh sanity-only  # tylko sanity
-#   SWEEP_NS=350,500,750,1000 bash scripts/sanity_sweep_pllum70b_awq.sh
+# Intended flow:  sanity  ->  probe  ->  (human review)  ->  sweep
+#
+# Reuse:
+#   - scripts/_env.sh                  — env §3.1 (AITER off, ROCR filter, venv)
+#   - scripts/kill_port.sh             — isolated process cleanup (NOT pkill -f)
+#   - scripts/awq_coherence_probe.py   — Gate-2 probe (this branch)
+#   - throughput_scaling_phase2.py     — sweep harness (METHODOLOGY §5.2/§6/§7)
+#
+# METHODOLOGY-compliant: TP=2 mandatory for 70B (§4.3), enforce_eager (§3.2
+# conservative default), embargo split per artifact — sanity + probe PUBLIC
+# §11.1, sweep numbers EMBARGOED §11.2/§11.3.
+#
+# Idempotent: a model with an existing sanity JSON is skipped in --stage
+# sanity; with an existing probe JSON, skipped in --stage probe; with an
+# existing scaling/results_table.csv, skipped in --stage sweep.
+#
+# Usage:
+#   bash scripts/sanity_sweep_pllum70b_awq.sh                      # = --stage sanity
+#   bash scripts/sanity_sweep_pllum70b_awq.sh --stage sanity
+#   bash scripts/sanity_sweep_pllum70b_awq.sh --stage probe
+#   bash scripts/sanity_sweep_pllum70b_awq.sh --stage sweep
+#   SWEEP_NS=350,500,750,1000 bash scripts/sanity_sweep_pllum70b_awq.sh --stage sweep
 # =============================================================================
 # NIE set -e/-u/pipefail — batch musi przeżyć błędy pojedynczych modeli
 # i kontynuować kolejne (wzorzec z batch_sanity_v0.3.sh).
@@ -33,7 +55,9 @@ set +e
 NAVIMED_ROOT="/home/mozarcik/Vaults-main/10_Projekty/0001-navimed-umb"  # pragma: allowlist secret
 MODELS_DIR="$HOME/models"
 SANITY_DIR="$NAVIMED_ROOT/environment/sanity-tests"
+PROBE_DIR="$NAVIMED_ROOT/environment/coherence-probes"
 SCALER="$NAVIMED_ROOT/benchmarks/scripts/runners/throughput_scaling_phase2.py"
+PROBE_PY="$NAVIMED_ROOT/scripts/awq_coherence_probe.py"
 KILL_PORT="$NAVIMED_ROOT/scripts/kill_port.sh"
 PORT=8100
 TP=2                                  # §4.3 — TP=2 mandatory dla Llama-PLLuM-70B
@@ -41,8 +65,31 @@ QUANT_LABEL="compressed-tensors"       # W4A16, auto-wykrywany przez vLLM z conf
 DATE=$(date +%Y-%m-%d)
 PROGRESS_LOG="$NAVIMED_ROOT/logs/downloads/sanity-sweep-pllum70b-awq-${DATE}.log"
 SANITY_PROMPT="Rozwiń skrót PEEP w kontekście wentylacji mechanicznej i wyjaśnij jego rolę."
-MODE="${1:-full}"                                  # full | sanity-only
 SWEEP_NS="${SWEEP_NS:-200,350,500,750,1000}"       # extended N>200 — knee/plateau
+
+# --- Stage flag --------------------------------------------------------------
+# --stage {sanity,probe,sweep}. Default sanity. NO 'full' mode — the sweep
+# never auto-chains; it must be requested explicitly after Gate-2 review.
+STAGE="sanity"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --stage)
+      STAGE="${2:-}"; shift 2 ;;
+    --stage=*)
+      STAGE="${1#*=}"; shift ;;
+    -h|--help)
+      grep -E '^# ' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *)
+      echo "ERROR: unknown argument '$1' (expected --stage {sanity,probe,sweep})" >&2
+      exit 2 ;;
+  esac
+done
+case "$STAGE" in
+  sanity|probe|sweep) ;;
+  *)
+    echo "ERROR: --stage must be one of: sanity, probe, sweep (got '$STAGE')" >&2
+    exit 2 ;;
+esac
 
 # 8 modeli AWQ Llama-PLLuM-70B. compressed-tensors W4A16 — vLLM auto-wykrywa
 # kwantyzację z config.json (quant_method: compressed-tensors), bez --quantization.
@@ -58,7 +105,7 @@ MODELS=(
 )
 
 cd "$NAVIMED_ROOT" || exit 1
-mkdir -p "$SANITY_DIR" "$(dirname "$PROGRESS_LOG")"
+mkdir -p "$SANITY_DIR" "$PROBE_DIR" "$(dirname "$PROGRESS_LOG")"
 
 log() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$PROGRESS_LOG"; }
 
@@ -70,8 +117,17 @@ source "$NAVIMED_ROOT/scripts/_env.sh"
 set +euo pipefail
 
 # -----------------------------------------------------------------------------
+# verdict_of — read the "verdict" field from a JSON record, or "" if absent.
+# -----------------------------------------------------------------------------
+verdict_of() {
+  grep -oP '"verdict"\s*:\s*"\K[A-Z]+' "$1" 2>/dev/null | head -1
+}
+
+# =============================================================================
+# STAGE 1 — SANITY (Gate 1, hardware envelope)
+# =============================================================================
 # sanity_one — serve TP=2, poll readiness, probe, klasyfikuj odpowiedź.
-# Echo: "PASS" lub "FAIL" na stdout (do sterowania sweepem). Reszta → log/JSON.
+# Echo: "PASS" lub "FAIL" na stdout. Reszta → log/JSON. PUBLIC §11.1.
 # -----------------------------------------------------------------------------
 sanity_one() {
   local mdir="$1"
@@ -81,7 +137,7 @@ sanity_one() {
 
   if [[ -f "$json_out" ]]; then
     local prev
-    prev=$(grep -oP '"verdict"\s*:\s*"\K[A-Z]+' "$json_out" | head -1)
+    prev=$(verdict_of "$json_out")
     log "[skip] $mdir — sanity JSON już istnieje (verdict ${prev:-?})"
     echo "${prev:-FAIL}"
     return
@@ -188,20 +244,90 @@ PYEOF
   echo "$verdict"
 }
 
+run_stage_sanity() {
+  log "=== STAGE 1/3 SANITY (Gate 1) — ${#MODELS[@]} modeli ==="
+  local passed=()
+  for mdir in "${MODELS[@]}"; do
+    local verdict
+    verdict=$(sanity_one "$mdir")
+    [[ "$verdict" == "PASS" ]] && passed+=("$mdir")
+  done
+  log "=== SANITY KONIEC — ${#passed[@]}/${#MODELS[@]} PASS: ${passed[*]:-(brak)} ==="
+  log "Następny etap (po przeglądzie): bash $0 --stage probe"
+}
+
+# =============================================================================
+# STAGE 2 — COHERENCE PROBE (Gate 2, AWQ-QA)
+# =============================================================================
+# probe_one — Polish coherence probe dla jednego modelu sanity-PASS.
+# Delegated to awq_coherence_probe.py (vehicle-integrity check, §8 boundary).
 # -----------------------------------------------------------------------------
+probe_one() {
+  local mdir="$1"
+  local sanity_json="$SANITY_DIR/${DATE}-${mdir}-tp${TP}.json"
+  local probe_json="$PROBE_DIR/${DATE}-${mdir}-coherence-probe.json"
+
+  if [[ ! -f "$sanity_json" ]]; then
+    log "[skip] $mdir — brak sanity JSON ($DATE); uruchom najpierw --stage sanity"
+    return
+  fi
+  local sv
+  sv=$(verdict_of "$sanity_json")
+  if [[ "$sv" != "PASS" ]]; then
+    log "[skip] $mdir — sanity verdict ${sv:-?} (≠PASS); probe pominięty"
+    return
+  fi
+  if [[ -f "$probe_json" ]]; then
+    log "[skip] $mdir — probe JSON już istnieje (verdict $(verdict_of "$probe_json"))"
+    return
+  fi
+
+  log "--- PROBE $mdir (Gate 2 AWQ-QA, TP=$TP) ---"
+  # awq_coherence_probe.py serwuje model, odpytuje, sprząta przez kill_port.sh.
+  python3 "$PROBE_PY" "$mdir" --tp "$TP" --port "$PORT" 2>&1 | tee -a "$PROGRESS_LOG"
+  log "  $mdir → probe verdict $(verdict_of "$probe_json")"
+}
+
+run_stage_probe() {
+  log "=== STAGE 2/3 COHERENCE PROBE (Gate 2 AWQ-QA) — ${#MODELS[@]} modeli ==="
+  log "Vehicle-integrity check (czy AWQ nie zepsuł modelu), NIE ocena jakości — §8."
+  for mdir in "${MODELS[@]}"; do
+    probe_one "$mdir"
+  done
+  log "=== COHERENCE PROBE KONIEC — JSON+raw w $PROBE_DIR ==="
+  log "PRZEGLĄD: spot-check raw outputs, potem (jeśli OK): bash $0 --stage sweep"
+}
+
+# =============================================================================
+# STAGE 3 — SWEEP (Gate 3, Phase 2 scaling) — EMBARGOED §11.2/§11.3
+# =============================================================================
 # sweep_one — Phase 2 scaling sweep przez throughput_scaling_phase2.py.
-# Wywoływane TYLKO po sanity PASS. Idempotent: pomija jeśli wynik już istnieje.
+# Wywoływane TYLKO dla modeli sanity-PASS ORAZ probe-PASS.
 # -----------------------------------------------------------------------------
 sweep_one() {
   local mdir="$1"
+  local sanity_json="$SANITY_DIR/${DATE}-${mdir}-tp${TP}.json"
+  local probe_json="$PROBE_DIR/${DATE}-${mdir}-coherence-probe.json"
   local result_csv="$NAVIMED_ROOT/benchmarks/results/$mdir/scaling/results_table.csv"
 
+  # Gate 1 — sanity PASS wymagany.
+  if [[ "$(verdict_of "$sanity_json")" != "PASS" ]]; then
+    log "[skip] $mdir — brak sanity-PASS ($DATE); sweep pominięty"
+    return
+  fi
+  # Gate 2 — probe PASS wymagany. REVIEW/FAIL/brak → sweep wstrzymany.
+  local pv
+  pv=$(verdict_of "$probe_json")
+  if [[ "$pv" != "PASS" ]]; then
+    log "[skip] $mdir — coherence probe verdict ${pv:-brak} (≠PASS); sweep wstrzymany"
+    return
+  fi
   if [[ -f "$result_csv" ]]; then
     log "[skip] $mdir — sweep scaling/results_table.csv już istnieje"
     return
   fi
 
-  log "--- SWEEP $mdir (TP=$TP, $QUANT_LABEL, N=$SWEEP_NS) ---"
+  log "--- SWEEP $mdir (TP=$TP, $QUANT_LABEL, N=$SWEEP_NS) — EMBARGO §11.2/§11.3 ---"
   bash "$KILL_PORT" "$PORT"
 
   # compressed-tensors W4A16 → vLLM auto-wykrywa kwantyzację, --extra puste.
@@ -213,36 +339,20 @@ sweep_one() {
   log "  $mdir — sweep cleanup done, GPU released"
 }
 
-# -----------------------------------------------------------------------------
-# Main — sanity wszystkich 8, sweep tylko dla PASS.
-# -----------------------------------------------------------------------------
-log "=== SANITY+SWEEP PLLuM-70B AWQ START — ${#MODELS[@]} modeli, mode=$MODE ==="
+run_stage_sweep() {
+  log "=== STAGE 3/3 SWEEP (Gate 3, Phase 2 scaling) — EMBARGO §11.2/§11.3 ==="
+  log "Sweep wymaga sanity-PASS ORAZ coherence-probe-PASS dla każdego modelu."
+  for mdir in "${MODELS[@]}"; do
+    sweep_one "$mdir"
+  done
+  log "=== SWEEP KONIEC — wyniki w $NAVIMED_ROOT/benchmarks/results/<model>/scaling/ ==="
+}
 
-PASSED=()
-for mdir in "${MODELS[@]}"; do
-  verdict=$(sanity_one "$mdir")
-  if [[ "$verdict" == "PASS" ]]; then
-    PASSED+=("$mdir")
-  fi
-done
-
-log "=== SANITY KONIEC — ${#PASSED[@]}/${#MODELS[@]} PASS: ${PASSED[*]:-(brak)} ==="
-
-if [[ "$MODE" == "sanity-only" ]]; then
-  log "=== mode=sanity-only — sweep pominięty ==="
-  exit 0
-fi
-
-if [[ ${#PASSED[@]} -eq 0 ]]; then
-  log "=== Brak modeli sanity-PASS — sweep pominięty ==="
-  exit 0
-fi
-
-log "=== SWEEP START — ${#PASSED[@]} modeli sanity-PASS ==="
-for mdir in "${PASSED[@]}"; do
-  sweep_one "$mdir"
-done
-
-log "=== SANITY+SWEEP PLLuM-70B AWQ KONIEC ==="
-log "  sanity JSON:  $SANITY_DIR/${DATE}-Llama-PLLuM-70B-*-tp${TP}.json"
-log "  sweep wyniki: $NAVIMED_ROOT/benchmarks/results/<model>/scaling/"
+# =============================================================================
+# Dispatch — dokładnie jeden etap per uruchomienie. NIE auto-chain.
+# =============================================================================
+case "$STAGE" in
+  sanity) run_stage_sanity ;;
+  probe)  run_stage_probe  ;;
+  sweep)  run_stage_sweep  ;;
+esac
