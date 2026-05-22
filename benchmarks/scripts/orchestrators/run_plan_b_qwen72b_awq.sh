@@ -36,8 +36,8 @@ if ! python -c "import vllm" 2>/dev/null; then
     exit 1
 fi
 
-if [ ! -f "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals_qwen72b.py" ]; then
-    echo "ERROR: bench_with_thermals_qwen72b.py not found at $REPO_ROOT/benchmarks/scripts/instrumentation/"
+if [ ! -f "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals.py" ]; then
+    echo "ERROR: bench_with_thermals.py not found at $REPO_ROOT/benchmarks/scripts/instrumentation/"
     exit 1
 fi
 
@@ -81,7 +81,7 @@ for tp in "${TP_VALUES[@]}"; do
         # own command line and collateral-kills the orchestrator (exit 144).
         bash "$REPO_ROOT/scripts/kill_port.sh" 8100 >/dev/null 2>&1 || true
 
-        python "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals_qwen72b.py" "$tp" "$n" \
+        python "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals.py" qwen72b-awq "$tp" "$n" \
             --name "$NAME" --out-dir "$OUT_DIR" 2>&1 | \
             tee -a "$OUT_DIR/${NAME}-wrapper.log" | \
             grep -E "Output throughput|Requests/second|Total time|ERROR|Load time" | \

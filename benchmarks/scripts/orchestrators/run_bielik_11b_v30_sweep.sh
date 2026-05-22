@@ -63,7 +63,7 @@ if [[ ! -d "$MODEL_PATH" ]]; then
     exit 1
 fi
 
-stale_pids="$(pgrep -af 'vllm serve|test_concurrent_bielik' 2>/dev/null || true)"
+stale_pids="$(pgrep -af 'vllm serve|run_concurrent.py bielik-11b-v30' 2>/dev/null || true)"
 if [[ -n "$stale_pids" ]]; then
     echo "ERROR: stale vllm processes present — refusing to start:" >&2
     echo "$stale_pids" >&2
@@ -155,8 +155,8 @@ for TP in "${TP_LADDER[@]}"; do
             # Single replication. We use 'continue' on failure rather than abort
             # so a transient HIP OOM at large N does not kill the whole sweep.
             if python3 \
-                "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals_bielik_11b_v30.py" \
-                "$TP" "$N" \
+                "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals.py" \
+                bielik-11b-v30 "$TP" "$N" \
                 --quant "$QUANT" \
                 --max-len "$MAX_LEN" \
                 --util "$UTIL" \

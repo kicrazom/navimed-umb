@@ -27,12 +27,6 @@ if ! python -c "import vllm" 2>/dev/null; then
     exit 1
 fi
 
-if [ ! -f ~/benchmarks/test_concurrent.py ]; then
-    echo "ERROR: ~/benchmarks/test_concurrent.py not found."
-    echo "Create symlink: ln -sf $REPO_ROOT/benchmarks/scripts/runners/test_concurrent.py ~/benchmarks/test_concurrent.py"
-    exit 1
-fi
-
 export VLLM_ROCM_USE_AITER=0
 export AMD_SERIALIZE_KERNEL=1     # NOT 3 — current PyTorch rejects 3
 export HIP_LAUNCH_BLOCKING=1
@@ -63,7 +57,7 @@ for tp in "${TP_VALUES[@]}"; do
         # own command line and collateral-kills the orchestrator (exit 144).
         bash "$REPO_ROOT/scripts/kill_port.sh" 8100 >/dev/null 2>&1 || true
 
-        python "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals.py" "$tp" "$n" \
+        python "$REPO_ROOT/benchmarks/scripts/instrumentation/bench_with_thermals.py" qwen7b "$tp" "$n" \
             --name "$NAME" --out-dir "$OUT_DIR" 2>&1 | \
             tee -a "$OUT_DIR/${NAME}-wrapper.log" | \
             grep -E "Output throughput|Requests/second|Total time|ERROR|Load time" | \

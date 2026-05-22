@@ -19,7 +19,10 @@ from pathlib import Path
 
 DEFAULTS_N = [10, 25, 50, 100, 200]
 DEFAULTS_TP = [1, 2]
-SCRIPT = Path.home() / "benchmarks" / "test_concurrent.py"
+# Parameterized runner (replaces the per-model test_concurrent*.py scripts).
+# 'qwen7b' reproduces the old test_concurrent.py workload byte-for-byte.
+SCRIPT = Path(__file__).resolve().parent.parent / "runners" / "run_concurrent.py"
+SCRIPT_MODEL = "qwen7b"
 OUTPUT_JSON = Path(__file__).parent / "scaling_data.json"
 
 
@@ -47,7 +50,7 @@ def run_single(tp: int, n: int) -> dict:
 
     t0 = time.time()
     result = subprocess.run(
-        ["python", "-u", str(SCRIPT), str(tp), str(n)],
+        ["python", "-u", str(SCRIPT), SCRIPT_MODEL, str(tp), str(n)],
         capture_output=True,
         text=True,
         env=env,
