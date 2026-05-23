@@ -5,6 +5,38 @@ results for each tagged version. The current release summary lives in
 [`README.md`](README.md); the universal benchmark protocol lives in
 [`METHODOLOGY.md`](METHODOLOGY.md).
 
+## 2026-05-23 — Llama-PLLuM-70B AWQ public release (between-version event, under v0.3.0)
+
+To the author's knowledge, the **first public AWQ W4A16 (vLLM-native
+`compressed-tensors`) quantization of the entire Llama-PLLuM-70B family**
+was published on HuggingFace under `mozarcik/`. Eight variants live:
+`base-{2412, 2508}` + `instruct-{2412, 2508, 2512}` + `chat-{2412, 2508,
+2512}`. Calibration corpus
+[`mozarcik/clinical-pl-smpc-awq-calibration`](https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration)
+(418 fragments of Polish SmPC text, sourced from EMA, No PHI) is published
+separately and reusable. Model cards ship as v1.1 with Llama 3.1 Community
+License compliance (`NOTICE` + `LICENSE` + `USE_POLICY.md` in every repo),
+dual-platform vLLM snippets (AMD ROCm validated; NVIDIA portable via
+`awq_marlin`), Gate 1 hardware envelope + Gate 2 coherence-probe evidence
+linked to this repository, and explicit "first AWQ to the author's
+knowledge" qualifier (GGUF alternatives by mradermacher are acknowledged
+for llama.cpp / ollama users).
+
+This event is documented in
+[`logbook/2026-05-23.md`](logbook/2026-05-23.md) and
+[`docs/sessions/2026-05-23-pllum-awq-release-pipeline.md`](docs/sessions/2026-05-23-pllum-awq-release-pipeline.md).
+The Gate 1 sanity JSON+log artifacts (eight variants, fresh re-run on
+2026-05-23 in addition to the original 2026-05-22 batch) and the six Gate 2
+coherence-probe JSON + raw-text artifacts are committed under
+`environment/sanity-tests/` and `environment/coherence-probes/` respectively
+(PUBLIC §11.1). No throughput numbers are published; Gate 3 (Phase 2
+scaling sweep) remains EMBARGOED §11.2 / §11.3 pending paper acceptance.
+
+Cross-channel surface: HuggingFace (8 model cards + dataset), GitHub
+(this repository), Zenodo (DOI
+[`10.5281/zenodo.20317011`](https://doi.org/10.5281/zenodo.20317011)
+inherited from v0.3.0), LinkedIn (post `activity-7464059097575907328`).
+
 ## v0.3.0 — 2026-05-20
 
 This release expands the benchmark scope toward the Phase 2 v0.3 campaign.

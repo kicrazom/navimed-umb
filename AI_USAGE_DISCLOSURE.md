@@ -16,8 +16,10 @@ Transparency about AI assistance is a default policy for this project.
 | Tool | Provider | Version / Model | Interface | Period of use |
 |---|---|---|---|---|
 | Claude Opus 4.7 | Anthropic | `claude-opus-4-7` | claude.ai web app | Apr 2026 |
-| Claude Code (Opus 4.7) | Anthropic | `claude-opus-4-7` | command-line interface, Kubuntu 24.04 LTS | Apr 2026 |
+| Claude Code (Opus 4.7) | Anthropic | `claude-opus-4-7` | command-line interface, Kubuntu 24.04 LTS | Apr 2026 – May 2026 |
 | GPT-5.5 Deep Thinking | OpenAI | GPT-5.5 with extended reasoning | OpenAI web app | Apr 2026 |
+| Gemini | Google | (web review) | gemini web app | May 2026 |
+| Bielik-11B-v3.0-instruct (AWQ W4A16) | SpeakLeash / consortium | `bielik-11b-v30-instruct-awq` (local) | vLLM 0.19.0+rocm721 on 1× AMD Radeon AI PRO R9700 (gfx1201, TP=1) | May 2026 |
 
 All three tools were accessed through their official end-user
 interfaces. No API integration, no automated pipelines, no autonomous

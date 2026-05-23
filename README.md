@@ -45,6 +45,14 @@ Exact software manifests: [`environment/`](environment/).
 Current release: **v0.3.0** — Phase 2 v0.3 sweep harness + 21-model suite.
 Full release history and per-version highlights: [`RELEASES.md`](RELEASES.md).
 
+**Latest event (2026-05-23):** to the author's knowledge, the first public
+AWQ W4A16 (vLLM-native `compressed-tensors`) quantization of the entire
+Llama-PLLuM-70B family — eight variants — has been published on Hugging
+Face under [`mozarcik/`](https://huggingface.co/mozarcik), together with
+the reusable [Polish SmPC calibration corpus](https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration).
+Details and provenance:
+[`RELEASES.md`](RELEASES.md#2026-05-23--llama-pllum-70b-awq-public-release-between-version-event-under-v030).
+
 ## AI assistance
 
 This work was developed with assistance from generative AI tools (Claude
