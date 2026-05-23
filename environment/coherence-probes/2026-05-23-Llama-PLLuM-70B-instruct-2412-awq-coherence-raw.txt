@@ -1,0 +1,29 @@
+# Coherence probe — Llama-PLLuM-70B-instruct-2412-awq
+# date: 2026-05-23  TP=2  enforce_eager=True
+# AWQ-QA Gate 2 vehicle-integrity check (METHODOLOGY §8 boundary).
+# Raw model output, retained verbatim for human spot-check.
+
+## [1] kind=fakt  status=ok  flags_ok=False
+PROMPT: Jaka jest stolica Polski? Odpowiedz jednym zdaniem.
+RESPONSE:
+Stolicą Polski jest Warszawa.
+
+## [2] kind=polecenie  status=ok  flags_ok=True
+PROMPT: Wymień trzy pory roku w kolejności alfabetycznej.
+RESPONSE:
+Trzy pory roku w kolejności alfabetycznej to: jesień, lato, zima.
+
+## [3] kind=streszczenie  status=ok  flags_ok=True
+PROMPT: Streść w dwóch zdaniach, czym zajmuje się botanika jako dziedzina nauki.
+RESPONSE:
+Botanika to dziedzina nauki, która zajmuje się budową i funkcjami roślin. Jest jedną z najstarszych nauk przyrodniczych.
+
+## [4] kind=definicja  status=ok  flags_ok=True
+PROMPT: Wyjaśnij krótko, co oznacza słowo 'fotosynteza'.
+RESPONSE:
+Fotosynteza to proces przeprowadzany przez rośliny zielone, w którym dzięki energii słonecznej przetwarzają one dwutlenek węgla oraz wodę w glukozę i tlen.
+
+## [5] kind=porownanie  status=ok  flags_ok=True
+PROMPT: Porównaj rower i samochód jako środki transportu — podaj jedną różnicę.
+RESPONSE:
+Jedną z wielu różnic pomiędzy rowerem a samochodem jest liczba kół — rower ma ich z reguły dwa, a samochód cztery.

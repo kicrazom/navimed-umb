@@ -1,0 +1,19 @@
+{
+  "test_type": "sanity",
+  "date": "2026-05-22",
+  "model": "Llama-PLLuM-70B-base-2412-awq",
+  "tensor_parallel_size": 2,
+  "quantization": "compressed-tensors",
+  "enforce_eager": true,
+  "metrics": {
+    "model_loading_sec": "14.344292",
+    "model_footprint_gib": "18.78",
+    "kv_cache_tokens": "55,008",
+    "max_concurrency_8192tok": "6.71",
+    "sanity_response_time_sec": ".009057463"
+  },
+  "verdict": "FAIL",
+  "response_status": "parse_fail",
+  "embargo": "PUBLIC engineering §11.1",
+  "orchestrated_by": "Claude Code sanity_sweep_pllum70b_awq.sh"
+}

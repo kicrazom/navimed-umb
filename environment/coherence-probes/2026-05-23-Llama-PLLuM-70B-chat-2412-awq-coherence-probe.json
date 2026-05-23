@@ -1,0 +1,173 @@
+{
+  "test_type": "coherence_probe",
+  "date": "2026-05-23",
+  "model": "Llama-PLLuM-70B-chat-2412-awq",
+  "tensor_parallel_size": 2,
+  "enforce_eager": true,
+  "quantization": "compressed-tensors",
+  "prompt_count": 5,
+  "summary": {
+    "responses_ok": 5,
+    "all_flags_ok": 4,
+    "polish": 5,
+    "coherent": 4,
+    "length_ok": 5
+  },
+  "verdict": "REVIEW",
+  "responses": [
+    {
+      "index": 1,
+      "kind": "fakt",
+      "prompt": "Jaka jest stolica Polski? Odpowiedz jednym zdaniem.",
+      "response_status": "ok",
+      "response_time_sec": 5.38,
+      "flags": {
+        "polish": true,
+        "coherent": false,
+        "length_ok": true,
+        "all_flags_ok": false,
+        "detail": {
+          "polish": {
+            "diacritic_count": 1,
+            "diacritic_ratio": 0.0345,
+            "stopword_hits": 1,
+            "by_diacritics": true,
+            "by_stopwords": false
+          },
+          "coherent": {
+            "ngram_count": 2,
+            "top_ngram_repeats": 1,
+            "top_ngram_share": 0.5
+          },
+          "length": {
+            "word_count": 4
+          }
+        }
+      }
+    },
+    {
+      "index": 2,
+      "kind": "polecenie",
+      "prompt": "Wymień trzy pory roku w kolejności alfabetycznej.",
+      "response_status": "ok",
+      "response_time_sec": 11.08,
+      "flags": {
+        "polish": true,
+        "coherent": true,
+        "length_ok": true,
+        "all_flags_ok": true,
+        "detail": {
+          "polish": {
+            "diacritic_count": 1,
+            "diacritic_ratio": 0.0154,
+            "stopword_hits": 2,
+            "by_diacritics": true,
+            "by_stopwords": true
+          },
+          "coherent": {
+            "ngram_count": 8,
+            "top_ngram_repeats": 1,
+            "top_ngram_share": 0.125
+          },
+          "length": {
+            "word_count": 10
+          }
+        }
+      }
+    },
+    {
+      "index": 3,
+      "kind": "streszczenie",
+      "prompt": "Streść w dwóch zdaniach, czym zajmuje się botanika jako dziedzina nauki.",
+      "response_status": "ok",
+      "response_time_sec": 25.35,
+      "flags": {
+        "polish": true,
+        "coherent": true,
+        "length_ok": true,
+        "all_flags_ok": true,
+        "detail": {
+          "polish": {
+            "diacritic_count": 10,
+            "diacritic_ratio": 0.0629,
+            "stopword_hits": 4,
+            "by_diacritics": true,
+            "by_stopwords": true
+          },
+          "coherent": {
+            "ngram_count": 19,
+            "top_ngram_repeats": 1,
+            "top_ngram_share": 0.0526
+          },
+          "length": {
+            "word_count": 21
+          }
+        }
+      }
+    },
+    {
+      "index": 4,
+      "kind": "definicja",
+      "prompt": "Wyjaśnij krótko, co oznacza słowo 'fotosynteza'.",
+      "response_status": "ok",
+      "response_time_sec": 29.23,
+      "flags": {
+        "polish": true,
+        "coherent": true,
+        "length_ok": true,
+        "all_flags_ok": true,
+        "detail": {
+          "polish": {
+            "diacritic_count": 11,
+            "diacritic_ratio": 0.0585,
+            "stopword_hits": 7,
+            "by_diacritics": true,
+            "by_stopwords": true
+          },
+          "coherent": {
+            "ngram_count": 24,
+            "top_ngram_repeats": 1,
+            "top_ngram_share": 0.0417
+          },
+          "length": {
+            "word_count": 26
+          }
+        }
+      }
+    },
+    {
+      "index": 5,
+      "kind": "porownanie",
+      "prompt": "Porównaj rower i samochód jako środki transportu — podaj jedną różnicę.",
+      "response_status": "ok",
+      "response_time_sec": 29.11,
+      "flags": {
+        "polish": true,
+        "coherent": true,
+        "length_ok": true,
+        "all_flags_ok": true,
+        "detail": {
+          "polish": {
+            "diacritic_count": 14,
+            "diacritic_ratio": 0.0714,
+            "stopword_hits": 5,
+            "by_diacritics": true,
+            "by_stopwords": true
+          },
+          "coherent": {
+            "ngram_count": 25,
+            "top_ngram_repeats": 2,
+            "top_ngram_share": 0.08
+          },
+          "length": {
+            "word_count": 27
+          }
+        }
+      }
+    }
+  ],
+  "raw_outputs_file": "2026-05-23-Llama-PLLuM-70B-chat-2412-awq-coherence-raw.txt",
+  "embargo": "PUBLIC engineering §11.1",
+  "methodology_note": "AWQ-QA Gate 2 vehicle-integrity check: confirms the AWQ quantization did not destroy the model's ability to produce coherent Polish text. NOT a model-quality, reasoning, or factual accuracy evaluation — METHODOLOGY §8 boundary preserved. Auto-flags are mechanical (diacritics, n-gram repetition, length); raw outputs retained for human spot-check. A REVIEW verdict raises a flag for Łukasz — it does not by itself decide re-quantization.",
+  "orchestrated_by": "Claude Code awq_coherence_probe.py"
+}
