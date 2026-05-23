@@ -316,8 +316,21 @@ sweep_one() {
     return
   fi
   # Gate 2 — probe PASS wymagany. REVIEW/FAIL/brak → sweep wstrzymany.
-  local pv
-  pv=$(verdict_of "$probe_json")
+  # Human override (METHODOLOGY §8 — auto-flags are mechanical; human spot-check
+  # is part of the gate). If a sibling file <probe>.human_verdict.json exists with
+  # verdict=PASS, it overrides the auto verdict — e.g. when the n-gram heuristic
+  # returns REVIEW false-positive on short correct answers
+  # ("Stolicą Polski jest Warszawa." — 4 words, top_ngram_share 0.5 → coherent=false
+  # despite being perfectly correct).
+  local pv pv_auto probe_override
+  probe_override="${probe_json%.json}.human_verdict.json"
+  pv_auto=$(verdict_of "$probe_json")
+  if [[ -f "$probe_override" ]]; then
+    pv=$(verdict_of "$probe_override")
+    log "[note] $mdir — using human_verdict.json override (auto=${pv_auto:-brak}, human=${pv:-brak})"
+  else
+    pv="$pv_auto"
+  fi
   if [[ "$pv" != "PASS" ]]; then
     log "[skip] $mdir — coherence probe verdict ${pv:-brak} (≠PASS); sweep wstrzymany"
     return
