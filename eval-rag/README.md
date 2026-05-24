@@ -148,7 +148,34 @@ Fallback policy: 4 weeks no-response → second-tier reviewers (Piotrowski WJ as
 
 ---
 
-## 10. Related artifacts
+## 10. Future single-card variant (conditional — depends on §11 results)
+
+The five-model evaluation above is anchored in the deployable configuration on **2× R9700** (the navimed reference hardware, METHODOLOGY §4). A separate but related practical question — relevant to smaller deployments (single GPU rigs, kliniki / zakłady UM z jedną kartą) — is:
+
+> *If `Llama-PLLuM-70B-instruct-2512-AWQ` (38 GB, TP=2) turns out to be significantly better than `bielik-11b-v30-instruct-AWQ` (6 GB, TP=1) on Polish clinical Q&A, can a further-quantized single-card version of PLLuM-70B preserve enough of that advantage to be worth deploying on a single 32 GB card?*
+
+This is a **conditional** addition to the evaluation, not an upfront scope expansion. The decision tree:
+
+| Result of the 5-model eval | Decision on 6th model |
+|---|---|
+| PLLuM-70B-AWQ TP=2 ≈ Bielik-11B-AWQ TP=1 (no significant advantage) | **Skip** — deploy Bielik-11B on single card, no need for further quantization |
+| PLLuM-70B-AWQ TP=2 ≫ Bielik-11B-AWQ TP=1 (significant advantage) | **Quantize and add** — pursue 6th model (single-card PLLuM 2-bit) and measure how much of the 70B-advantage survives further compression |
+
+If we proceed to the 6th model, the candidate quantization methods and their trade-offs:
+
+| Method | Bits | Footprint | Quality drop vs FP16 | Stack | Compute |
+|---|---|---|---|---|---|
+| **AQLM 2-bit** (Additive Quantization, arXiv:2401.06118) | 2 | ~17 GB | ~5-10% | vLLM ≥ 0.5 (compressed-tensors) | **8-24 h on MI300X** |
+| **GGUF Q3_K_M** | 3 | ~32 GB | ~3-5% | llama.cpp / ollama (NOT vLLM) | minutes (CPU OK) |
+| **AWQ W3A16** | 3 | ~28 GB | ~15-25% | vLLM | 30-60 min on MI300X |
+
+**Preferred: AQLM 2-bit**, conditional on the eval result. Rationale: highest quality among sub-4-bit, vLLM-native (stays in navimed-umb stack), fits comfortably on 1× R9700 with ~15 GB headroom for KV cache. Cost on AMD Developer Cloud: ~$16-48 of the remaining `$71.36` promotional credit (cap by June 20, 2026); well within budget.
+
+If AQLM proves intractable on this architecture (Llama-3.1-70B base, GQA), fallback to GGUF Q3_K_M as an **alternative-stack** release for ollama / llama.cpp users — documented separately, not part of the same vLLM Phase 2 / eval-rag pipeline.
+
+---
+
+## 11. Related artifacts
 
 - `mozarcik/clinical-pl-smpc-awq-calibration` — the corpus (HuggingFace dataset, published 2026-05-21)
 - `mozarcik/Llama-PLLuM-70B-instruct-2512-awq` — one of the models under test (HuggingFace, published 2026-05-23)
