@@ -54,15 +54,25 @@ class SweepRow:
 
     @classmethod
     def from_csv_row(cls, row: dict[str, str]) -> "SweepRow":
+        # Schema-compat: runner CSV output post-2026-05 uses snake_case
+        # (total_time_s, vram_peak_gb, ...); legacy plotter used PascalCase
+        # (total_s, VRAM_peak_GB, ...). Accept both via row.get(snake) or row[legacy]
+        # per column. Backwards-compatible with v0.1/v0.2 sweep CSVs.
+        def col(snake: str, legacy: str) -> str:
+            v = row.get(snake)
+            if v is not None and v != "":
+                return v
+            return row[legacy]
+
         return cls(
             n=int(row["N"]),
             tok_s_out=float(row["tok_s_out"]),
-            total_s=float(row["total_s"]),
-            vram_peak_gb=float(row["VRAM_peak_GB"]),
-            t_peak_c=float(row["T_peak_C"]),
-            w_mean=float(row["W_mean"]),
-            w_peak=float(row["W_peak"]),
-            mwh_per_tok=float(row["W_per_tok_Wh"]) * 1000.0,
+            total_s=float(col("total_time_s", "total_s")),
+            vram_peak_gb=float(col("vram_peak_gb", "VRAM_peak_GB")),
+            t_peak_c=float(col("temp_peak_c", "T_peak_C")),
+            w_mean=float(col("power_mean_w", "W_mean")),
+            w_peak=float(col("power_peak_w", "W_peak")),
+            mwh_per_tok=float(col("w_per_tok", "W_per_tok_Wh")) * 1000.0,
         )
 
 
@@ -81,8 +91,8 @@ def load_csv(path: Path) -> tuple[list[SweepRow], dict[str, str]]:
                     "tp": row["TP"],
                     "max_len": row["max_len"],
                     "util": row["util"],
-                    "kv_dtype": row["KV_dtype"],
-                    "tuning": row["tuning"],
+                    "kv_dtype": row.get("kv_dtype") or row.get("KV_dtype", ""),
+                    "tuning": row.get("tuning", ""),
                 }
     rows.sort(key=lambda r: r.n)
     return rows, meta
