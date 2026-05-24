@@ -1,0 +1,17 @@
+{
+  "verdict": "PASS",
+  "auto_verdict_was": "REVIEW",
+  "reviewer": "Łukasz Minarowski",
+  "reviewer_orcid": "0000-0002-2536-3508",
+  "reviewed_at": "2026-05-24",
+  "method": "Manual spot-check of all 5 prompts in raw outputs file (environment/coherence-probes/2026-05-23-Llama-PLLuM-70B-chat-2508-awq-coherence-raw.txt). All 5 responses confirmed as coherent Polish.",
+  "auto_flag_failure_root_cause": "n-gram repetition heuristic produces false positives on short correct answers (see instruct-2512 human verdict for the worked example).",
+  "evidence": {
+    "prompts_pass": 5,
+    "prompts_total": 5,
+    "categories_reviewed": ["fakt", "polecenie", "streszczenie", "definicja", "porownanie"]
+  },
+  "methodology_anchor": "METHODOLOGY §8 — auto-flags are mechanical; raw outputs are retained for human spot-check. Human verdict is part of the Gate 2 boundary by design.",
+  "embargo": "PUBLIC §11.1",
+  "promotes_to": "Gate 3 (Phase 2 throughput sweep) — EMBARGOED §11.2/§11.3"
+}
