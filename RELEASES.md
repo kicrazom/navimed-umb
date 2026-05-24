@@ -5,6 +5,97 @@ results for each tagged version. The current release summary lives in
 [`README.md`](README.md); the universal benchmark protocol lives in
 [`METHODOLOGY.md`](METHODOLOGY.md).
 
+## v0.4.0 — 2026-05-24
+
+This release widens the project's scope from internal engineering log to a
+public release pipeline plus an opened model-quality evaluation track. It
+consolidates four working days of work (2026-05-21 through 2026-05-24)
+that built on the v0.3.0 Phase 2 v0.3 sweep harness.
+
+**Public release surface.** To the author's knowledge, this release ships
+the **first public AWQ W4A16 vLLM-native quantization of the entire
+Llama-PLLuM-70B family**: eight model cards under `mozarcik/`
+(`base × {2412, 2508}` + `instruct × {2412, 2508, 2512}` + `chat × {2412,
+2508, 2512}`), each with Llama 3.1 Community License compliance artifacts
+(`NOTICE`, `LICENSE`, `USE_POLICY.md`), dual-platform vLLM usage snippets
+(AMD ROCm validated; NVIDIA portable via `awq_marlin`), Gate 1 hardware
+envelope + Gate 2 coherence-probe evidence, and an explicit "to the author's
+knowledge" qualifier for the first-public claim. The reusable Polish
+clinical SmPC calibration corpus is published separately as
+[`mozarcik/clinical-pl-smpc-awq-calibration`](https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration)
+(418 fragments, ~512 tokens each, 81 INNs, 9 NFZ drug programmes, No PHI).
+
+**Phase 2 scaling sweep — 6/6 sanity-PASS Llama-PLLuM-70B AWQ variants.**
+All six sanity-PASS variants (the three already covered overnight 2026-05-23
+plus the three remaining `instruct-2412`, `chat-2412`, `chat-2508` covered
+on 2026-05-24) were swept on the METHODOLOGY §6 standard N grid
+`{10, 25, 50, 100, 200, 500, 1000}`. Engineering envelope is identical
+across the family as expected for the shared Llama-3.1-70B architecture
+(37.56 GB footprint at TP=2, ~55k KV cache at 8192 max_seq_len,
+max_concurrency 6.7, junction peak 92-94 °C with ~16 °C headroom to the
+gfx1201 throttle limit, ~290-320 W package power per GPU under load, no
+thermal throttling observed). Per-N throughput, latency, scaling, and W/tok
+numbers are EMBARGOED §11.2 (and stricter §11.3 for Polish models) and
+remain in the gitignored `benchmarks/results/` tree pending paper
+acceptance.
+
+**METHODOLOGY §8 extension — Gate 2 human override.** The Gate 2 coherence
+probe (`scripts/awq_coherence_probe.py`) uses an intentionally conservative
+n-gram repetition heuristic that produces false positives on short correct
+answers ("Stolicą Polski jest Warszawa." → `coherent=false` at
+top_ngram_share 0.5 with word_count 4, despite being perfectly correct).
+The `--stage sweep` orchestrator now honors a sibling
+`<probe>.human_verdict.json` file: if present with `verdict: PASS`, it
+overrides the auto verdict and is logged as a `[note]` line so both values
+appear in the audit trail. Six such verdict files were committed for the
+six sanity-PASS variants. This is consistent with the §8 boundary that
+auto-flags are mechanical and human spot-check is part of the gate by
+design.
+
+**`eval-rag/` sub-project opened.** A new sub-project under
+[`eval-rag/`](eval-rag/) opens a methodologically-distinct evaluation
+question — *given that PLLuM-70B AWQ now fits on consumer 2× R9700, does
+it actually answer Polish clinical-regulatory questions better than the
+smaller PL-native Bielik or the larger multilingual Mistral / Qwen?* The
+full design (five candidate LLMs, hybrid BM25 + multilingual-e5 retrieval
+with RRF fusion, fifty Polish clinical questions in seven safety-weighted
+categories, five-point manual review by three reviewers, conditional
+single-card AQLM 2-bit sixth model gated on the five-model result) is
+checked in along with outreach drafts to two proposed co-authors (Adam
+Białas, UM Łódź; Jakub Radliński, IGiChP Rabka-Zdrój). Generation pipeline
+is BLOCKED on reviewer responses; no answers have been generated.
+
+**Coordinated multi-paper publication roadmap.** This release adds a
+four-paper publication plan (`#1` Quantization Trade-offs / MDPI
+Electronics or IEEE Access · `#2` Broncho-Nome HL7 normalization / JBI or
+JAMIA Open · `#3` Capno-Nome persistent homology / Respiratory Medicine or
+Sensors · `#4a/4b` NaviMed L2 RAG architecture + L3 Arena methodology /
+IEEE Access or JBI / JAMIA Open) plus a synthesis paper (`★` Three-Layer
+Architecture for Sovereign Clinical Knowledge Management / Patterns or NPJ
+Digital Medicine) targeted as the third pillar of the author's habilitation.
+The papers are scaffolded by the QAIF AIntern 2026 submission round (Phase
+1 deadline 2026-05-31).
+
+**Documentation.** The repository README has been rewritten to reflect the
+widened scope (benchmark suite + release pipeline + paper hub, rather than
+the v0.3.0-era "engineering log of a workstation build"). The
+`AI_USAGE_DISCLOSURE.md` tools table is extended with Gemini (web review)
+and a locally-served Bielik-11B-v3.0-instruct-AWQ on a single R9700 used
+for Polish-language proofreading. Plotting was patched — `plot_phase2_sweep.py`
+now accepts both the post-2026-05 snake_case schema and the legacy
+PascalCase one (backwards compatible with v0.1 / v0.2 sweeps).
+
+**Embargo classification (PUBLIC §11.1, in this release).** Engineering
+envelope, walltimes, thermal headroom, hardware configuration, methodology,
+model cards, license/notice/policy attribution, and decision logs.
+
+**Embargo classification (EMBARGOED §11.2 / §11.3, NOT in this release).**
+Per-N throughput tok/s, request/s, total time, latency distributions, KV
+cache occupancy curves, mean output length, W/tok, and any cross-model
+comparative claim that uses concrete numbers. These remain in the
+gitignored `benchmarks/results/` tree on the workstation, retained for the
+forthcoming paper #1.
+
 ## 2026-05-23 — Llama-PLLuM-70B AWQ public release (between-version event, under v0.3.0)
 
 To the author's knowledge, the **first public AWQ W4A16 (vLLM-native

@@ -8,8 +8,8 @@ authors:
     orcid: "https://orcid.org/0000-0002-2536-3508"
     affiliation: "Department of Respiratory Physiopathology, Medical University of Białystok, Poland"
     email: "lukasz.minarowski@umb.edu.pl"
-date-released: "2026-05-20"
-version: "0.3.0"
+date-released: "2026-05-24"
+version: "0.4.0"
 license: "CC-BY-4.0"
 repository-code: "https://github.com/kicrazom/navimed-umb"
 keywords:
@@ -36,4 +36,12 @@ abstract: >-
   execution and thermal and power instrumentation. Raw Phase 2 scaling data is under publication embargo; aggregated summaries
   and methodology are public. The intended audience is researchers preparing local AI infrastructure for privacy-sensitive
   workloads, hardware reviewers seeking reproducible methodology, and software maintainers working on RDNA 4 support in inference
-  frameworks.
+  frameworks. Version 0.4.0 (2026-05-24) widens the scope from internal engineering log to public release pipeline: it adds the
+  first public AWQ W4A16 vLLM-native quantization of the entire Llama-PLLuM-70B family (eight model cards and one reusable
+  Polish clinical SmPC calibration dataset, on HuggingFace under the mozarcik namespace), a Phase 2 throughput sweep on six
+  sanity-PASS variants of that family on the METHODOLOGY section 6 standard N grid, a documented Gate 2 human-verdict-override
+  extension to the coherence-probe boundary in METHODOLOGY section 8, a new eval-rag sub-project (a five-model RAG benchmark of
+  Polish versus multilingual LLMs on the SmPC corpus, with design and outreach drafts to potential co-authors), and a four-paper
+  publication roadmap supporting a synthesis paper as the third pillar of the author's habilitation. Raw Phase 2 throughput
+  numbers remain under publication embargo per METHODOLOGY section 11; engineering envelope, methodology, and external release
+  artifacts are public.

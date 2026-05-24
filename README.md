@@ -2,7 +2,7 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19851346.svg)](https://doi.org/10.5281/zenodo.19851346)
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.3.0)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.4.0)
 
 Reproducible benchmark suite, model-card releases, and methodology for
 deploying Polish clinical large-language-model inference on a consumer-grade
@@ -65,14 +65,16 @@ Released as part of (or alongside) this repository:
 
 ## Status
 
-Current release: **v0.3.0** — Phase 2 v0.3 sweep harness + 21-model suite.
+Current release: **v0.4.0** (2026-05-24) — public release pipeline + 6-variant
+Phase 2 sweep + Gate 2 human-override extension + `eval-rag/` sub-project +
+4-paper publication roadmap.
 Full release history and per-version highlights: [`RELEASES.md`](RELEASES.md).
 
-Most recent activity (2026-05-24): Phase 2 throughput sweep completed on all
-six sanity-PASS variants of the Llama-PLLuM-70B AWQ family on the standard
-METHODOLOGY §6 N grid `{10, 25, 50, 100, 200, 500, 1000}`. Results are
-embargoed §11.2/§11.3 pending paper acceptance; engineering envelope and
-walltime are public ([`logbook/2026-05-24.md`](logbook/2026-05-24.md)).
+Most recent activity (2026-05-24): six-variant Phase 2 throughput sweep
+completed on the standard METHODOLOGY §6 N grid `{10, 25, 50, 100, 200, 500,
+1000}`. Throughput numbers are embargoed §11.2/§11.3 pending paper
+acceptance; engineering envelope, methodology, and external HF release
+artifacts are public ([`logbook/2026-05-24.md`](logbook/2026-05-24.md)).
 
 ## Roadmap
 
