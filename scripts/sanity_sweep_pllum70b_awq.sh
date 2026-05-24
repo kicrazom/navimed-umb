@@ -62,7 +62,12 @@ KILL_PORT="$NAVIMED_ROOT/scripts/kill_port.sh"
 PORT=8100
 TP=2                                  # §4.3 — TP=2 mandatory dla Llama-PLLuM-70B
 QUANT_LABEL="compressed-tensors"       # W4A16, auto-wykrywany przez vLLM z config.json
-DATE=$(date +%Y-%m-%d)
+# DATE — date key for sanity/probe JSON filenames. Defaults to today; can be
+# overridden via `DATE=2026-05-23 bash ... --stage sweep` to consume artifacts
+# produced on an earlier day (stack-stable carry-over) without forcing a fresh
+# sanity+probe re-run. Use with care: this trusts the operator's judgment that
+# the hardware/software stack has not changed since the named date.
+DATE="${DATE:-$(date +%Y-%m-%d)}"
 PROGRESS_LOG="$NAVIMED_ROOT/logs/downloads/sanity-sweep-pllum70b-awq-${DATE}.log"
 SANITY_PROMPT="Rozwiń skrót PEEP w kontekście wentylacji mechanicznej i wyjaśnij jego rolę."
 SWEEP_NS="${SWEEP_NS:-200,350,500,750,1000}"       # extended N>200 — knee/plateau
