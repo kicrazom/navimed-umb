@@ -8,7 +8,7 @@
       "orcid": "0000-0002-2536-3508"
     }
   ],
-  "description": "<p>An engineering log and reproducible benchmark suite documenting the practical envelope of running modern open-weight large language models on a consumer-grade dual AMD Radeon AI PRO R9700 32 GB workstation (gfx1201, RDNA 4 / Navi 48) under ROCm 7.2 and vLLM 0.19.</p><p>The repository includes the v0.1 hardware-envelope preprint on Qwen 3.6 27B (FP8 vs BF16, CUDA-graph and FP8-kernel findings), METHODOLOGY.md &mdash; a reproducible benchmark protocol &mdash; per-model software/hardware environment manifests, and aggregated benchmark summaries. Raw Phase 2 sweep data is under publication embargo; aggregated summaries and methodology are public.</p><p>Intended audience: researchers preparing local AI infrastructure for privacy-sensitive workloads, hardware reviewers seeking reproducible methodology, and software maintainers working on RDNA 4 support in inference frameworks.</p>",
+  "description": "<p><strong>NaviMed-UMB</strong> is an engineering log and reproducible benchmark suite for running modern open-weight large language models on a consumer-grade dual AMD Radeon AI PRO R9700 32 GB workstation (gfx1201, RDNA 4 / Navi 48) under ROCm 7.2 and vLLM 0.19. The repository is the L1 (engineering / hardware envelope) layer of a three-layer NaviMed program targeting sovereign on-premise medical AI for privacy-sensitive workloads.</p><p>The project provides: a reproducible <a href=\"https://github.com/kicrazom/navimed-umb/blob/main/METHODOLOGY.md\">benchmark protocol</a> with explicit Phase 1 / Phase 2 gates and a strict §11 embargo classification; per-model software / hardware environment manifests; aggregated public engineering envelopes (§11.1) for a 21-model evaluation suite; an AWQ W4A16 release pipeline for the PLLuM family of Polish-language LLMs (8B Llama base, 12B Mistral-Nemo base, 70B Llama base; published as model cards on HuggingFace under <code>mozarcik/</code>); a reusable Polish SmPC calibration corpus (<code>mozarcik/clinical-pl-smpc-awq-calibration</code>, 418 fragments of European Medicines Agency drug-information text, no patient health information); and a four-paper publication roadmap (engineering trade-offs, two clinical NLP applications, and a synthesis paper for the three-layer architecture).</p><p>Per-N throughput, latency and power-per-token figures are held under embargo (METHODOLOGY §11.2 / §11.3) pending peer-reviewed publication. Engineering envelopes, walltime, sanity-gate evidence and failure post-mortems are public (§11.1).</p><p>Intended audience: researchers preparing local AI infrastructure for privacy-sensitive workloads, hardware reviewers seeking reproducible RDNA 4 methodology, software maintainers working on RDNA 4 support in inference frameworks, and clinical-AI groups evaluating Polish-language LLMs.</p>",
   "keywords": [
     "large language models",
     "LLM benchmarking",
@@ -30,7 +30,27 @@
       "identifier": "https://github.com/kicrazom/navimed-umb",
       "relation": "isSupplementTo",
       "scheme": "url"
+    },
+    {
+      "identifier": "https://huggingface.co/mozarcik",
+      "relation": "isSupplementedBy",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://huggingface.co/mozarcik/Llama-PLLuM-8B-chat-2512-awq",
+      "relation": "isSupplementedBy",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://huggingface.co/mozarcik/PLLuM-12B-chat-2512-awq",
+      "relation": "isSupplementedBy",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration",
+      "relation": "isReferencedBy",
+      "scheme": "url"
     }
   ],
-  "notes": "AI assistance disclosure: project documentation was prepared with assistance from large language models (Claude, Anthropic; GPT, OpenAI). All experimental design, hardware configuration, empirical measurements and scientific claims are the author's. AI tools did not execute experiments. See AI_USAGE_DISCLOSURE.md in the repository."
+  "notes": "AI assistance disclosure: project documentation was prepared with assistance from large language models (Claude, Anthropic; GPT, OpenAI; Gemini, Google; Bielik-11B-v3.0-instruct served locally via vLLM on the project's R9700 workstation for Polish-language editorial). All experimental design, hardware configuration, empirical measurements and scientific claims are the author's. AI tools did not execute experiments. See AI_USAGE_DISCLOSURE.md in the repository."
 }
