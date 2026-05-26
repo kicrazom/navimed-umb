@@ -43,7 +43,7 @@ sovereign, on-premise medical-AI deployment.
 ## Key documents
 
 - [`METHODOLOGY.md`](METHODOLOGY.md) — universal Phase 1 envelope + Phase 2 scaling protocol, the §8 vehicle-integrity boundary, and the §11.1/§11.2/§11.3 embargo classification applied across the 21-model suite.
-- [`RELEASES.md`](RELEASES.md) — per-release notes (v0.1.0 → v0.3.0) and between-version events (the 2026-05-23 public Llama-PLLuM-70B AWQ release lives here).
+- [`RELEASES.md`](RELEASES.md) — per-release notes (v0.1.0 → v0.4.0) and between-version events (the 2026-05-23 public Llama-PLLuM-70B AWQ release and the 2026-05-26 Run-3 consumer-GPU 8B/12B AWQ release live here).
 - [`CITATION.cff`](CITATION.cff) — canonical citation (or use GitHub's "Cite this repository").
 - [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md) — disclosure of generative-AI assistance, including the locally-served Bielik-11B that proofread documentation in May 2026.
 
@@ -58,10 +58,10 @@ Exact software manifests: [`environment/`](environment/).
 
 Released as part of (or alongside) this repository:
 
-- **Eight HuggingFace model cards** — `mozarcik/Llama-PLLuM-70B-{base,instruct,chat}-{2412,2508,2512}-awq` (8 variants total; to the author's knowledge the first public AWQ W4A16 / vLLM-native quantization of the Llama-PLLuM-70B family). [`huggingface.co/mozarcik`](https://huggingface.co/mozarcik).
+- **Ten HuggingFace model cards** — the Llama-PLLuM-70B family (`mozarcik/Llama-PLLuM-70B-{base,instruct,chat}-{2412,2508,2512}-awq`, 8 variants, 2× R9700 / TP=2 deployment target), plus two Run-3 consumer-GPU variants released 2026-05-26 fitting on a single R9700: `mozarcik/Llama-PLLuM-8B-chat-2512-awq` (Llama 3.1 base) and `mozarcik/PLLuM-12B-chat-2512-awq` (Mistral-Nemo base). To the author's knowledge the first public AWQ W4A16 / vLLM-native quantization of each variant. [`huggingface.co/mozarcik`](https://huggingface.co/mozarcik).
 - **One HuggingFace dataset** — [`mozarcik/clinical-pl-smpc-awq-calibration`](https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration), 418 fragments of Polish *Charakterystyka Produktu Leczniczego* (ChPL / SmPC) text from EMA, ~512 tokens each, covering 81 INNs and 9 NFZ drug programmes (pulmonology + thoracic oncology focus; No PHI). Reusable as a calibration corpus for other Polish-clinical quantization work.
 - **One LinkedIn announcement** — [activity 7464059097575907328](https://www.linkedin.com/posts/lukasz-minarowski-73b3233b_navimed-umb-hardware-envelope-studies-for-activity-7464059097575907328).
-- **One Zenodo deposit** — concept DOI [10.5281/zenodo.19851346](https://doi.org/10.5281/zenodo.19851346) (auto-resolves to latest version; current version v0.3.0 at [10.5281/zenodo.20317011](https://doi.org/10.5281/zenodo.20317011)).
+- **One Zenodo deposit** — concept DOI [10.5281/zenodo.19851346](https://doi.org/10.5281/zenodo.19851346) (auto-resolves to latest version; current version v0.4.0 at [10.5281/zenodo.20364953](https://doi.org/10.5281/zenodo.20364953); previous v0.3.0 at [10.5281/zenodo.20317011](https://doi.org/10.5281/zenodo.20317011)).
 
 ## Status
 
@@ -78,19 +78,22 @@ artifacts are public ([`logbook/2026-05-24.md`](logbook/2026-05-24.md)).
 
 ## Roadmap
 
-The repository feeds a coordinated multi-paper publication track tied to the
-2026-05 / 2026-06 QAIF AIntern submissions:
+The repository feeds a coordinated multi-paper publication track that is the
+third pillar of the author's habilitation plan. (The QAIF AIntern programme
+was previously planned as a delivery vehicle for papers #2/#3/#4 but was
+dropped 2026-05-25 — these now follow the habilitation timeline directly,
+with organic intern recruitment via PJATK contacts and the LBC application
+to KE UMB, deadline 31.12.2026, as the compliance backbone.)
 
 | # | Paper (working title) | Venue (target) | Status |
 |---|---|---|---|
 | 1 | Quantization Trade-offs for Polish Clinical LLMs on AMD RDNA 4 | MDPI Electronics / IEEE Access (Q1) | data complete, draft pending |
-| 2 | Polish Bronchoscopy Reports → HL7 v2.3 / ICD-9 / JGP via Local LLMs (`Broncho-Nome`) | JBI / JAMIA Open (Q1) | AIntern proposal |
-| 3 | Pattern Burden in tcPCO₂: Persistent Homology of Hypercapnic Episodes (`Capno-Nome`) | Respiratory Medicine / Sensors | AIntern proposal |
-| 4a / 4b | NaviMed L2 RAG architecture / L3 Arena methodology (`navimed-rag`) | IEEE Access / JBI / JAMIA Open (Q1) | AIntern proposal |
+| 2 | Polish Bronchoscopy Reports → HL7 v2.3 / ICD-9 / JGP via Local LLMs (`Broncho-Nome`) | JBI / JAMIA Open (Q1) | habilitation roadmap |
+| 3 | Pattern Burden in tcPCO₂: Persistent Homology of Hypercapnic Episodes (`Capno-Nome`) | Respiratory Medicine / Sensors | habilitation roadmap |
+| 4a / 4b | NaviMed L2 RAG architecture / L3 Arena methodology (`navimed-rag` + `navimed-arena`) | IEEE Access / JBI / JAMIA Open (Q1) | habilitation roadmap (in scoping) |
 | ★ | NaviMed: Three-Layer Architecture for Sovereign Clinical Knowledge Management (synthesis) | Patterns (Cell Press, Q1) / NPJ Digital Medicine | habilitation centerpiece |
 
-The synthesis paper (★) is the third pillar of the author's habilitation
-plan; papers #1–#4 are its supporting evidence track.
+Papers #1–#4 are the supporting evidence track for the synthesis paper (★).
 
 ## AI assistance
 
