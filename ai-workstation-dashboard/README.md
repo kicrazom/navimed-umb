@@ -23,7 +23,7 @@ Open **http://localhost:8000** in your browser.
 - **GPUs** — all detected GPUs (2× discrete R9700 + iGPU) — load %, temp, VRAM, sparklines
 - **Processes** — top 12 by CPU usage
 - **CPU Temperature** — dedicated panel with 60s history graph
-- **Network / Download** — RX (download) & TX (upload) throughput in MB/s, 60s download line chart, link status (interface, up/down, negotiated speed)
+- **Network / Throughput** — RX (download, amber) & TX (upload, cyan) throughput in MB/s, two stacked 60s auto-scaled line charts, link status panel (interface, up/down, negotiated speed)
 
 ## Architecture
 
@@ -92,6 +92,9 @@ sudo systemctl restart ai-dashboard   # if using systemd
 ```
 
 ## Changelog
+
+### v1.1.1 — 2026-05-26
+- **Network panel**: added dedicated TX (upload) 60s line chart in cyan, stacked beneath the RX (download) chart in amber. Both charts auto-scale independently so an idle direction stays readable when the other saturates. Closes the gap where v1.1.0 README promised both directions visible but only RX rendered.
 
 ### v1.1.0 — 2026-05-20
 - New **Network / Download** panel — RX/TX throughput (MB/s), 60s auto-scaled download line chart, link status (interface, state, negotiated speed). Backend `get_network()` via `psutil.net_io_counters`.

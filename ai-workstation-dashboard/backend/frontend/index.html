@@ -178,17 +178,28 @@
   </div>
 </div>
 
-<!-- Row 4: Network — download line chart + link status -->
+<!-- Row 4: Network — download + upload line charts + link status -->
 <div class="grid2-1">
   <div class="card">
     <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--orange),transparent)"></div>
-    <div class="card-title" style="color:var(--orange)"><span class="icon">🌐</span> NETWORK — DOWNLOAD</div>
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+    <div class="card-title" style="color:var(--orange)"><span class="icon">🌐</span> NETWORK — THROUGHPUT</div>
+
+    <!-- RX (download) — amber/orange, matches existing accent line -->
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
       <span class="big-num" style="color:var(--orange)" id="net-rx-big">--</span>
-      <span class="label">MB/s download</span>
+      <span class="label">MB/s ↓ download</span>
     </div>
-    <div class="sparkline-wrap"><svg class="spark" id="spark-net" viewBox="0 0 100 100" preserveAspectRatio="none" height="60"></svg></div>
+    <div class="sparkline-wrap"><svg class="spark" id="spark-net" viewBox="0 0 100 100" preserveAspectRatio="none" height="50"></svg></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dark);margin-top:4px"><span>0 MB/s</span><span id="net-scale-max">peak --</span></div>
+
+    <!-- TX (upload) — cyan, high-contrast complement to RX amber (opposite on color wheel,
+         and already part of the dashboard palette so it stays visually coherent) -->
+    <div style="display:flex;align-items:baseline;gap:8px;margin:12px 0 4px">
+      <span class="big-num" style="color:var(--cyan)" id="net-tx-big">--</span>
+      <span class="label">MB/s ↑ upload</span>
+    </div>
+    <div class="sparkline-wrap"><svg class="spark" id="spark-net-tx" viewBox="0 0 100 100" preserveAspectRatio="none" height="50"></svg></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dark);margin-top:4px"><span>0 MB/s</span><span id="net-tx-scale-max">peak --</span></div>
   </div>
 
   <div class="card">
@@ -211,7 +222,7 @@
 
 <script>
 const HIST_LEN = 60;
-const hist = { cpu: [], ram: [], temp: [], net: [], gpu: {} };
+const hist = { cpu: [], ram: [], temp: [], net: [], netTx: [], gpu: {} };
 
 function pushHist(arr, val) {
   arr.push(val);
@@ -386,6 +397,7 @@ function updateDash(d) {
   const rx = net.rx_mbps ?? 0;
   const tx = net.tx_mbps ?? 0;
   document.getElementById('net-rx-big').textContent = rx.toFixed(2);
+  document.getElementById('net-tx-big').textContent = tx.toFixed(2);
   document.getElementById('net-rx-stat').textContent = rx.toFixed(2);
   document.getElementById('net-tx-stat').textContent = tx.toFixed(2);
   document.getElementById('net-tx-inline').textContent = tx.toFixed(2) + ' MB/s';
@@ -400,16 +412,24 @@ function updateDash(d) {
   pushHist(hist.ram, d.ram_percent);
   if (ct != null) pushHist(hist.temp, ct);
   pushHist(hist.net, rx);
+  pushHist(hist.netTx, tx);
 
-  // Auto-scale download chart: peak of rolling buffer, min floor 1 MB/s
+  // Auto-scale each chart independently: peak of rolling buffer × 1.15, min floor 1 MB/s.
+  // Separate scales keep an idle upload visible even when download is hammering (and vice versa).
   const netMax = Math.max(1, ...hist.net) * 1.15;
+  const netTxMax = Math.max(1, ...hist.netTx) * 1.15;
   document.getElementById('net-scale-max').textContent =
     'peak ' + Math.max(0, ...hist.net).toFixed(2) + ' MB/s';
+  document.getElementById('net-tx-scale-max').textContent =
+    'peak ' + Math.max(0, ...hist.netTx).toFixed(2) + ' MB/s';
 
   makeSpark(document.getElementById('spark-cpu'), hist.cpu, 100, '#22d3ee');
   makeSpark(document.getElementById('spark-ram'), hist.ram, 100, '#a78bfa');
   makeSpark(document.getElementById('spark-temp'), hist.temp, 105, '#f87171');
+  // RX = amber (#f59e0b), TX = cyan (#22d3ee) — complementary colors on the wheel, both
+  // already in --orange / --cyan tokens, so chart pair is unambiguous at a glance.
   makeSpark(document.getElementById('spark-net'), hist.net, netMax, '#f59e0b');
+  makeSpark(document.getElementById('spark-net-tx'), hist.netTx, netTxMax, '#22d3ee');
 
   document.getElementById('footer').textContent = `◆ Live from ${d.hostname} · Refresh 1s · ${t.toLocaleDateString('pl-PL')}`;
 }
