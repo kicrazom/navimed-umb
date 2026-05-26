@@ -5,6 +5,23 @@ results for each tagged version. The current release summary lives in
 [`README.md`](README.md); the universal benchmark protocol lives in
 [`METHODOLOGY.md`](METHODOLOGY.md).
 
+## 2026-05-26 — Run-3 consumer-GPU PLLuM AWQ (between-version event, under v0.4.0)
+
+Run-3 closes the consumer-GPU surface of the PLLuM family. Two new public AWQ-4bit checkpoints quantized locally on a single Radeon AI PRO R9700 (gfx1201) and published on HuggingFace under `mozarcik/`:
+
+- [`mozarcik/Llama-PLLuM-8B-chat-2512-awq`](https://huggingface.co/mozarcik/Llama-PLLuM-8B-chat-2512-awq) (Llama 3.1 base, full Llama 3.1 Community License compliance: `LICENSE`, `NOTICE` with exact Meta wording, `USE_POLICY.md`).
+- [`mozarcik/PLLuM-12B-chat-2512-awq`](https://huggingface.co/mozarcik/PLLuM-12B-chat-2512-awq) (Mistral base, Apache 2.0 — no Llama overlay needed).
+
+Both share the same `mozarcik/clinical-pl-smpc-awq-calibration` corpus as the Run-2 70B family (418 Polish SmPC fragments, EMA-sourced, No PHI), so cross-variant quantization-quality comparisons across 8B / 12B / 70B are corpus-controlled.
+
+Gate 1 sanity 5/5 PASS for both variants via `/v1/completions` on the standard five Polish clinical prompts (factual + four clinical: tiotropium, astma, ostra duszność, spirometria). Raw outputs committed under `environment/sanity-tests/2026-05-26-*.json` (PUBLIC §11.1). Engineering envelope (PUBLIC §11.1): 8B at 5.53 GiB weights / 22.22 GiB KV cache / 88.89× max-concurrency on 1× R9700; 12B at 8.03 GiB weights / 19.77 GiB KV cache / 63.27× max-concurrency on 1× R9700. Phase 2 throughput sweep for Run-3 variants is scoped for v0.5.0 — when produced those numbers will be EMBARGOED §11.2 (§11.3 for Polish models).
+
+The 4B-chat-2512 (multimodal Gemma3) variant is explicitly out of Run-3 scope — it requires `llm-compressor` main + cherry-pick of PR #2571 and is deferred to a separate mini-project.
+
+Failure post-mortem (overnight `hf download` library run stalled on shards 3-5 — root cause `hf_transfer` accelerated mode silently truncating shards, misleading downstream "protobuf missing" error as the visible symptom — rescued by curl-per-shard against `cas-bridge.xethub.hf.co` direct path, IPv4-forced, ~60 min at ~31 Mbps; followed by ~25 min local quantization on R9700) and the snap-Obsidian `XDG_CACHE_HOME` leak workaround (`HF_HOME=$HOME/.cache/huggingface` override in `scripts/_env.sh`) are recorded in [`logbook/2026-05-26.md`](logbook/2026-05-26.md). METHODOLOGY §4.3 Run-3 addendum added in v1.2 (see METHODOLOGY changelog).
+
+Ancillary infrastructure: `ai-workstation-dashboard/` bumped to v1.1.1 (added TX upload chart in cyan, stacked beneath the existing amber RX chart with independent auto-scale — closes the v1.1.0 README gap that promised both directions visible while only RX rendered).
+
 ## v0.4.0 — 2026-05-24
 
 This release widens the project's scope from internal engineering log to a
