@@ -1,8 +1,8 @@
 # AI Usage Disclosure
 
-> **Document version**: 1.2 (released with `navimed-umb` v0.3.0)
+> **Document version**: 1.4 (released with `navimed-umb` v0.4.0 + Run-3 between-version event)
 > **Author**: Łukasz Minarowski, MD, PhD
-> **Last updated**: 2026-05-20
+> **Last updated**: 2026-05-26
 
 This document discloses the AI tools used during the development of
 this repository and the associated preprint, the roles those tools
@@ -173,6 +173,8 @@ versions remain in git history.
 | 1.0 | v0.1.0 | Initial disclosure: Claude Opus 4.7 (web + CLI), GPT-5.5 Deep Thinking (web). |
 | 1.1 | v0.2.0 | Replaced PENDING DOI placeholder with assigned concept DOI (10.5281/zenodo.19851346). Added §1 "Commit attribution transparency" documenting two pre-v0.1.0 `Co-Authored-By: Claude` commits intentionally retained for Zenodo immutability. |
 | 1.2 | v0.3.0 | No tooling-profile change: same models (Claude Opus 4.7 web + CLI, GPT-5.5 Deep Thinking web). Version bump to track the v0.3.0 release (version DOI 10.5281/zenodo.20317011). |
+| 1.3 | v0.4.0 | Added Gemini (Google, web review) and Bielik-11B-v3.0-instruct-AWQ (local, vLLM 0.19.0+rocm721 on 1× R9700) to the tooling profile, both used during the 2026-05-23 PLLuM-70B AWQ release session for cross-model documentation review and Polish-language editorial. Version DOI 10.5281/zenodo.20364953. |
+| 1.4 | v0.4.0 (Run-3 between-version) | No tooling-profile change vs 1.3: same four-tool stack (Claude + GPT + Gemini + Bielik). Version bump to track the 2026-05-26 Run-3 consumer-GPU PLLuM AWQ release (8B Llama base + 12B Mistral-Nemo base). Inherits v0.4.0 version DOI 10.5281/zenodo.20364953. |
 
 ---
 
