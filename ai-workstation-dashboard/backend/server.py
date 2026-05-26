@@ -491,6 +491,10 @@ if (FRONTEND / "index.html").exists():
     async def root():
         return FileResponse(FRONTEND / "index.html")
 
+    @app.get("/favicon.svg")
+    async def favicon():
+        return FileResponse(FRONTEND / "favicon.svg", media_type="image/svg+xml")
+
     app.mount("/static", StaticFiles(directory=FRONTEND), name="static")
 
 
