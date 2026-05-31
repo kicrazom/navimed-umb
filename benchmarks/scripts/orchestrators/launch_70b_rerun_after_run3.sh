@@ -50,7 +50,9 @@ export NCCL_P2P_DISABLE=1
 # Paths / config
 # ---------------------------------------------------------------------------
 RUN3_SENTINEL="$REPO_ROOT/benchmarks/results/_run3_orchestrator_logs/SWEEP_COMPLETE"
-FULL_SWEEP="$SCRIPT_DIR/run_pllum70b_n10_rerun_sweep.sh"
+# NB: $SCRIPT_DIR is clobbered by `source _env.sh` above (it sets its own
+# SCRIPT_DIR=.../scripts), so derive sibling-script paths from $REPO_ROOT.
+FULL_SWEEP="$REPO_ROOT/benchmarks/scripts/orchestrators/run_pllum70b_n10_rerun_sweep.sh"
 RUNNER="$REPO_ROOT/benchmarks/scripts/runners/throughput_scaling_phase2.py"
 KILL_PORT="$REPO_ROOT/scripts/kill_port.sh"
 
