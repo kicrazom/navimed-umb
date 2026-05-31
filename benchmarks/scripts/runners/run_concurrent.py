@@ -293,6 +293,52 @@ MODELS = {
         "verbose_dtype": "bfloat16",
         "results_header": "",
     },
+    # Run-3 consumer-GPU AWQ — Llama-PLLuM 8B chat-2512 (Llama 3.1 base).
+    # compressed-tensors pack-quantized W4A16 → vLLM auto-detects from
+    # config.json; no explicit quantization kwarg (awq_marlin=False).
+    "pllum-8b-awq": {
+        "label": "Llama-PLLuM 8B chat-2512 AWQ",
+        "banner_quant": False,  # label already says AWQ
+        "quants": {
+            "awq": {
+                "model_path": "/home/mozarcik/models/Llama-PLLuM-8B-chat-2512-awq",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "awq",
+        "dtype": "auto",
+        "awq_marlin": False,  # compressed-tensors auto-detected, NOT classic AWQ
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "results_header": "",
+    },
+    # Run-3 consumer-GPU AWQ — PLLuM 12B chat-2512 (Mistral-Nemo base).
+    "pllum-12b-awq": {
+        "label": "PLLuM 12B chat-2512 AWQ",
+        "banner_quant": False,  # label already says AWQ
+        "quants": {
+            "awq": {
+                "model_path": "/home/mozarcik/models/PLLuM-12B-chat-2512-awq",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "awq",
+        "dtype": "auto",
+        "awq_marlin": False,  # compressed-tensors auto-detected, NOT classic AWQ
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "results_header": "",
+    },
 }
 
 

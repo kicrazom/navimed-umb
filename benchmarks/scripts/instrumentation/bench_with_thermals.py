@@ -164,6 +164,37 @@ MODELS = {
         "print_quant": True,
         "exit_on_rc": True,
     },
+    # Run-3 consumer-GPU AWQ — Llama-PLLuM 8B + PLLuM 12B chat-2512.
+    # Same robust overnight policy as bielik-11b-v30 (timeout caught and
+    # finalized as rc=124, plotting best-effort, exit mirrors inner rc).
+    "pllum-8b-awq": {
+        "quants": ["awq"],
+        "default_quant": "awq",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
+    "pllum-12b-awq": {
+        "quants": ["awq"],
+        "default_quant": "awq",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
 }
 
 
