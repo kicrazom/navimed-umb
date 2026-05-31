@@ -63,9 +63,9 @@
   "test_input_tokens": 33,
   "test_output_tokens": 128,
   "test_total_tokens": 161,
-  "vllm_engine_avg_generation_tok_s": 7.3,
-  "vllm_engine_avg_prompt_tok_s": 3.3,
-  "throughput_note": "Engine-side averages from vllm loggers.py at 22:03:44 (single-prompt window). Generation 7.3 tok/s = 57% of TP=1's 12.8 tok/s — single-stream throughput degrades under TP=2 due to inter-rank synchronization overhead (HIP_LAUNCH_BLOCKING=1 + custom_all_reduce disabled). This is the cost side of the TP=2 trade-off; the benefit (5× max_concurrency) only realizes at high N. Phase 2 sweep will quantify the crossover N where TP=2 wins on aggregate tok/s. NOT a scaling claim — Phase 1 baseline only, per METHODOLOGY §5.1 and §11.1.",
+  "vllm_engine_avg_generation_tok_s": "EMBARGOED §11.3",
+  "vllm_engine_avg_prompt_tok_s": "EMBARGOED §11.3",
+  "throughput_note": "Engine-side single-prompt throughput values and the TP=1/TP=2 comparison EMBARGOED §11.3 (Polish-language model); redacted from the public record 2026-06-01. Qualitative point retained: single-stream throughput is lower under TP=2 (inter-rank synchronization overhead); the TP=2 benefit (larger max_concurrency) realizes only at high N, to be quantified by the embargoed Phase 2 sweep. Static envelope remains PUBLIC per §11.1.",
   "errors": [],
   "issues_encountered": [
     "kill_method footnote: initial `kill $(cat /tmp/bielik-11b-v30-tp2.pid)` killed the bash wrapper script (PID 156669) but not the vllm subprocess tree (APIServer pid 156674, EngineCore 156927, Worker_TP{0,1} 157182/157183). nohup + & disconnected the children from the wrapper's process group, so SIGTERM did not propagate. Required follow-up `kill 156674` on the actual APIServer pid; clean shutdown completed in <1s with proper EngineCore + worker shutdown messages. Lesson: for nohup'd vllm serve under bash -c, pidfile must capture the vllm child pid (e.g. from `pgrep -f 'vllm serve.*8101'` after launch), not the wrapper $!. To be patched in v0.3 sanity runner."
@@ -84,6 +84,6 @@
     "kv_cache_size_tokens": {"tp1": 37584, "tp2": 183968, "delta_pct": 389.5, "ratio": 4.90},
     "max_concurrency": {"tp1": 4.59, "tp2": 22.46, "delta_pct": 389.3, "ratio": 4.89},
     "test_response_time_sec": {"tp1": 8.664, "tp2": 8.547, "delta_pct": -1.4, "note": "Within noise — single-stream end-to-end roundtrip unaffected by TP at N=1"},
-    "vllm_engine_avg_generation_tok_s": {"tp1": 12.8, "tp2": 7.3, "delta_pct": -43.0, "note": "Single-stream throughput degraded; TP=2 cost paid here, benefit only at high N"}
+    "vllm_engine_avg_generation_tok_s": {"status": "EMBARGOED §11.3", "note": "Single-stream tok/s and TP1/TP2 delta redacted 2026-06-01 (Polish model); qualitative: TP=2 single-stream throughput lower, benefit only at high N"}
   }
 }

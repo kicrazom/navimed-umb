@@ -59,9 +59,9 @@
   "test_input_tokens": 29,
   "test_output_tokens": 128,
   "test_total_tokens": 157,
-  "vllm_engine_avg_generation_tok_s": 12.8,
-  "vllm_engine_avg_prompt_tok_s": 2.9,
-  "throughput_note": "Engine-side averages from vllm loggers.py:259 at 06:27:57 (single-prompt window). NOT a scaling claim — Phase 1 baseline only, per METHODOLOGY §5.1 and §11.1.",
+  "vllm_engine_avg_generation_tok_s": "EMBARGOED §11.3",
+  "vllm_engine_avg_prompt_tok_s": "EMBARGOED §11.3",
+  "throughput_note": "Engine-side single-prompt throughput values EMBARGOED §11.3 (Polish-language model); redacted from the public record 2026-06-01. Static envelope (load, VRAM, KV cache, max_concurrency) remains PUBLIC per §11.1.",
   "off_protocol_capability_observation": {
     "scope": "§8 / §9 capability marker, NOT envelope claim",
     "peep_expansion_correct": true,

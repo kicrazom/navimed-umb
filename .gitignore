@@ -76,6 +76,11 @@ SESSION_RESUME.md
 paper/
 eval-rag/
 
+# Raw vLLM sanity server logs — engine-side throughput (Polish models §11.3-
+# embargoed) lives in these; raw logs are local-only, while the curated .json
+# envelope (§11.1: load / VRAM / KV / max_concurrency) stays public.
+environment/sanity-tests/*.log
+
 # Claude Code local-only files
 .claude/settings.local.json
 .claude/local/

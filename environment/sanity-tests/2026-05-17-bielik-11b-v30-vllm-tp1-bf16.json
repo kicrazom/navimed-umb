@@ -58,9 +58,9 @@
   "test_input_tokens": 33,
   "test_output_tokens": 128,
   "test_total_tokens": 161,
-  "vllm_engine_avg_generation_tok_s": 12.8,
-  "vllm_engine_avg_prompt_tok_s": 3.3,
-  "throughput_note": "Engine-side averages from vllm loggers.py at 21:54:45 (single-prompt window). NOT a scaling claim — Phase 1 baseline only, per METHODOLOGY §5.1 and §11.1.",
+  "vllm_engine_avg_generation_tok_s": "EMBARGOED §11.3",
+  "vllm_engine_avg_prompt_tok_s": "EMBARGOED §11.3",
+  "throughput_note": "Engine-side single-prompt throughput values EMBARGOED §11.3 (Polish-language model); redacted from the public record 2026-06-01. Static envelope (load, VRAM, KV cache, max_concurrency) remains PUBLIC per §11.1.",
   "errors": [],
   "issues_encountered": [
     "Initial launch attempted '--disable-log-requests' flag (per task spec); vllm 0.19 has removed/renamed this flag: 'vllm: error: unrecognized arguments: --disable-log-requests'. Retry without the flag succeeded.",
