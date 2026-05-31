@@ -15,6 +15,13 @@ and clinical-AI papers (see [Roadmap](#roadmap) below). It is the L1 pillar
 of a three-layer architecture (workstation → retrieval → arena) targeted at
 sovereign, on-premise medical-AI deployment.
 
+**Operating principle: scientific rigor over time and cost.** Benchmarks use the
+full Tier-A statistical protocol (n = 10 per `(quant, TP, N)` cell, results
+reported as descriptive statistics — see [`METHODOLOGY.md`](METHODOLOGY.md)
+§7.4). Where methodological faithfulness and wall-clock / GPU-hours conflict,
+rigor wins: e.g. the Llama-PLLuM-70B family is re-run at full n = 10 rather than
+shortcut.
+
 > **Security note.** This repository documents a workstation build, public
 > benchmarks, and external release pipelines. Operational details — hostnames,
 > domains, network addresses, secrets, patient data — are deliberately
@@ -50,7 +57,7 @@ sovereign, on-premise medical-AI deployment.
 ## Platform at a glance
 
 AMD Ryzen 9 9950X3D · 2× GIGABYTE Radeon AI PRO R9700 32 GB (gfx1201, RDNA 4) ·
-96 GB DDR5-6000 · Kubuntu 24.04, kernel 6.17, ROCm 7.2.1 · vLLM 0.19.0.
+96 GB DDR5-6000 · Kubuntu 24.04, kernel 6.17, ROCm 7.2.0 · vLLM 0.19.0.
 Full BOM and power topology: [`bom/readme.md`](bom/readme.md).
 Exact software manifests: [`environment/`](environment/).
 

@@ -1,6 +1,6 @@
 # NaviMed-UMB Benchmark Methodology
 
-**Document version:** 1.1 (2026-05-21)
+**Document version:** 1.3 (2026-05-31)
 **Maintainer:** Łukasz Minarowski, UMB Białystok (ORCID 0000-0002-2536-3508)
 **Repository:** https://github.com/kicrazom/navimed-umb
 **License:** CC-BY-4.0 (text), MIT (code)
@@ -19,6 +19,8 @@ NaviMed-UMB is a universal AI hardware envelope and inference benchmark platform
 2. **Scaling sweep (EMBARGOED until publication):** At envelope-validated best configurations, how does aggregate throughput, latency, and power efficiency scale with concurrent request count `N`, where does the throughput knee occur relative to `max_concurrency`, and how do these properties compare across quantizations, model architectures, and inference backends?
 
 The platform deliberately does **not** measure model quality, reasoning capability, or clinical utility. Those questions belong to the separate NaviMed Arena methodology paper and to domain-specific validation studies (e.g., Broncho-Nome). Mixing hardware engineering with semantic evaluation conflates two distinct epistemic regimes; this is the methodological humility position elaborated in §8.
+
+**Guiding principle — scientific rigor over time and cost.** Where methodological faithfulness and wall-clock / GPU-hours conflict, rigor wins. Statistical claims use the full Tier-A protocol (§7.4, n = 10) with no shortened N-ladders and no reduced rep counts, and the suite is kept internally consistent even when that means re-running already-measured models. The Llama-PLLuM-70B family is re-run at full n = 10 for exactly this reason — completeness and comparability take priority over speed.
 
 ---
 
@@ -186,7 +188,7 @@ Each model is measured in two phases with disjoint outputs, separate filesystems
 - Knee at `N ≈ max_concurrency`
 - Preemption regime above `max_concurrency` up to ~40× over
 
-Each N value is one independent run with full model load and 15-second cooldown between runs. Background sampling at 1 Hz captures `cpu_percent`, `cpu_temp`, and per-GPU `use`, `temp`, `vram_used_b`, `power_w`.
+Each N value is measured with full model load per run and a cooldown between runs. The number of repetitions per `(quant, TP, N)` cell depends on the statistical tier — a single run in **Tier 0** (exploratory), or **REPS = 10** in **Tier A** (statistical; final values reported as descriptive statistics over the reps); see §7.4. Background sampling at 1 Hz captures `cpu_percent`, `cpu_temp`, and per-GPU `use`, `temp`, `vram_used_b`, `power_w`.
 
 **Output location:** `benchmarks/results/<model>/thermal-runs/<quant>-tp<TP>-n<N>-{bench.log,events.json,thermals.jsonl,thermals.png}`
 
@@ -267,6 +269,22 @@ benchmarks/results/<model>/
 ```
 
 Plus a session lab log entry at `docs/sessions/YYYY-MM-DD-<model>-sweep.md` containing methodology recap, results table, methodological humility statement, AI disclosure block, lessons learned, and embargo classification.
+
+### 7.4 Statistical protocol — Tier A (n=10 reruns)
+
+Phase 2 cells are measured in one of two tiers.
+
+**Tier 0 — exploratory (single-shot).** The legacy v0.2–v0.4 mode: one independent run per `(quant, TP, N)` cell. Sufficient to locate the knee and plateau qualitatively. Used for the initial 12-model sweep and the single-shot Llama-PLLuM-70B family runs.
+
+**Tier A — statistical (n = 10).** The standard from the Run-3 / v0.5 series onward. Each `(quant, TP, N)` cell is run **REPS = 10** times, each rep a fresh vLLM process (full model load) with the §5.2 cooldown between runs. **Final results are reported as descriptive statistics over the 10 reps — never a single observation:**
+
+- central tendency: **median** — preferred over the arithmetic mean, which the skewed throughput / latency distributions (cold-cache, thermal, and preemption outliers) make misleading;
+- dispersion and tails: **p95, p99, min, max** (IQR where useful). The **p99 of per-request latency** is the deployment-relevant tail, not the mean;
+- **`n_runs` per cell is recorded explicitly**; a cell with fewer than REPS valid reps is aggregated over what completed and flagged.
+
+The aggregator (`finalize_*` scripts) emits both a per-rep raw table (`phase2_sweep_raw.csv`) and the per-cell descriptive-statistics table (`phase2_sweep.csv`, carrying the median / p95 / p99 columns of §7.1). When the text asserts a **difference** between configurations as meaningful (rather than merely describing one cell), the family-wise error rate across the N-ladder is controlled with **Holm–Bonferroni**; absent that test, comparative statements remain descriptive only and claim no significance — consistent with the §8 humility position.
+
+Tiering does not change embargo: per-cell statistics for Polish models remain **EMBARGOED §11.3**; this protocol section is PUBLIC.
 
 ---
 
@@ -374,17 +392,20 @@ Every benchmark session, every result-generating step is explicitly labeled at t
 | Version | Scope | Status |
 |---|---|---|
 | v0.1.0 | Hardware envelope paper, Qwen 3.6 27B | Released 2026-04-26, DOI 10.5281/zenodo.19851347 |
-| v0.2.0 | Phase 2 scaling sweep, Qwen 3.6 27B (BF16 + FP8) | In progress 2026-04-29 |
-| v0.3.0 | Remaining model suite, Phase 1 + Phase 2 | In progress 2026-05-21 — Phase 2 scaling sweep done (12 models, 44 N-points); 70B AWQ quantizations routed to AMD compute |
-| v0.4.0 | Lemonade Server cross-stack comparison | Planned post-v0.3 |
-| v0.5.0 | Undervolted re-run (-75 mV / +15 W) of full suite | Planned |
+| v0.2.0 | Phase 2 scaling sweep, Qwen 3.6 27B (BF16 + FP8) | Released 2026-04-29 |
+| v0.3.0 | Remaining model suite (Phase 1 + Phase 2, 12 models / 44 N-points) + first public AWQ W4A16 of the Llama-PLLuM-70B family (8 cards) | Released 2026-05-21, DOI 10.5281/zenodo.20317011 |
+| v0.4.0 | Public release pipeline + Run-3 consumer-GPU AWQ (Llama-PLLuM-8B-chat-2512, PLLuM-12B-chat-2512) + four-paper roadmap | Released 2026-05-24, DOI 10.5281/zenodo.20364953 |
+| v0.5.0 | Tier-A statistical re-runs (n=10 per cell, §7.4) of the Phase 2 suite — Run-3 8B/12B + Llama-PLLuM-70B family | In progress 2026-05-31 |
+| v0.6.0 | Undervolted (-75 mV / +15 W) re-run of the suite | Planned |
+| v0.7.0 | Lemonade Server cross-stack comparison (vLLM vs GGUF / desktop) | Planned |
 
-This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.1) and are recorded in the changelog at the bottom of this file.
+This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.3) and are recorded in the changelog at the bottom of this file.
 
 ---
 
 ## Changelog
 
+- **1.3 (2026-05-31):** Statistical protocol formalized. New **§7.4 (Tier A)** — n=10 reruns per `(quant, TP, N)` cell, results reported as **descriptive statistics** (median / p95 / p99 / min / max, IQR), Holm–Bonferroni FWER for any difference claim; §5.2 single-shot wording generalized to **Tier 0** (exploratory) vs **Tier A** (statistical). Resolves the previously dangling `§7.4` references in `paper-1-results-outline.md`, `RELEASES.md`, and `analyze_phase2_sweep.py`. §13 version table corrected (v0.1–v0.4 marked Released; v0.4.0 scope set to the actual public-release/PLLuM pipeline, not Lemonade; Tier-A re-runs = v0.5.0, undervolted → v0.6.0, Lemonade → v0.7.0). Header version aligned to changelog. The live Run-3 8B/12B sweep and the approved Llama-PLLuM-70B re-run both execute under Tier A. Embargo (§11) unchanged. (v0.2.0 Zenodo DOI in §13 left blank pending verification.)
 - **1.2 (2026-05-26):** Run-3 (consumer-GPU AWQ) addendum. §4.3 PLLuM family: entries #12 (Llama-PLLuM-8B-instruct) and #13 (PLLuM-12B-chat) annotated with their Run-3 AWQ children (`mozarcik/Llama-PLLuM-8B-chat-2512-awq`, `mozarcik/PLLuM-12B-chat-2512-awq`, both published 2026-05-26). Run-3 addendum block added after the §4.3 PLLuM-70B errata documenting: shared calibration corpus (identical to Run-2), local R9700 quant (~25 min/model vs ~2 h/model on MI300X for 70B), no `llm-compressor` cherry-picks needed for Llama/Mistral arches, 4B-chat-2512 gemma3 multimodal explicitly deferred. Gate 1 sanity 5/5 PASS both models via `/v1/completions`. Engineering envelope (PUBLIC §11.1): 8B 5.53 GiB / 22.22 GiB KV / 88.89× conc; 12B 8.03 GiB / 19.77 GiB KV / 63.27× conc; both on 1× R9700. Phase 2 sweep for Run-3 variants scoped v0.5.0; §11.2/§11.3 unchanged. Failure post-mortem (`hf_transfer` shard truncation, snap-Obsidian XDG leak) in `logbook/2026-05-26.md`.
 - **1.1 (2026-05-21):** Recovery-session errata. §3: transformers 5.8.1 adopted as the v0.3+ stack (required for `qwen3_5` arch; vLLM 0.19 accepts it empirically — 12 models PASS), AITER deferred to ROCm 7.3+, FP8/compressed-tensors caveat documented. §4 #3 qwen3.5-9b: status FAIL→PASS (earlier FAIL was an incomplete stub download, not an image-processor defect). §4 #14–18 PLLuM-70B: BF16 132 GB exceeds 64 GB VRAM — local AWQ quant is feasible (~2 h/model) but routed to AMD compute as a resource-allocation choice. §4 #21 Kimi-Dev-72B-AWQ: switched to pre-quantized `abhishekchohan/Kimi-Dev-72B-AWQ`; finding — not deployable on 2× R9700 (TP=2 group-alignment failure in `mlp.down_proj`, intermediate_size 29568; TP=1 OOM), routed to AMD. §5.2: Phase 2 v0.3 sweep complete (12 models, 44 N-points); v0.2.0 "knee ≈ N × max_concurrency" model retracted — knee is compute-saturation-driven (bf16/fp16 knee N≈500, AWQ/FP8/compressed-tensors knee N≈200–450); quantized models 4–10× slower than BF16 on gfx1201. §11.1 knee-observation line updated accordingly. Embargo policy (§11) unchanged.
 - **1.0 (2026-04-29):** Initial consolidated methodology. Synthesizes engineering practice from v0.1.0 release, Capitelli-style reporting schema, Kim et al. (2026) AI disclosure framework, Lerchner (2026) methodological humility position, and embargo policy operational since 2026-04-28. Authoritative for v0.2.0 and onward.
