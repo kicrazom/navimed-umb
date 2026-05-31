@@ -93,8 +93,8 @@ Załadowane przez `scripts/_env.sh` (single source of truth post-2026-05-17 refa
 | `max_concurrency` (8192-tok req) | **4.59×** | `kv_cache_utils.py:1324` |
 | `init engine` (profile + KV + warmup) | 1.95 s | `core.py:283` |
 | Sanity response time (curl end-to-end) | **6.97 s** dla 128 tokens | `date +%s.%N` wokół curl POST |
-| vLLM engine avg generation throughput | 12.8 tok/s | `loggers.py:259` (window 06:27:57) |
-| vLLM engine avg prompt throughput | 2.9 tok/s | tamże |
+| vLLM engine avg generation throughput | [EMBARGOED §11.3] | `loggers.py:259` (window 06:27:57) |
+| vLLM engine avg prompt throughput | [EMBARGOED §11.3] | tamże |
 | `finish_reason` | `length` (cap na 128) | API response `choices[0]` |
 | `errors` | `[]` | — |
 
@@ -107,8 +107,8 @@ VRAM card1 = 0.056 GiB potwierdza, że TP=1 trzyma cały model na card0; shardin
 | Model | Load time | VRAM (GPU0) | Model footprint | KV tokens | Max conc. | Sanity response time (128 tok) | Engine avg gen |
 |---|---|---|---|---|---|---|---|
 | bielik-4.5b-v30 | (4.5B prior) | — | smaller | larger | 5.65× | — | — |
-| bielik-11b-v30 (base, multilingual) | 27 s | 28.88 GiB | 20.90 GiB | 37 584 | 4.59× | 8.66 s | 12.8 tok/s |
-| **bielik-pl-11b-v30 (Polish FT)** | **20 s** | **28.69 GiB** | **20.89 GiB** | **37 616** | **4.59×** | **6.97 s** | **12.8 tok/s** |
+| bielik-11b-v30 (base, multilingual) | 27 s | 28.88 GiB | 20.90 GiB | 37 584 | 4.59× | 8.66 s | [EMBARGOED §11.3] |
+| **bielik-pl-11b-v30 (Polish FT)** | **20 s** | **28.69 GiB** | **20.89 GiB** | **37 616** | **4.59×** | **6.97 s** | **[EMBARGOED §11.3]** |
 
 KV geometry praktycznie identyczna (37 584 vs 37 616 tokens, różnica < 0.1%) — potwierdza że Polish-focused fine-tune zachowuje architekturę i config tokenizera w sposób transparentny dla envelope. Load time 20 s vs 27 s — różnica prawdopodobnie wynika z page cache (drugie ładowanie tych samych safetensors po 11B base w tej samej sesji), NIE z różnic wagowych — NIE klasyfikować jako "Bielik-PL jest szybszy w loading" bez powtórzonego pomiaru cold-cache.
 

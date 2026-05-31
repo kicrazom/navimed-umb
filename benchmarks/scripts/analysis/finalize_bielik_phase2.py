@@ -595,8 +595,8 @@ terminate at the hardware-software interface.
 This config selected from 7-config envelope sweep (2026-05-04, all loaded
 successfully). Selection criterion (pre-specified in PLAN-NEXT before
 sweep): highest sanity_throughput_tok_s among loaded configs. Winner had
-sanity 17.42 tok/s, KV pool 173,328 tokens, vs FP16 TP=1 max=8192 with
-14.16 tok/s and 34,320 tokens. TP=2 advantage emerges at large max_len —
+sanity [EMBARGOED §11.3], KV pool 173,328 tokens, vs FP16 TP=1 max=8192 with
+[EMBARGOED §11.3] and 34,320 tokens. TP=2 advantage emerges at large max_len —
 AllReduce overhead is masked by larger compute per token plus 2× memory
 bandwidth from sharding.
 

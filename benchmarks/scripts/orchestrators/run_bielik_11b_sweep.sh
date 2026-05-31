@@ -8,7 +8,7 @@
 #   - Output: benchmarks/results/bielik-11b-v23/thermal-runs/<quant>-tp<TP>-n<N>-{bench.log,events.json,thermals.jsonl,thermals.png}
 #
 # Phase 1 selected config (2026-05-04):
-#   fp16_tp2_max8192_util090_eager  → sanity 17.42 tok/s, 173k KV tokens
+#   fp16_tp2_max8192_util090_eager  → sanity [EMBARGOED §11.3], 173k KV tokens
 #
 # Embargo: EMBARGO_paper_bound (Polish model, METHODOLOGY §11.3).
 #

@@ -108,7 +108,7 @@ Worker config z log: `tensor_parallel_size=2, pipeline_parallel_size=1, data_par
 | `kv_cache_size_tokens` | **183 968** | `kv_cache_utils.py:1319` |
 | `max_concurrency` (8192-tok req) | **22.46×** | `kv_cache_utils.py:1324` |
 | Sanity response time | **8.55 s** dla 128 tokens | `date +%s.%N` wokół curl POST |
-| vLLM engine avg generation throughput | 7.3 tok/s | `loggers.py:259` (window 22:03:44) |
+| vLLM engine avg generation throughput | [EMBARGOED §11.3] | `loggers.py:259` (window 22:03:44) |
 | `finish_reason` | `length` (cap na 128) | API response `choices[0]` |
 | `errors` | `[]` | — |
 

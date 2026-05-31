@@ -90,8 +90,8 @@ Załadowane przez `scripts/_env.sh` (single source of truth post-2026-05-17 refa
 | `max_concurrency` (8192-tok req) | **4.59×** | `kv_cache_utils.py:1324` |
 | `init engine` (profile + KV + warmup) | 2.04 s | `core.py:283` |
 | Sanity response time (curl end-to-end) | **8.66 s** dla 128 tokens | `date +%s.%N` wokół curl POST |
-| vLLM engine avg generation throughput | 12.8 tok/s | `loggers.py:259` (window 21:54:45) |
-| vLLM engine avg prompt throughput | 3.3 tok/s | tamże |
+| vLLM engine avg generation throughput | [EMBARGOED §11.3] | `loggers.py:259` (window 21:54:45) |
+| vLLM engine avg prompt throughput | [EMBARGOED §11.3] | tamże |
 | `finish_reason` | `length` (cap na 128) | API response `choices[0]` |
 | `errors` | `[]` | — |
 
