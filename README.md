@@ -38,8 +38,6 @@ shortcut.
 | [`benchmarks/`](benchmarks/) | vLLM / ROCm benchmark harness (Phase 1 envelope + Phase 2 scaling sweep), methodology, plotting scripts, and per-model results (`benchmarks/results/` is gitignored — embargo-protected per §11) |
 | [`scripts/`](scripts/) | Orchestration scripts: `sanity_sweep_pllum70b_awq.sh` (three-stage Gate 1/2/3 runner), `kill_port.sh` (process-isolated cleanup), `_env.sh` (gfx1201 env vars) |
 | [`calibration/`](calibration/) | Polish clinical SmPC corpus for AWQ quantization (separately licensed; published on HuggingFace as a reusable artifact) + quantization scripts |
-| [`eval-rag/`](eval-rag/) | Design and outreach drafts for a 5-model RAG evaluation of Polish vs multilingual LLMs on the SmPC corpus (sub-project, BLOCKED on reviewer responses) |
-| [`paper/`](paper/) | Preprints in preparation — see [Roadmap](#roadmap) for the four-paper plan |
 | [`ai-workstation-dashboard/`](ai-workstation-dashboard/) | Real-time CPU/GPU monitoring (FastAPI + psutil + rocm-smi) |
 | [`docs/sessions/`](docs/sessions/) | Long-form engineering session reports and debugging logs (one per substantive session) |
 | [`logbook/`](logbook/) | Short chronological build-diary entries (one per day of substantive activity) |

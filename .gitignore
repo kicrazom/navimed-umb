@@ -69,6 +69,13 @@ logbook/raw_logs/
 # Local-only session continuation notes (private)
 SESSION_RESUME.md
 
+# WIP manuscripts + pre-consent collaborator outreach — local-only, NEVER public.
+# Paper drafts and outreach files name proposed co-authors / reviewers (with
+# ORCIDs, affiliations, authorship-order) before their consent; they must not
+# appear in the public repository. Manuscript work lives in the private vault.
+paper/
+eval-rag/
+
 # Claude Code local-only files
 .claude/settings.local.json
 .claude/local/

@@ -78,8 +78,8 @@ full design (five candidate LLMs, hybrid BM25 + multilingual-e5 retrieval
 with RRF fusion, fifty Polish clinical questions in seven safety-weighted
 categories, five-point manual review by three reviewers, conditional
 single-card AQLM 2-bit sixth model gated on the five-model result) is
-checked in along with outreach drafts to two proposed co-authors (Adam
-Białas, UM Łódź; Jakub Radliński, IGiChP Rabka-Zdrój). Generation pipeline
+checked in along with outreach drafts to two proposed external co-authors
+(identities withheld pending their consent). Generation pipeline
 is BLOCKED on reviewer responses; no answers have been generated.
 
 **Coordinated multi-paper publication roadmap.** This release adds a
