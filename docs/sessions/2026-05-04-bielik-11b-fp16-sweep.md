@@ -144,26 +144,29 @@ See `benchmarks/results/bielik-11b-v23/results_table.csv` for full schema.
 
 Throughput trajectory:
 
-```
-N=10:   183.14 tok/s  (1.43 req/s, 6.99 s wall)
-N=25:   407.16 tok/s  (3.22 req/s, 7.75 s)
-N=50:   699.47 tok/s  (5.76 req/s, 8.69 s)
-N=100: 1182.64 tok/s  (9.48 req/s, 10.55 s)
-N=200: 1657.78 tok/s  (13.56 req/s, 14.75 s)
-N=500: 1793.96 tok/s  (14.81 req/s, 33.77 s)  ← knee + plateau begin
-N=1000: 1793.39 tok/s (14.54 req/s, 68.78 s)  ← preemption regime
-```
+*Per-N throughput (tok/s), req/s, efficiency percentages, the plateau value and
+the specific knee N are **EMBARGOED §11.3** (Polish model) — retained in the
+gitignored `benchmarks/results/bielik-11b-v23/results_table.csv` until paper
+acceptance. (Numbers redacted from this tracked file 2026-05-31; prior commits
+remain in git history.)*
+
+Qualitative shape (PUBLIC §11.1): aggregate throughput rises monotonically with
+concurrency — a near-linear region at low N transitioning into sub-linear
+scaling, a knee in the high-N range followed by a plateau, then a preemption
+regime at the top of the ladder where aggregate throughput holds flat while wall
+time grows.
 
 ## Engineering observations (PUBLIC)
 
-1. **Linear-then-saturating scaling.** Aggregate tok/s scales 89% efficient
-   from N=10 to N=25, then enters sub-linear regime (~85% efficiency) up to
-   N=200. Knee at N≈500 with plateau ~1794 tok/s. No abrupt collapse.
+1. **Linear-then-saturating scaling.** Aggregate throughput scales near-linearly
+   at low concurrency, then enters a sub-linear regime at higher N, reaching a
+   knee followed by a plateau. No abrupt collapse. *(Specific efficiency %, knee
+   N and plateau tok/s — EMBARGOED §11.3.)*
 
-2. **Clean preemption.** N=500 vs N=1000: 1793.96 vs 1793.39 tok/s — drift
-   0.03%. Wall time doubles (33.77s → 68.78s) but aggregate throughput is
-   identical. vLLM's KV-cache swapping is working correctly: preemption
-   trades latency for capacity without loss of throughput.
+2. **Clean preemption.** At the top of the ladder versus the knee, aggregate
+   throughput is essentially identical (drift negligible) while wall time roughly
+   doubles. vLLM's KV-cache swapping is working correctly: preemption trades
+   latency for capacity without loss of throughput. *(Specific tok/s — EMBARGOED §11.3.)*
 
 3. **Load time consistency.** Across all 7 runs, load time stayed in
    21.0-22.6s window. No memory leakage or fragmentation between runs
@@ -230,8 +233,8 @@ under vLLM 0.19.0+rocm721 + PyTorch 2.10".
 
 - **EMBARGO_paper_bound (Polish model, §11.3):**
   - Phase 2 throughput numbers per N
-  - Plateau value 1794 tok/s
-  - Knee N=500 specific value
+  - Plateau value (specific tok/s)
+  - Knee (specific N)
   - Cross-N efficiency percentages
   - All three plots (scaling, thermal, efficiency)
   - results_table.csv contents
