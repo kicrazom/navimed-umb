@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # sweep_phase2_v0.3.sh
 # Phase 2 sweep — model refresh + new contenders + multimodal probe
-# Target HW: 2× AMD Radeon AI PRO R9700 (64 GB VRAM), ROCm 7.2.1, vLLM 0.19.0+rocm721
+# Target HW: 2× AMD Radeon AI PRO R9700 (64 GB VRAM), ROCm 7.2.0, vLLM 0.19.0+rocm721
 # Generated: 2026-05-17
 
 # Single source of env per scripts/_env.sh (ROCm §3.1 + venv + XDG guard)

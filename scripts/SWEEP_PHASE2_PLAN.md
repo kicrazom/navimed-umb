@@ -93,7 +93,7 @@ Rozszerzyć Phase 2 inference sweep o (A) odświeżone wersje obecnych modeli,
 
 ## Otwarte pytania
 
-1. **AutoAWQ + ROCm 7.2.1** — czy autoawq buduje się bezbłędnie? Backup plan: GPTQ via vLLM serve config.
+1. **AutoAWQ + ROCm 7.2.0** — czy autoawq buduje się bezbłędnie? Backup plan: GPTQ via vLLM serve config.
 2. **Linear attention vs prefix cache** — testuj oba; może być policy decision dla navimed-umb.
 3. **Llama-4 vLLM support** — sprawdź release notes 0.19.0 czy Scout/Maverick są w pełni wspierane na ROCm (na CUDA tak od 0.18).
 4. **MLOps tracking** — nadal brak. Sugestia: **MLflow lokalnie** (Docker) dla Phase 2 v0.3, żeby nie tracić runów do `METHODOLOGY.md` ad-hoc.

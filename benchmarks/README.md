@@ -2,7 +2,7 @@
 
 ![The battle of the models in the AMD kingdom on vLLM-powered horses](assets/battle_of_LLM_models_gemini.png)
 
-Performance characterization of vLLM 0.19 + ROCm 7.2.1 on 2× R9700
+Performance characterization of vLLM 0.19 + ROCm 7.2.0 on 2× R9700
 (gfx1201 / RDNA 4). The driving question: **when does TP=2 help, hurt, or
 become mandatory** as model size and quantization vary?
 

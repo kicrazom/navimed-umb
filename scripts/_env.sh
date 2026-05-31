@@ -17,6 +17,7 @@ export VLLM_ROCM_USE_AITER=0
 export AMD_SERIALIZE_KERNEL=1
 export HIP_LAUNCH_BLOCKING=1
 export ROCR_VISIBLE_DEVICES=0,1
+export NCCL_P2P_DISABLE=1                # required for TP=2 dual-R9700 (no P2P over PCIe)
 
 # === Venv guard ===
 export VLLM_VENV="$HOME/venvs/vllm"
