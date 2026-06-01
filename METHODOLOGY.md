@@ -1,6 +1,6 @@
 # NaviMed-UMB Benchmark Methodology
 
-**Document version:** 1.3 (2026-05-31)
+**Document version:** 1.4 (2026-06-01)
 **Maintainer:** Łukasz Minarowski, UMB Białystok (ORCID 0000-0002-2536-3508)
 **Repository:** https://github.com/kicrazom/navimed-umb
 **License:** CC-BY-4.0 (text), MIT (code)
@@ -286,6 +286,16 @@ The aggregator (`finalize_*` scripts) emits both a per-rep raw table (`phase2_sw
 
 Tiering does not change embargo: per-cell statistics for Polish models remain **EMBARGOED §11.3**; this protocol section is PUBLIC.
 
+### 7.5 Statistical analysis and presentation
+
+Tier-A cells (§7.4) are summarized and plotted as **distributions, not point estimates**, following current small-sample reporting guidance (Weissgerber et al. 2015, *PLoS Biology* — "show the data"; Tukey box convention; SAMPL reporting guidelines).
+
+- **Central tendency and dispersion.** Each `(quant, TP, N)` cell is reported as **median + interquartile range (IQR, Q1–Q3)** with min/max, and p95/p99 for per-request latency. Arithmetic **mean ± SD is not the primary summary**: aggregate-throughput and latency distributions are right-skewed and small-n (n = 10), so the median is the robust, distribution-appropriate estimator.
+- **Plots.** Per-N results are drawn as **box-and-whisker plots** — box = IQR, centre line = median, whiskers = 1.5 × IQR (Tukey), points beyond shown as outliers — with **all ten individual rep observations overlaid (jittered)** so the raw data are visible, not only summary glyphs. TP = 1 and TP = 2 are shown side-by-side per N. Rendered by `benchmarks/scripts/plotting/plot_boxwhisker.py` from `phase2_sweep_raw.csv` (fully reproducible from the per-rep table).
+- **Comparisons / inference.** Where a difference between configurations (TP, quantization, model size) is asserted as more than descriptive, the distributions are compared with a **non-parametric test** (Mann–Whitney U / Wilcoxon, given non-normality), the **family-wise error rate across the N-ladder is controlled with Holm–Bonferroni** (§7.4), and an **effect size** (median ratio or Hodges–Lehmann shift) is reported alongside any p-value. Absent such a test, statements are explicitly descriptive and claim no significance — consistent with the §8 humility position.
+- **Software & reproducibility.** matplotlib (Agg backend); Python `statistics` / numpy; aggregation in `benchmarks/scripts/analysis/`, plotting in `benchmarks/scripts/plotting/`. Every figure regenerates deterministically from the locally-held raw CSV.
+- **Embargo.** These conventions are PUBLIC (§11.1); the per-model numerical values and the rendered figures are EMBARGOED (§11.2; stricter §11.3 for Polish-language models) and live in the gitignored `benchmarks/results/` tree.
+
 ---
 
 ## 8. Methodological humility (Lerchner 2026)
@@ -399,12 +409,13 @@ Every benchmark session, every result-generating step is explicitly labeled at t
 | v0.6.0 | Undervolted (-75 mV / +15 W) re-run of the suite | Planned |
 | v0.7.0 | Lemonade Server cross-stack comparison (vLLM vs GGUF / desktop) | Planned |
 
-This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.3) and are recorded in the changelog at the bottom of this file.
+This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.4) and are recorded in the changelog at the bottom of this file.
 
 ---
 
 ## Changelog
 
+- **1.4 (2026-06-01):** New §7.5 (Statistical analysis and presentation) — distribution-first reporting: median + IQR (not mean ± SD) for right-skewed throughput/latency; box-and-whisker with all individual reps overlaid (Weissgerber 2015 / Tukey / SAMPL); non-parametric comparisons (Mann–Whitney) under Holm–Bonferroni with effect sizes. Added `benchmarks/scripts/plotting/plot_boxwhisker.py`. Run-3 8B/12B Tier-A figures rendered (EMBARGOED §11.3, local-only).
 - **1.3 (2026-05-31):** Statistical protocol formalized. New **§7.4 (Tier A)** — n=10 reruns per `(quant, TP, N)` cell, results reported as **descriptive statistics** (median / p95 / p99 / min / max, IQR), Holm–Bonferroni FWER for any difference claim; §5.2 single-shot wording generalized to **Tier 0** (exploratory) vs **Tier A** (statistical). Resolves the previously dangling `§7.4` references in `paper-1-results-outline.md`, `RELEASES.md`, and `analyze_phase2_sweep.py`. §13 version table corrected (v0.1–v0.4 marked Released; v0.4.0 scope set to the actual public-release/PLLuM pipeline, not Lemonade; Tier-A re-runs = v0.5.0, undervolted → v0.6.0, Lemonade → v0.7.0). Header version aligned to changelog. The live Run-3 8B/12B sweep and the approved Llama-PLLuM-70B re-run both execute under Tier A. Embargo (§11) unchanged. (v0.2.0 Zenodo DOI in §13 left blank pending verification.)
 - **1.2 (2026-05-26):** Run-3 (consumer-GPU AWQ) addendum. §4.3 PLLuM family: entries #12 (Llama-PLLuM-8B-instruct) and #13 (PLLuM-12B-chat) annotated with their Run-3 AWQ children (`mozarcik/Llama-PLLuM-8B-chat-2512-awq`, `mozarcik/PLLuM-12B-chat-2512-awq`, both published 2026-05-26). Run-3 addendum block added after the §4.3 PLLuM-70B errata documenting: shared calibration corpus (identical to Run-2), local R9700 quant (~25 min/model vs ~2 h/model on MI300X for 70B), no `llm-compressor` cherry-picks needed for Llama/Mistral arches, 4B-chat-2512 gemma3 multimodal explicitly deferred. Gate 1 sanity 5/5 PASS both models via `/v1/completions`. Engineering envelope (PUBLIC §11.1): 8B 5.53 GiB / 22.22 GiB KV / 88.89× conc; 12B 8.03 GiB / 19.77 GiB KV / 63.27× conc; both on 1× R9700. Phase 2 sweep for Run-3 variants scoped v0.5.0; §11.2/§11.3 unchanged. Failure post-mortem (`hf_transfer` shard truncation, snap-Obsidian XDG leak) in `logbook/2026-05-26.md`.
 - **1.1 (2026-05-21):** Recovery-session errata. §3: transformers 5.8.1 adopted as the v0.3+ stack (required for `qwen3_5` arch; vLLM 0.19 accepts it empirically — 12 models PASS), AITER deferred to ROCm 7.3+, FP8/compressed-tensors caveat documented. §4 #3 qwen3.5-9b: status FAIL→PASS (earlier FAIL was an incomplete stub download, not an image-processor defect). §4 #14–18 PLLuM-70B: BF16 132 GB exceeds 64 GB VRAM — local AWQ quant is feasible (~2 h/model) but routed to AMD compute as a resource-allocation choice. §4 #21 Kimi-Dev-72B-AWQ: switched to pre-quantized `abhishekchohan/Kimi-Dev-72B-AWQ`; finding — not deployable on 2× R9700 (TP=2 group-alignment failure in `mlp.down_proj`, intermediate_size 29568; TP=1 OOM), routed to AMD. §5.2: Phase 2 v0.3 sweep complete (12 models, 44 N-points); v0.2.0 "knee ≈ N × max_concurrency" model retracted — knee is compute-saturation-driven (bf16/fp16 knee N≈500, AWQ/FP8/compressed-tensors knee N≈200–450); quantized models 4–10× slower than BF16 on gfx1201. §11.1 knee-observation line updated accordingly. Embargo policy (§11) unchanged.
