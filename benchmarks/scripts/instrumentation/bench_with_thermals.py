@@ -164,6 +164,52 @@ MODELS = {
         "print_quant": True,
         "exit_on_rc": True,
     },
+    # Tier-A n=10 sweep — Bielik 4.5B / Bielik-PL 11B v3.0 Instruct (BF16) and
+    # Bielik 11B v3.0 Instruct AWQ (compressed-tensors). Same robust overnight
+    # policy as bielik-11b-v30 (timeout caught → rc=124, plotting best-effort,
+    # exit mirrors inner rc) so an unattended sweep never aborts.
+    "bielik-4.5b-v30": {
+        "quants": ["bf16"],
+        "default_quant": "bf16",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
+    "bielik-pl-11b-v30-instruct": {
+        "quants": ["bf16"],
+        "default_quant": "bf16",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
+    "bielik-11b-v30-instruct-awq": {
+        "quants": ["awq"],
+        "default_quant": "awq",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
     # Run-3 consumer-GPU AWQ — Llama-PLLuM 8B + PLLuM 12B chat-2512.
     # Same robust overnight policy as bielik-11b-v30 (timeout caught and
     # finalized as rc=124, plotting best-effort, exit mirrors inner rc).

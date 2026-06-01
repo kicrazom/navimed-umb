@@ -293,6 +293,83 @@ MODELS = {
         "verbose_dtype": "bfloat16",
         "results_header": "",
     },
+    # Tier-A n=10 sweep — Bielik 4.5B v3.0 Instruct, BF16. Llama arch,
+    # torch_dtype bfloat16, max_position_embeddings 32768 (config.json). Same
+    # bf16 policy as bielik-11b-v30 (golden reference), smaller hidden_size
+    # (2048) / GQA num_kv_heads=2 → comfortably fits one R9700 at 8192 ctx.
+    "bielik-4.5b-v30": {
+        "label": "Bielik 4.5B v3.0",
+        "quants": {
+            "bf16": {
+                "model_path": "/home/mozarcik/models/bielik-4.5b-v30",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "bf16",
+        "dtype": "bfloat16",
+        "awq_marlin": False,
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "verbose_dtype": "bfloat16",
+        "results_header": "",
+    },
+    # Tier-A n=10 sweep — Bielik-PL 11B v3.0 Instruct, BF16. Llama arch,
+    # torch_dtype bfloat16, max_position_embeddings 32768 (config.json).
+    # Mirrors bielik-11b-v30 exactly (same hidden_size 4096, 50 layers, GQA
+    # num_kv_heads=8) — full bf16 11B fits one R9700 at 8192 ctx.
+    "bielik-pl-11b-v30-instruct": {
+        "label": "Bielik-PL 11B v3.0 Instruct",
+        "quants": {
+            "bf16": {
+                "model_path": "/home/mozarcik/models/bielik-pl-11b-v30-instruct",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "bf16",
+        "dtype": "bfloat16",
+        "awq_marlin": False,
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "verbose_dtype": "bfloat16",
+        "results_header": "",
+    },
+    # Tier-A n=10 sweep — Bielik 11B v3.0 Instruct AWQ. Llama arch,
+    # quantization_config.quant_method = "compressed-tensors", format
+    # pack-quantized W4A16_ASYM (recipe.yaml), torch_dtype bfloat16. Same
+    # primitive as pllum-8b-awq: vLLM auto-detects compressed-tensors from
+    # config.json → NO explicit quantization kwarg (awq_marlin=False),
+    # dtype=auto. NOT classic AutoAWQ (that path is bielik-11b v2.3 awq).
+    "bielik-11b-v30-instruct-awq": {
+        "label": "Bielik 11B v3.0 Instruct AWQ",
+        "banner_quant": False,  # label already says AWQ
+        "quants": {
+            "awq": {
+                "model_path": "/home/mozarcik/models/bielik-11b-v30-instruct-awq",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "awq",
+        "dtype": "auto",
+        "awq_marlin": False,  # compressed-tensors auto-detected, NOT classic AWQ
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "results_header": "",
+    },
     # Run-3 consumer-GPU AWQ — Llama-PLLuM 8B chat-2512 (Llama 3.1 base).
     # compressed-tensors pack-quantized W4A16 → vLLM auto-detects from
     # config.json; no explicit quantization kwarg (awq_marlin=False).
