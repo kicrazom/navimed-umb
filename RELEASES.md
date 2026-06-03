@@ -40,7 +40,7 @@ envelope + Gate 2 coherence-probe evidence, and an explicit "to the author's
 knowledge" qualifier for the first-public claim. The reusable Polish
 clinical SmPC calibration corpus is published separately as
 [`mozarcik/clinical-pl-smpc-awq-calibration`](https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration)
-(418 fragments, ~512 tokens each, 81 INNs, 9 NFZ drug programmes, No PHI).
+(418 fragments, ~512 tokens each, 61 medicines from an 81-INN catalog, 9 NFZ drug programmes, No PHI).
 
 **Phase 2 scaling sweep — 6/6 sanity-PASS Llama-PLLuM-70B AWQ variants.**
 All six sanity-PASS variants (the three already covered overnight 2026-05-23
