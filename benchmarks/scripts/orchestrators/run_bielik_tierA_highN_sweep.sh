@@ -67,7 +67,9 @@ N_LADDER=(500 1000)         # HIGH-N extension: {5..250} already done by run_bie
 TP_LADDER=(1 2)
 REPS=10
 COOLDOWN_S=30
-PER_RUN_TIMEOUT_S=900       # caught as rc=124 (catch_timeout) — never kills sweep
+PER_RUN_TIMEOUT_S=1800      # N=500/1000 reps are LONG — matches run_pllum_run3_highN_sweep.sh
+                            # (the proven 8B/12B high-N sweep). 900s (Tier-A {5..250}) would cut
+                            # off legitimate N=1000 runs. Overruns caught as rc=124, never kills.
 
 # Parallel arrays: model key → result dir → per-model quant → HF name.
 # Index alignment is load-bearing; keep all four arrays in lock-step.
