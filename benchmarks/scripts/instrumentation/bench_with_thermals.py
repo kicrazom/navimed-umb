@@ -135,19 +135,25 @@ MODELS = {
         "exit_on_rc": False,
     },
     # bench_with_thermals_bielik_11b.py — Bielik 11B v2.3, FP16/AWQ.
+    # Tier-A overnight policy aligned to the v3.0 siblings (2026-06-05): this is
+    # one of the four Polish variants in run_bielik_tierA_n10_sweep.sh, which
+    # passes --timeout uniformly. The legacy entry (timeout_flag/catch_timeout/
+    # exit_on_rc=False) rejected --timeout at argparse → every run failed in 0s,
+    # and exit_on_rc=False would have mis-scored inner failures as OK. Flipped to
+    # match bielik-4.5b-v30 / -pl-11b-v30-instruct / -11b-v30-instruct-awq.
     "bielik-11b": {
         "quants": ["fp16", "awq"],
         "default_quant": "fp16",
         "default_name": "{quant}-tp{tp}-n{n}",
         "rocr_policy": "always_pop",
         "default_timeout": 1800,
-        "timeout_flag": False,
-        "catch_timeout": False,
+        "timeout_flag": True,
+        "catch_timeout": True,
         "grep_keys": GREP_KEYS_WITH_LOAD,
-        "require_plotter": True,
-        "plot_guard": False,
+        "require_plotter": False,
+        "plot_guard": True,
         "print_quant": True,
-        "exit_on_rc": False,
+        "exit_on_rc": True,
     },
     # bench_with_thermals_bielik_11b_v30.py — Bielik 11B v3.0, BF16.
     "bielik-11b-v30": {
