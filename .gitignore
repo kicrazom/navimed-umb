@@ -99,6 +99,14 @@ docs/sessions/PLAN-NEXT.md
 # Raw third-party SmPC PDFs and the text-only backup stay local-only:
 calibration/clinical-pl/chpl_raw/
 calibration/clinical-pl/corpus.text-only.bak.jsonl
+# clinical-EN mirror: raw English EMA PI PDFs + build venv stay local-only
+# (corpus.jsonl, scripts, manifest.json, fetch_log.json ARE committed):
+calibration/clinical-en/epar_raw/
+calibration/clinical-en/.venv/
+# fetch_log.json = build artifact (per-PDF URL+bytes+sha256); SHA256 hashes trip
+# detect-secrets (false positive). Provenance preserved via corpus.jsonl source_url
+# + RUNBOOK 61-URL table; per-PDF integrity stays local-only.
+calibration/clinical-en/fetch_log.json
 
 # Source literature (PDFs of papers the project builds on) — local-only
 literature/

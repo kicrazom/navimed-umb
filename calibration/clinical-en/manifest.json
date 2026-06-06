@@ -1,0 +1,310 @@
+{
+  "_comment": "EPAR slug map derived from verified clinical-pl/corpus.jsonl source_url values. EN Product Information PDF = https://www.ema.europa.eu/en/documents/product-information/<epar_slug>-epar-product-information_en.pdf",
+  "medicines": [
+    {
+      "medicine": "aclidinium",
+      "brand_name": "Eklira Genuair",
+      "epar_slug": "eklira-genuair"
+    },
+    {
+      "medicine": "aclidinium-formoterol",
+      "brand_name": "Duaklir Genuair",
+      "epar_slug": "duaklir-genuair"
+    },
+    {
+      "medicine": "afatinib",
+      "brand_name": "GIOTRIF",
+      "epar_slug": "giotrif"
+    },
+    {
+      "medicine": "alectinib",
+      "brand_name": "Alecensa",
+      "epar_slug": "alecensa"
+    },
+    {
+      "medicine": "ambrisentan",
+      "brand_name": "Volibris",
+      "epar_slug": "volibris"
+    },
+    {
+      "medicine": "amivantamab",
+      "brand_name": "Rybrevant",
+      "epar_slug": "rybrevant"
+    },
+    {
+      "medicine": "atezolizumab",
+      "brand_name": "Tecentriq",
+      "epar_slug": "tecentriq"
+    },
+    {
+      "medicine": "beclomethasone-formoterol-glycopyrronium",
+      "brand_name": "Trimbow",
+      "epar_slug": "trimbow"
+    },
+    {
+      "medicine": "bedaquiline",
+      "brand_name": "SIRTURO",
+      "epar_slug": "sirturo"
+    },
+    {
+      "medicine": "benralizumab",
+      "brand_name": "Fasenra",
+      "epar_slug": "fasenra"
+    },
+    {
+      "medicine": "binimetinib",
+      "brand_name": "Mektovi",
+      "epar_slug": "mektovi"
+    },
+    {
+      "medicine": "bosentan",
+      "brand_name": "Tracleer",
+      "epar_slug": "tracleer"
+    },
+    {
+      "medicine": "brigatinib",
+      "brand_name": "Alunbrig",
+      "epar_slug": "alunbrig"
+    },
+    {
+      "medicine": "cemiplimab",
+      "brand_name": "LIBTAYO",
+      "epar_slug": "libtayo"
+    },
+    {
+      "medicine": "crizotinib",
+      "brand_name": "XALKORI",
+      "epar_slug": "xalkori"
+    },
+    {
+      "medicine": "dacomitinib",
+      "brand_name": "Vizimpro",
+      "epar_slug": "vizimpro"
+    },
+    {
+      "medicine": "docetaxel",
+      "brand_name": "Docetaxel Accord",
+      "epar_slug": "docetaxel-accord"
+    },
+    {
+      "medicine": "dupilumab",
+      "brand_name": "Dupixent",
+      "epar_slug": "dupixent"
+    },
+    {
+      "medicine": "durvalumab",
+      "brand_name": "IMFINZI",
+      "epar_slug": "imfinzi"
+    },
+    {
+      "medicine": "elexacaftor-tezacaftor-ivacaftor",
+      "brand_name": "Kaftrio",
+      "epar_slug": "kaftrio"
+    },
+    {
+      "medicine": "encorafenib",
+      "brand_name": "Braftovi",
+      "epar_slug": "braftovi"
+    },
+    {
+      "medicine": "entrectinib",
+      "brand_name": "Rozlytrek",
+      "epar_slug": "rozlytrek"
+    },
+    {
+      "medicine": "erlotinib",
+      "brand_name": "Tarceva",
+      "epar_slug": "tarceva"
+    },
+    {
+      "medicine": "fluticasone-umeclidinium-vilanterol",
+      "brand_name": "Trelegy Ellipta",
+      "epar_slug": "trelegy-ellipta"
+    },
+    {
+      "medicine": "gefitinib",
+      "brand_name": "IRESSA",
+      "epar_slug": "iressa"
+    },
+    {
+      "medicine": "glycopyrronium",
+      "brand_name": "Seebri Breezhaler",
+      "epar_slug": "seebri-breezhaler"
+    },
+    {
+      "medicine": "glycopyrronium-indacaterol",
+      "brand_name": "Ultibro Breezhaler",
+      "epar_slug": "ultibro-breezhaler"
+    },
+    {
+      "medicine": "iloprost",
+      "brand_name": "Ventavis",
+      "epar_slug": "ventavis"
+    },
+    {
+      "medicine": "indacaterol",
+      "brand_name": "Onbrez Breezhaler",
+      "epar_slug": "onbrez-breezhaler"
+    },
+    {
+      "medicine": "ipilimumab",
+      "brand_name": "YERVOY",
+      "epar_slug": "yervoy"
+    },
+    {
+      "medicine": "ivacaftor",
+      "brand_name": "Kalydeco",
+      "epar_slug": "kalydeco"
+    },
+    {
+      "medicine": "lazertinib",
+      "brand_name": "Lazcluze",
+      "epar_slug": "lazcluze"
+    },
+    {
+      "medicine": "levofloxacin",
+      "brand_name": "Quinsair",
+      "epar_slug": "quinsair"
+    },
+    {
+      "medicine": "lorlatinib",
+      "brand_name": "Lorviqua",
+      "epar_slug": "lorviqua"
+    },
+    {
+      "medicine": "lumacaftor-ivacaftor",
+      "brand_name": "Orkambi",
+      "epar_slug": "orkambi"
+    },
+    {
+      "medicine": "macitentan",
+      "brand_name": "Opsumit",
+      "epar_slug": "opsumit"
+    },
+    {
+      "medicine": "mepolizumab",
+      "brand_name": "Nucala",
+      "epar_slug": "nucala"
+    },
+    {
+      "medicine": "nintedanib",
+      "brand_name": "Ofev",
+      "epar_slug": "ofev"
+    },
+    {
+      "medicine": "nivolumab",
+      "brand_name": "OPDIVO",
+      "epar_slug": "opdivo"
+    },
+    {
+      "medicine": "omalizumab",
+      "brand_name": "Xolair",
+      "epar_slug": "xolair"
+    },
+    {
+      "medicine": "osimertinib",
+      "brand_name": "TAGRISSO",
+      "epar_slug": "tagrisso"
+    },
+    {
+      "medicine": "pembrolizumab",
+      "brand_name": "KEYTRUDA",
+      "epar_slug": "keytruda"
+    },
+    {
+      "medicine": "pemetrexed",
+      "brand_name": "Pemetrexed Accord",
+      "epar_slug": "pemetrexed-accord"
+    },
+    {
+      "medicine": "pirfenidone",
+      "brand_name": "Esbriet",
+      "epar_slug": "esbriet"
+    },
+    {
+      "medicine": "pretomanid",
+      "brand_name": "Dovprela",
+      "epar_slug": "dovprela"
+    },
+    {
+      "medicine": "riociguat",
+      "brand_name": "Adempas",
+      "epar_slug": "adempas"
+    },
+    {
+      "medicine": "rituximab",
+      "brand_name": "MabThera",
+      "epar_slug": "mabthera"
+    },
+    {
+      "medicine": "roflumilast",
+      "brand_name": "Daxas",
+      "epar_slug": "daxas"
+    },
+    {
+      "medicine": "selexipag",
+      "brand_name": "Uptravi",
+      "epar_slug": "uptravi"
+    },
+    {
+      "medicine": "serplulimab",
+      "brand_name": "HETRONIFLY",
+      "epar_slug": "hetronifly"
+    },
+    {
+      "medicine": "sildenafil",
+      "brand_name": "Revatio",
+      "epar_slug": "revatio"
+    },
+    {
+      "medicine": "sotatercept",
+      "brand_name": "Winrevair",
+      "epar_slug": "winrevair"
+    },
+    {
+      "medicine": "sotorasib",
+      "brand_name": "LUMYKRAS",
+      "epar_slug": "lumykras"
+    },
+    {
+      "medicine": "tezacaftor-ivacaftor",
+      "brand_name": "Symkevi",
+      "epar_slug": "symkevi"
+    },
+    {
+      "medicine": "tezepelumab",
+      "brand_name": "Tezspire",
+      "epar_slug": "tezspire"
+    },
+    {
+      "medicine": "tislelizumab",
+      "brand_name": "Tevimbra",
+      "epar_slug": "tevimbra"
+    },
+    {
+      "medicine": "tobramycin",
+      "brand_name": "TOBI Podhaler",
+      "epar_slug": "tobi-podhaler"
+    },
+    {
+      "medicine": "tocilizumab",
+      "brand_name": "RoActemra",
+      "epar_slug": "roactemra"
+    },
+    {
+      "medicine": "tremelimumab",
+      "brand_name": "IMJUDO",
+      "epar_slug": "imjudo"
+    },
+    {
+      "medicine": "umeclidinium",
+      "brand_name": "Incruse Ellipta",
+      "epar_slug": "incruse-ellipta"
+    },
+    {
+      "medicine": "umeclidinium-vilanterol",
+      "brand_name": "ANORO ELLIPTA",
+      "epar_slug": "anoro-ellipta"
+    }
+  ]
+}
