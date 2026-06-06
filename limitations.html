@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Limitations · NaviMed-UMB</title>
+<meta name="description" content="What NaviMed-UMB does not claim: no clinical use, no clinical-accuracy measurement, single-workstation scope, backend-specific quantization, and an active performance embargo.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
+    <nav class="site" aria-label="Primary">
+      <a href="index.html">Overview</a>
+      <a href="models.html">Models</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="reproduce.html">Reproduce</a>
+      <a href="limitations.html" class="active">Limitations</a>
+      <a href="cite.html">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+  <h1>Limitations</h1>
+  <p class="lead">What this project does not claim. Read this before citing or deploying anything here.</p>
+
+  <div class="callout warning">
+    <p><strong>Not for clinical use.</strong> NaviMed-UMB is a research and engineering platform. It is not validated for diagnosis, treatment, triage, or any patient-care decision. Nothing here is a medical device.</p>
+  </div>
+
+  <h2>No clinical-accuracy measurement</h2>
+  <p>Layer 1 measures the inference vehicle. It does not measure what the model says. There is no scoring of factual accuracy, reasoning, or clinical correctness on this site. Those belong to the Layer 3 arena and to separate validation studies.</p>
+
+  <h2>Benchmark is not model quality</h2>
+  <p>Throughput, latency, thermal, and power are properties of the hardware and the serving stack. A fast model is not a good model. The benchmark cannot tell a careful answer from a confident wrong one.</p>
+
+  <h2>The calibration corpus is not patient data</h2>
+  <p>The Polish SmPC corpus is public drug-information text published by the European Medicines Agency. It contains no patient health information. It is a quantization calibration set, not a clinical dataset.</p>
+
+  <h2>Local inference depends on deployment hygiene</h2>
+  <p>"No patient data leaves the building" holds for on-premise inference with no external telemetry or API calls. It is a property of how you deploy, not a guarantee the software grants on its own. Model downloads, framework telemetry, logging, crash reports, and system updates are the operator's responsibility to control.</p>
+
+  <h2>Performance numbers are embargoed</h2>
+  <p>Per-N throughput, latency distributions, energy per token, and cross-model comparisons are held back until peer-reviewed publication. The public figures are the engineering envelope only. See <a href="results.html">Results</a>.</p>
+
+  <h2>Single-workstation external validity</h2>
+  <p>Every figure comes from one machine: two AMD Radeon AI PRO R9700 cards under one pinned stack. Results may not transfer to other GPUs, driver versions, or vLLM builds. This is a depth-over-breadth study, not a survey.</p>
+
+  <h2>Quantization is backend-specific</h2>
+  <p>The AWQ behaviour reported here is specific to gfx1201 (RDNA 4), ROCm 7.2.0, and vLLM 0.19.0. Kernel maturity on this stack is still moving. The same checkpoints may behave differently on NVIDIA or on newer ROCm.</p>
+
+  <h2>"First public" is a best-effort claim</h2>
+  <p>The model cards say "to the author's knowledge, first public" for each AWQ variant. This is based on a public HuggingFace search at release date. It is not a registry-level claim and is not provable in the strict sense.</p>
+
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+    <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the <a href="cite.html#ai">AI-usage disclosure</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
