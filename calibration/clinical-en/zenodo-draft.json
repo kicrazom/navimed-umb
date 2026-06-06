@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "upload_type": "dataset",
+    "title": "Clinical-EN SmPC AWQ Calibration Corpus: an English-language activation-aware quantization calibration set derived from EMA Summary of Product Characteristics",
+    "creators": [
+      {
+        "name": "Minarowski, Łukasz",
+        "affiliation": "Department of Respiratory Physiopathology, Medical University of Białystok, Poland",
+        "orcid": "0000-0002-2536-3508"
+      }
+    ],
+    "description": "<p><strong>Summary.</strong> The <em>Clinical-EN SmPC AWQ Calibration Corpus</em> is an English-language, clinical-domain text corpus assembled to serve as a <strong>calibration set for activation-aware weight quantization (AWQ / AutoAWQ / GPTQ, W4A16)</strong> of English and multilingual large language models intended for clinical use. It comprises <strong>412 text chunks</strong> (~512-token budget; observed window 80&ndash;255 words, median 161) of dense, domain-specific clinical English drawn from the pulmonology and thoracic-oncology therapeutic areas. The corpus is distributed as a single newline-delimited JSON file (<code>corpus.jsonl</code>) in which every record carries full per-chunk source provenance. It is the <strong>English cross-language counterpart</strong> to the <em>Clinical-PL SmPC AWQ Calibration Corpus</em> (<code>mozarcik/clinical-pl-smpc-awq-calibration</code>): the same 61 EMA medicines, but the text is the <strong>English</strong> Annex I Summary of Product Characteristics rather than the Polish <em>Charakterystyka Produktu Leczniczego</em>, extracted from the same EMA EPAR documents. Pairing the two enables the English side of cross-lingual calibration experiments alongside the <code>mozarcik/Llama-PLLuM-70B-*-awq</code> series.</p>\n<p><strong>What it is.</strong> A calibration corpus for post-training quantization (AWQ / AutoAWQ / GPTQ) of English-language and multilingual clinical LLMs. Activation-aware quantization requires a representative, dense sample of in-domain text so that per-channel activation scales are estimated on data resembling the deployment distribution; for the clinical use case that target distribution is dense clinical English (pulmonology and thoracic oncology).</p>\n<p><strong>How it was built.</strong> For each of 61 centrally-authorised European Medicines Agency (EMA) medicines shared with the Polish corpus, the <strong>English</strong> Product Information PDF (Annex I SmPC) was retrieved from EMA on 2026-06-06 from the documented English PI URL pattern (<code>.../product-information/&lt;epar_slug&gt;-epar-product-information_en.pdf</code>); the brand &rarr; EPAR-slug map (<code>manifest.json</code>) is derived directly from the verified Polish corpus source URLs, so no URL is guessed. Extraction (script <code>extract_corpus.py</code>, PyMuPDF &mdash; an English-parametrized copy of the Polish extractor) was restricted to Annex I clinical prose, excluding Annex II/III labelling and leaflet text and the Section 6 pharmaceutical-particulars tail (excipients, shelf-life, marketing-authorisation boilerplate). Text was chunked at a soft window of ~150 words (hard cap 255, min 80), sentence-boundary preferred, and sampled per drug proportionally to that drug's clinical-prose volume with a section weighting biased toward clinical-efficacy (SmPC &sect;5.1), pharmacokinetics (&sect;5.2), dosing (&sect;4.2), and special-warnings (&sect;4.4) content. The chunking, sampling and section-weighting logic is byte-for-byte the Polish logic; only language-bound parsing tokens and the explicit fetch step differ. The extraction workflow is reproducible and included in the deposit.</p>\n<p><strong>Per-chunk provenance schema (every record in <code>corpus.jsonl</code>).</strong></p>\n<pre>{\n  \"text\": \"&hellip; (English SmPC clinical prose, ~512 tokens) &hellip;\",\n  \"source_authority\": \"EMA\",\n  \"source_document_type\": \"SmPC / Product Information\",\n  \"source_url\": \"https://www.ema.europa.eu/en/documents/product-information/tagrisso-epar-product-information_en.pdf\",\n  \"medicine\": \"osimertinib\",\n  \"brand_name\": \"TAGRISSO\",\n  \"language\": \"en\",\n  \"retrieved_at\": \"2026-06-06\",\n  \"chunk_id\": \"EMA_osimertinib_en_0001\",\n  \"license_note\": \"EMA reproduction policy; source attribution required\"\n}</pre>\n<p>All 412 released chunks have <code>source_authority = \"EMA\"</code>, <code>source_document_type = \"SmPC / Product Information\"</code> and <code>language = \"en\"</code>. <code>corpus.jsonl</code> SHA-256: <code>820b7a4de75f20baddf3d89fa73a3d8f348ae22086f1ed52f0278ec6040aac85</code>.</p>\n<p><strong>Intended use.</strong> Calibration data for post-training quantization (AWQ / AutoAWQ / GPTQ) of English-language and multilingual clinical LLMs, and the English side of cross-lingual calibration experiments paired with the Polish corpus; reuse as a corpus-controlled calibration set enabling like-for-like quantization-quality comparison across model scales and languages.</p>\n<p><strong>What it is NOT.</strong> This is <strong>not</strong> a training set and <strong>not</strong> an evaluation / benchmark set; it is not a question-answering, instruction-tuning, or clinical-decision-support dataset and must not be used to fine-tune clinical behaviour or to evaluate clinical accuracy. It contains <strong>no patient data and no protected health information (PHI)</strong>: SmPC documents describe medicinal products (indications, dosing, adverse reactions, pharmacokinetics, aggregate clinical-trial data), not individuals. Every chunk's text is verbatim source text (verified: 412/412 chunks are a contiguous span of their source document after line-cleaning; zero fabricated or paraphrased text) and absence of PHI was confirmed by automated pattern scan. The corpus is not clinical advice and confers no clinical authority; the canonical, legally-authoritative product information remains the EMA-published SmPC.</p>\n<p><strong>Rights and source attribution.</strong> This dataset is a calibration corpus that contains text chunks derived from official medicinal product information documents. Source text is derived from EMA-published <strong>English</strong> SmPC / Product Information documents. EMA source text: &copy; European Medicines Agency. EMA-published documents are reproduced and distributed under EMA's content-reproduction policy, which permits reproduction and/or distribution, in whole or in part, for non-commercial and commercial purposes, provided that EMA is always acknowledged as the source. <strong>Compilation, drug selection, extraction workflow, chunking, dataset structuring and metadata: Łukasz Minarowski / navimed-umb.</strong> No claim is made that the underlying SmPC source text is licensed under CC-BY-4.0, CC-BY-NC-4.0, MIT, Apache-2.0 or any other open-source software licence. Users are responsible for preserving EMA source attribution and for checking source-specific restrictions before redistribution or downstream use. The licence on this record is therefore set to \"other (attribution)\" (EMA public-reproduction policy and source-specific reuse terms); the author's compilation contribution is the author's own work but does not relicense the underlying source text.</p>\n<p><strong>Context.</strong> Produced for NaviMed-UMB (https://github.com/kicrazom/navimed-umb), a local-LLM benchmarking and clinical-decision-support feasibility project at the Medical University of Białystok. The corpus is published on HuggingFace at mozarcik/clinical-en-smpc-awq-calibration; this deposit makes it independently citable with its own DOI. It is the English cross-language counterpart to the Polish corpus mozarcik/clinical-pl-smpc-awq-calibration (same 61 medicines, English Annex I instead of Polish ChPL).</p>\n<p><strong>AI assistance disclosure.</strong> Project documentation was prepared with assistance from large language models (Claude, Anthropic; GPT, OpenAI; Gemini, Google). All drug selection, extraction design, provenance assignment and scientific claims are the author's. See AI_USAGE_DISCLOSURE.md in the repository.</p>",
+    "access_right": "open",
+    "license": "other-at",
+    "language": "eng",
+    "version": "1.0.0",
+    "publication_date": "2026-06-06",
+    "keywords": [
+      "calibration corpus",
+      "AWQ",
+      "AutoAWQ",
+      "GPTQ",
+      "activation-aware weight quantization",
+      "W4A16",
+      "post-training quantization",
+      "English clinical NLP",
+      "clinical English",
+      "cross-lingual calibration",
+      "PLLuM",
+      "large language models",
+      "pulmonology",
+      "thoracic oncology",
+      "Summary of Product Characteristics",
+      "SmPC",
+      "EMA",
+      "medical AI infrastructure",
+      "no PHI"
+    ],
+    "notes": "DRAFT — not yet deposited. Corpus text is EMA-derived and is NOT released under CC-BY or any open-source software licence; licence is \"other-at\" (Other / attribution required: EMA public-reproduction policy + source-specific reuse terms). Legacy Zenodo rejects bare \"other\"; the sibling PL draft should be reconciled to \"other-at\" as well. EMA must always be acknowledged as the source. The author's compilation/extraction/metadata are the author's own work. No patient data / no PHI. Not a training or evaluation set — calibration only. No throughput/latency/benchmark numbers are included (those remain under the NaviMed-UMB METHODOLOGY publication embargo). DESIGN DECISION PENDING (owner): PL and EN may be deposited as TWO separate records (this draft) or as ONE bilingual PL+EN record — the PL Zenodo record is still an unpublished draft so combining is still possible. See zenodo-draft.md section 8.A.",
+    "related_identifiers": [
+      {
+        "identifier": "https://huggingface.co/datasets/mozarcik/clinical-en-smpc-awq-calibration",
+        "relation": "isIdenticalTo",
+        "scheme": "url",
+        "resource_type": "dataset"
+      },
+      {
+        "identifier": "https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration",
+        "relation": "isVariantFormOf",
+        "scheme": "url",
+        "resource_type": "dataset"
+      },
+      {
+        "identifier": "https://github.com/kicrazom/navimed-umb",
+        "relation": "isSupplementTo",
+        "scheme": "url",
+        "resource_type": "software"
+      },
+      {
+        "identifier": "10.5281/zenodo.19851346",
+        "relation": "isReferencedBy",
+        "scheme": "doi",
+        "resource_type": "software"
+      },
+      {
+        "identifier": "10.5281/zenodo.20317011",
+        "relation": "isReferencedBy",
+        "scheme": "doi",
+        "resource_type": "software"
+      },
+      {
+        "identifier": "10.5281/zenodo.20364953",
+        "relation": "isReferencedBy",
+        "scheme": "doi",
+        "resource_type": "software"
+      }
+    ]
+  }
+}
