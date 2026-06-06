@@ -35,8 +35,8 @@
     <p><strong>Performance numbers are held back.</strong> Throughput, latency, energy per token, and cross-model comparisons stay private until the papers are published. The plots that show them are not embedded here. What follows is load behaviour and capacity. That part is public.</p>
   </div>
 
-  <h2>Consumer-GPU envelope (single R9700)</h2>
-  <p>Measured on one R9700 at TP=1, vLLM <code>0.19.0+rocm721</code>, <code>enforce_eager</code>, <code>max_seq_len 2048</code>. Max-concurrency is the capacity multiple vLLM reports at load time. It is a load figure, not a throughput measurement.</p>
+  <h2>Engineering envelope</h2>
+  <p>Measured with vLLM <code>0.19.0+rocm721</code> and <code>enforce_eager</code>. The single-card variants run at TP=1 and <code>max_seq_len 2048</code>. The 70B family runs at TP=2 and <code>max_seq_len 8192</code>, so its context, weight, and concurrency sit on a different basis. See the note below the table. Max-concurrency is the capacity multiple vLLM reports at load time. It is a load figure, not a throughput measurement.</p>
 
   <div class="results-wide">
   <div class="results-controls">
@@ -56,6 +56,7 @@
         <th class="sortable" data-key="model">Model <span class="arrow"></span></th>
         <th class="sortable" data-key="quant">Quant <span class="arrow"></span></th>
         <th class="sortable" data-key="tp">TP <span class="arrow"></span></th>
+        <th class="sortable" data-key="ctx">Ctx <span class="arrow"></span></th>
         <th class="sortable" data-key="weight">Weight (GiB) <span class="arrow"></span></th>
         <th class="sortable" data-key="kv">KV budget (GiB) <span class="arrow"></span></th>
         <th class="sortable" data-key="conc">Max conc.× <span class="arrow"></span></th>
@@ -70,11 +71,11 @@
   </div>
   <p class="table-note">
     <span class="lock">🔒</span> The locked columns hold back throughput, latency, and energy per token until the papers are published. They fill in by a data swap. The layout stays the same.
-    Rows marked <span class="pend-pill">pending</span> wait on a public envelope figure from the model card. The 70B max-concurrency shifts with the KV-cache budget. No single number is claimed yet. Bielik-11B is still running its sweep.
+    The single-card rows are measured at <code>max_seq_len 2048</code>. The 70B row is from its model card at TP=2 and <code>max_seq_len 8192</code>. Its weight is the total across two cards. Its KV budget is reported in tokens there, so the GiB column shows <span class="na">n/a</span>. Its max-concurrency is not directly comparable to the 2048 rows. Bielik-11B is still running its sweep.
   </p>
   </div><!-- /.results-wide -->
 
-  <p>Both single-card variants run on one consumer card. That leaves the second R9700 free for a parallel sweep or training. The 70B family needs both cards (TP=2). Its envelope figures live on the model cards.</p>
+  <p>Both single-card variants run on one consumer card. That leaves the second R9700 free for a parallel sweep or training. The 70B family needs both cards (TP=2). Full per-variant figures are on each model card.</p>
 
   <h2>Gate 1 sanity</h2>
   <p>Each single-card variant passed 5/5 on a Polish-clinical prompt grid. The grid has one factual prompt and four clinical ones: definitional, syndrome, instructional, procedural. Prompts go through <code>/v1/completions</code> with the chat template bypassed. This checks that the model runs and stays coherent. It does not score quality. Raw outputs sit under <code>environment/sanity-tests/</code> in the repo.</p>
@@ -115,15 +116,18 @@
 // They are embargoed until publication. Envelope figures come from public
 // vLLM load-time logs and HuggingFace model cards. No figure is invented.
 // `null` envelope = no public figure yet (rendered as "pending").
+// 70B figures are from the public model card (TP=2, max_seq_len 8192): total
+// weight across two cards, KV reported in tokens there (n/a in the GiB column),
+// max-concurrency at 8192 tokens/request (not comparable to the 2048 rows).
 const ROWS = [
   { model: "Llama-PLLuM-8B-chat-2512", hf: "mozarcik/Llama-PLLuM-8B-chat-2512-awq",
-    family: "PLLuM", quant: "AWQ", tp: 1, weight: 5.53, kv: 22.22, conc: 88.89, gate: "5/5" },
+    family: "PLLuM", quant: "AWQ", tp: 1, ctx: 2048, weight: 5.53, kv: 22.22, conc: 88.89, gate: "5/5" },
   { model: "PLLuM-12B-chat-2512", hf: "mozarcik/PLLuM-12B-chat-2512-awq",
-    family: "PLLuM", quant: "AWQ", tp: 1, weight: 8.03, kv: 19.77, conc: 63.27, gate: "5/5" },
+    family: "PLLuM", quant: "AWQ", tp: 1, ctx: 2048, weight: 8.03, kv: 19.77, conc: 63.27, gate: "5/5" },
   { model: "Llama-PLLuM-70B-chat-2512", hf: "mozarcik/Llama-PLLuM-70B-chat-2512-awq",
-    family: "PLLuM", quant: "AWQ", tp: 2, weight: null, kv: null, conc: null, gate: null, pending: true },
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: 8192, weight: 37.56, kv: null, conc: 6.7, gate: null },
   { model: "Bielik-11B-v3.0-Instruct", hf: "",
-    family: "Bielik", quant: "AWQ", tp: 1, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep in progress" },
+    family: "Bielik", quant: "AWQ", tp: 1, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep in progress" },
 ];
 
 const $ = (s) => document.querySelector(s);
@@ -137,9 +141,11 @@ uniq("quant").forEach(v => fQuant.add(new Option("Quant: " + v, v)));
 uniq("family").forEach(v => fFamily.add(new Option("Family: " + v, v)));
 uniq("tp").forEach(v => fTp.add(new Option("TP = " + v, v)));
 
-const num = (v) => v == null ? "<span class='pend-pill'>pending</span>" : `<span class="num">${v.toFixed(2)}</span>`;
-const concCell = (v) => v == null ? "<span class='pend-pill'>pending</span>" : `<span class="num">${v.toFixed(2)}×</span>`;
-const gateCell = (v) => v == null ? "·" : `<span class="gate-ok">${v} ✓</span>`;
+const miss = (r) => r.pending ? "<span class='pend-pill'>pending</span>" : "<span class='na'>n/a</span>";
+const num = (v, r) => v == null ? miss(r) : `<span class="num">${v.toFixed(2)}</span>`;
+const intCell = (v, r) => v == null ? miss(r) : `<span class="num">${v}</span>`;
+const concCell = (v, r) => v == null ? miss(r) : `<span class="num">${v.toFixed(2)}×</span>`;
+const gateCell = (v, r) => v == null ? miss(r) : `<span class="gate-ok">${v} ✓</span>`;
 const modelCell = (r) => r.hf
   ? `<code><a href="https://huggingface.co/${r.hf}">${r.model}</a></code>${r.note ? ` <span class="pend-pill">${r.note}</span>` : ""}`
   : `${r.model}${r.note ? ` <span class="pend-pill">${r.note}</span>` : ""}`;
@@ -150,10 +156,11 @@ function rowHTML(r) {
     <td class="model">${modelCell(r)}</td>
     <td>${r.quant}</td>
     <td class="num">${r.tp}</td>
-    <td>${num(r.weight)}</td>
-    <td>${num(r.kv)}</td>
-    <td>${concCell(r.conc)}</td>
-    <td>${gateCell(r.gate)}</td>
+    <td>${intCell(r.ctx, r)}</td>
+    <td>${num(r.weight, r)}</td>
+    <td>${num(r.kv, r)}</td>
+    <td>${concCell(r.conc, r)}</td>
+    <td>${gateCell(r.gate, r)}</td>
     ${L}${L}${L}
   </tr>`;
 }
@@ -177,7 +184,7 @@ function render() {
     (!fTp.value || String(r.tp) === fTp.value)
   ).sort(cmp);
   body.innerHTML = rows.map(rowHTML).join("") ||
-    `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:1rem">No models match the current filter.</td></tr>`;
+    `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:1rem">No models match the current filter.</td></tr>`;
   $("#count").textContent = `${rows.length} / ${ROWS.length} models`;
   document.querySelectorAll("th.sortable").forEach(th => {
     const on = th.dataset.key === sortKey;

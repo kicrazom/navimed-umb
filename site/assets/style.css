@@ -290,6 +290,7 @@ table.envelope th.locked, table.envelope td.locked {
 table.envelope th.locked { background: var(--accent-2-soft); color: #9a4a05; cursor: not-allowed; }
 table.envelope td.locked .lock { color: var(--accent-2); }
 table.envelope tr.pending td:not(.locked) { color: var(--muted); }
+table.envelope .na { color: var(--muted); font-style: italic; font-size: 0.85em; }
 table.envelope .pend-pill {
   display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
   text-transform: uppercase; padding: 0.05rem 0.4rem; border-radius: 999px;
