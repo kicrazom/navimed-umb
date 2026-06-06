@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cite · NaviMed-UMB</title>
+<meta name="description" content="How to cite NaviMed-UMB: Zenodo concept and version DOIs, CITATION.cff metadata, BibTeX, and the project's generative-AI usage disclosure.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
+    <nav class="site" aria-label="Primary">
+      <a href="index.html">Overview</a>
+      <a href="models.html">Models</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="reproduce.html">Reproduce</a>
+      <a href="cite.html" class="active">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+  <h1>Cite this work</h1>
+  <p class="lead">NaviMed-UMB is archived on Zenodo with a versioned DOI chain. It ships a <code>CITATION.cff</code> for GitHub's "Cite this repository" button.</p>
+
+  <h2>DOIs</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Scope</th><th>DOI</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Concept</strong> (always resolves to latest version)</td><td><a href="https://doi.org/10.5281/zenodo.19851346">10.5281/zenodo.19851346</a></td></tr>
+      <tr><td>Version v0.4.0 (current)</td><td><a href="https://doi.org/10.5281/zenodo.20364953">10.5281/zenodo.20364953</a></td></tr>
+      <tr><td>Version v0.3.0</td><td><a href="https://doi.org/10.5281/zenodo.20317011">10.5281/zenodo.20317011</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>For most purposes, cite the <strong>concept DOI</strong>. It auto-resolves to the latest release. Cite a specific version DOI when reproducibility against an exact snapshot matters.</p>
+
+  <h2>Canonical citation</h2>
+  <p>From <a href="https://github.com/kicrazom/navimed-umb/blob/main/CITATION.cff"><code>CITATION.cff</code></a> (CFF 1.2.0):</p>
+  <blockquote>
+    <p>Minarowski, Ł. (2026). <em>NaviMed-UMB: hardware envelope studies for local AI deployment on consumer RDNA 4 GPUs</em> (Version 0.4.0) [Software]. Zenodo. <a href="https://doi.org/10.5281/zenodo.19851346">https://doi.org/10.5281/zenodo.19851346</a></p>
+  </blockquote>
+
+  <h3>BibTeX</h3>
+  <pre><code>@software{minarowski_navimed_umb_2026,
+  author    = {Minarowski, {\L}ukasz},
+  title     = {{NaviMed-UMB: hardware envelope studies for local
+               AI deployment on consumer RDNA 4 GPUs}},
+  year      = {2026},
+  version   = {0.4.0},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.19851346},
+  url       = {https://github.com/kicrazom/navimed-umb},
+  license   = {CC-BY-4.0}
+}</code></pre>
+
+  <h2>Author</h2>
+  <p><strong>Łukasz Minarowski, MD, PhD</strong><br>
+  Department of Respiratory Physiopathology, Medical University of Białystok, Poland<br>
+  ORCID: <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a><br>
+  Email: <a href="mailto:lukasz.minarowski@umb.edu.pl">lukasz.minarowski@umb.edu.pl</a></p>
+
+  <h2>Licensing</h2>
+  <p>The repository uses dual licensing:</p>
+  <ul>
+    <li><strong>Code</strong>: <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>.</li>
+    <li><strong>Documentation, methodology, lab logs, benchmark findings</strong>: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.</li>
+    <li><strong>The calibration dataset</strong>: derived from third-party EMA-published regulatory documents (SmPC). It is governed by its own license, <em>not</em> the root CC-BY-4.0 / MIT.</li>
+  </ul>
+  <p class="muted">Released model checkpoints carry the license of their base family. <span class="pill lic-llama">llama3.1</span> for the Llama-PLLuM derivatives, <span class="pill lic-apache">apache-2.0</span> for the Mistral-Nemo-derived 12B. See <a href="models.html">Models</a>.</p>
+
+  <h2 id="ai">AI-usage disclosure</h2>
+  <p>Transparency about AI assistance is a default policy for this project. Documentation prose, debugging dialogue, and sounding-board discussion used generative-AI tools: Claude (Anthropic, web + Claude Code CLI), GPT (OpenAI, web), and Gemini (Google, web review). A <strong>locally-served Bielik-11B-v3.0-instruct-AWQ</strong> (vLLM on one R9700) handled Polish-language editorial work.</p>
+  <p><strong>All experimental design, hardware configuration, empirical measurements, and scientific claims are the sole responsibility of the author.</strong> AI tools did not execute experiments, did not access the workstation, did not generate quantized weights, and did not validate any benchmark measurement. The work has a single author. Consistent with COPE and ICMJE guidance, AI tools are documented as research aids, not co-authors. Full table and per-role detail: <a href="https://github.com/kicrazom/navimed-umb/blob/main/AI_USAGE_DISCLOSURE.md"><code>AI_USAGE_DISCLOSURE.md</code></a>.</p>
+
+  <div class="callout">
+    <p><strong>Inline disclosure for citing work.</strong> "This work used Claude (Anthropic) and GPT (OpenAI) as research assistants for documentation, debugging dialogue, and sounding-board discussion. All experimental design, hardware configuration, empirical measurements, and scientific claims are the sole responsibility of the author. AI tools did not execute experiments, did not access the workstation, and were not given autonomous agency. Full disclosure: see <code>AI_USAGE_DISCLOSURE.md</code> (DOI: 10.5281/zenodo.19851346)."</p>
+  </div>
+
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+    <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the AI-usage disclosure above.</p>
+  </div>
+</footer>
+</body>
+</html>

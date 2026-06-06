@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reproduce · NaviMed-UMB</title>
+<meta name="description" content="Reproducibility floor for NaviMed-UMB: pinned ROCm 7.2.0 / vLLM 0.19.0+rocm721 stack and the mandatory gfx1201 environment variables and model-construction flags.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
+    <nav class="site" aria-label="Primary">
+      <a href="index.html">Overview</a>
+      <a href="models.html">Models</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="reproduce.html" class="active">Reproduce</a>
+      <a href="cite.html">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+  <h1>Reproduce</h1>
+  <p class="lead">To reproduce a run, match the full software stack. A different stack is a different experiment. The values below are the minimum spec. The repository holds the exact dated manifests.</p>
+
+  <h2>Pinned stack</h2>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Component</th><th>Pinned value</th></tr></thead>
+    <tbody>
+      <tr><td>GPU</td><td>2× AMD Radeon AI PRO R9700 32 GB (gfx1201, RDNA 4 / Navi 48)</td></tr>
+      <tr><td>CPU / RAM</td><td>AMD Ryzen 9 9950X3D · 96 GB DDR5-6000</td></tr>
+      <tr><td>OS / kernel</td><td>Kubuntu 24.04 · kernel 6.17</td></tr>
+      <tr><td>ROCm</td><td><code>7.2.0</code></td></tr>
+      <tr><td>vLLM</td><td><code>0.19.0+rocm721</code></td></tr>
+      <tr><td>Quantization</td><td>AWQ W4A16 (compressed-tensors); <code>llm-compressor 0.10.0.2</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Every benchmark JSON record captures the full version set (<code>rocm_version</code>, <code>vllm_version</code>, <code>torch_version</code>, <code>torch_hip_version</code>) plus the complete env-var dictionary. Dated software and system manifests (pip freeze, ROCm, kernel) live under <a href="https://github.com/kicrazom/navimed-umb/tree/main/environment"><code>environment/</code></a> in the repository.</p>
+
+  <h2>Mandatory gfx1201 environment variables</h2>
+  <p>These variables are required on this platform. They are public engineering content.</p>
+  <pre><code>unset PYTORCH_ALLOC_CONF
+export VLLM_ROCM_USE_AITER=0
+export AMD_SERIALIZE_KERNEL=1            # NOT 3, rejected by current PyTorch
+export HIP_LAUNCH_BLOCKING=1
+export ROCR_VISIBLE_DEVICES=0,1          # exclude the iGPU (RAPHAEL)</code></pre>
+
+  <h2>Mandatory model-construction flag</h2>
+  <p>For every model with hybrid attention, <code>enforce_eager=True</code> is mandatory. The default CUDA-graph capture crashes with <code>HSA_STATUS_ERROR_INVALID_PACKET_FORMAT</code> on gfx1201. This is a runtime constraint, not a model defect.</p>
+
+  <h2>Serving a released model</h2>
+  <p>The released AWQ checkpoints ship vLLM usage snippets for two platforms on their HuggingFace cards: AMD ROCm validated, NVIDIA portable via the <code>awq_marlin</code> kernel. On this platform, a single-card variant is served roughly as below. The model card gives the exact per-variant invocation.</p>
+  <pre><code># after exporting the gfx1201 env-var floor above
+vllm serve mozarcik/Llama-PLLuM-8B-chat-2512-awq \
+  --tensor-parallel-size 1 \
+  --max-model-len 2048 \
+  --enforce-eager</code></pre>
+  <p class="muted">Sanity checks go to the <code>/v1/completions</code> endpoint with the chat template bypassed. See <a href="results.html">Results</a> for why.</p>
+
+  <h2>What you can reproduce from public artifacts</h2>
+  <ul>
+    <li><strong>The engineering envelope.</strong> Load behaviour, weight footprint, KV-cache budget, and max-concurrency for each released checkpoint. These figures are on the <a href="results.html">Results</a> page and the model cards.</li>
+    <li><strong>The quantization.</strong> Re-quantize any base checkpoint against the published <a href="https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration">calibration corpus</a> with the pinned <code>llm-compressor</code> version.</li>
+    <li><strong>The methodology.</strong> The full Phase 1 and Phase 2 protocol, statistical design, and plotting scripts are in the repository.</li>
+  </ul>
+
+  <div class="callout embargo">
+    <p>The Phase 2 <em>numerical</em> results (per-N throughput, latency distributions, energy per token) and the figures needed to reproduce the scaling analysis are <strong>held back until the papers are published</strong>. The raw results tree (<code>benchmarks/results/</code>) is gitignored and kept locally only.</p>
+  </div>
+
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+    <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the <a href="cite.html#ai">AI-usage disclosure</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

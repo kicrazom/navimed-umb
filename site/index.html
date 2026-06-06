@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview · NaviMed-UMB</title>
+<meta name="description" content="A benchmark suite, Polish clinical-LLM AWQ releases, and a documented method for running open-weight models on a consumer dual AMD Radeon AI PRO R9700 workstation.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
+    <nav class="site" aria-label="Primary">
+      <a href="index.html" class="active">Overview</a>
+      <a href="models.html">Models</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="reproduce.html">Reproduce</a>
+      <a href="cite.html">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+  <h1>Clinical LLMs on hardware you own</h1>
+  <p class="lead">NaviMed-UMB runs open-weight language models on a consumer dual AMD Radeon AI PRO R9700 workstation. It ships a benchmark suite, public model cards, and a documented method. No cloud. No patient data leaves the building.</p>
+
+  <div class="badges">
+    <a class="badge" href="https://doi.org/10.5281/zenodo.19851346">Zenodo concept DOI</a>
+    <a class="badge" href="https://github.com/kicrazom/navimed-umb">GitHub repository</a>
+    <a class="badge" href="https://huggingface.co/mozarcik">HuggingFace · mozarcik</a>
+    <a class="badge" href="https://creativecommons.org/licenses/by/4.0/">Docs: CC BY 4.0</a>
+  </div>
+
+  <p>The platform is Layer 1 of a three-layer design for on-premise medical AI. It is the layer that runs today.</p>
+
+  <h2>The question</h2>
+  <p>What does it take to run a privacy-sensitive clinical model on hardware a department can buy? Two consumer GPUs. On premise. Nothing leaves the building. This site answers the hardware half of that question. It releases the models it produced.</p>
+
+  <h2>Hardware</h2>
+  <p>AMD Ryzen 9 9950X3D. 2× GIGABYTE Radeon AI PRO R9700 32 GB (gfx1201, RDNA 4). 96 GB DDR5-6000. Kubuntu 24.04, kernel 6.17, ROCm 7.2.0, vLLM 0.19.0.</p>
+
+  <h2>Releases (v0.4.0)</h2>
+  <ul>
+    <li><strong>Ten HuggingFace model cards.</strong> The Llama-PLLuM-70B family in eight AWQ variants for two-card deployment, plus two variants that fit on a single R9700. To the author's knowledge, the first public AWQ W4A16 quantization of each. See <a href="models.html">Models</a>.</li>
+    <li><strong>One calibration dataset.</strong> A reusable Polish clinical SmPC corpus. 418 fragments of EMA-published text. No PHI.</li>
+    <li><strong>One Zenodo deposit.</strong> Concept DOI <a href="https://doi.org/10.5281/zenodo.19851346">10.5281/zenodo.19851346</a>, current version v0.4.0.</li>
+  </ul>
+
+  <h2>Three layers</h2>
+  <p>Each layer is a separate contribution. This site documents Layer 1.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>L1 · Workstation</h3>
+      <p>The hardware envelope, the benchmark platform, and the AWQ releases. Released as v0.4.0.</p>
+    </div>
+    <div class="card">
+      <h3>L2 · Retrieval</h3>
+      <p>A clinical retrieval layer over the Polish SmPC corpus. Hybrid retrieval, not a single vector store. In scoping.</p>
+    </div>
+    <div class="card">
+      <h3>L3 · Arena</h3>
+      <p>A model-quality evaluation method, kept separate from the throughput work. In scoping.</p>
+    </div>
+  </div>
+
+  <h2>Scope</h2>
+  <p>The benchmark measures throughput, latency, thermal envelope, and power under concurrent load. It does not measure model quality, reasoning, or clinical accuracy. A confidently wrong model runs as fast as a correct one. The benchmark cannot tell them apart. Quality belongs to the L3 Arena and to clinical validation. Not here.</p>
+
+  <div class="callout embargo">
+    <p><strong>What this site holds back.</strong> Performance numbers stay private until the papers are published. Throughput, latency distributions, energy per token, and cross-model comparisons are not here. The engineering side is: hardware limits, the method, the model cards, and how to reproduce them.</p>
+  </div>
+
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+    <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the <a href="cite.html#ai">AI-usage disclosure</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
