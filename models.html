@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Models · NaviMed-UMB</title>
+<meta name="description" content="Released Polish clinical-LLM AWQ checkpoints: the Llama-PLLuM-70B family (8 variants), two Run-3 consumer-GPU variants, and a shared SmPC calibration dataset.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
+    <nav class="site" aria-label="Primary">
+      <a href="index.html">Overview</a>
+      <a href="models.html" class="active">Models</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="reproduce.html">Reproduce</a>
+      <a href="cite.html">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+  <h1>Released models &amp; dataset</h1>
+  <p class="lead">Eleven public artifacts on HuggingFace under the <a href="https://huggingface.co/mozarcik"><code>mozarcik/</code></a> namespace. Ten AWQ model cards and one reusable calibration dataset. To the author's knowledge, the first public AWQ W4A16 / vLLM-native quantization of each variant.</p>
+
+  <div class="callout">
+    <p>All checkpoints are <strong>AWQ W4A16</strong> (4-bit weight, 16-bit activation) compressed-tensors. Each is calibrated on the shared Polish clinical SmPC corpus below. Each ships with dual-platform vLLM usage snippets, validated on AMD ROCm and portable to NVIDIA via the <code>awq_marlin</code> kernel. Every card states "to the author's knowledge, first public".</p>
+  </div>
+
+  <h2>Llama-PLLuM-70B family: 8 variants</h2>
+  <p>Quantized from the <a href="https://huggingface.co/CYFRAGOVPL">CYFRAGOVPL</a> Llama-PLLuM-70B base / instruct / chat checkpoints. Deployment target: <strong>2× R9700 (TP = 2)</strong>. Released 2026-05-23. License: <span class="pill lic-llama">llama3.1</span> (Llama 3.1 Community License). Each card ships with full <code>NOTICE</code> / <code>LICENSE</code> / <code>USE_POLICY.md</code> compliance.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Variant</th><th>Checkpoint</th><th>Base model</th><th>License</th></tr></thead>
+    <tbody>
+      <tr><td>base · 2412</td><td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-70B-base-2412-awq">Llama-PLLuM-70B-base-2412-awq</a></td><td>CYFRAGOVPL/Llama-PLLuM-70B-base-2412</td><td><span class="pill lic-llama">llama3.1</span></td></tr>
+      <tr><td>base · 2508</td><td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-70B-base-2508-awq">Llama-PLLuM-70B-base-2508-awq</a></td><td>CYFRAGOVPL/Llama-PLLuM-70B-base-2508</td><td><span class="pill lic-llama">llama3.1</span></td></tr>
+      <tr><td>instruct · 2412</td><td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-70B-instruct-2412-awq">Llama-PLLuM-70B-instruct-2412-awq</a></td><td>CYFRAGOVPL/Llama-PLLuM-70B-instruct-2412</td><td><span class="pill lic-llama">llama3.1</span></td></tr>
+      <tr><td>instruct · 2508</td><td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-70B-instruct-2508-awq">Llama-PLLuM-70B-instruct-2508-awq</a></td><td>CYFRAGOVPL/Llama-PLLuM-70B-instruct-2508</td><td><span class="pill lic-llama">llama3.1</span></td></tr>
+      <tr><td>instruct · 2512</td><td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-70B-instruct-2512-awq">Llama-PLLuM-70B-instruct-2512-awq</a></td><td>CYFRAGOVPL/Llama-PLLuM-70B-instruct-2512</td><td><span class="pill lic-llama">llama3.1</span></td></tr>
+      <tr><td>chat · 2412</td><td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-70B-chat-2412-awq">Llama-PLLuM-70B-chat-2412-awq</a></td><td>CYFRAGOVPL/Llama-PLLuM-70B-chat-2412</td><td><span class="pill lic-llama">llama3.1</span></td></tr>
+      <tr><td>chat · 2508</td><td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-70B-chat-2508-awq">Llama-PLLuM-70B-chat-2508-awq</a></td><td>CYFRAGOVPL/Llama-PLLuM-70B-chat-2508</td><td><span class="pill lic-llama">llama3.1</span></td></tr>
+      <tr><td>chat · 2512</td><td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-70B-chat-2512-awq">Llama-PLLuM-70B-chat-2512-awq</a></td><td>CYFRAGOVPL/Llama-PLLuM-70B-chat-2512</td><td><span class="pill lic-llama">llama3.1</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Run-3 consumer-GPU variants: single R9700</h2>
+  <p>Released 2026-05-26. Both were quantized locally on a <strong>single 32 GB R9700</strong> (TP = 1). Both deploy on one consumer card under vLLM, leaving the second GPU free for a parallel sweep or co-located training. Each passed a 5/5 Polish-clinical Gate 1 sanity grid (see <a href="results.html">Results</a>).</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Checkpoint</th><th>Base model</th><th>Base family</th><th>License</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="https://huggingface.co/mozarcik/Llama-PLLuM-8B-chat-2512-awq">Llama-PLLuM-8B-chat-2512-awq</a></td>
+        <td>CYFRAGOVPL/Llama-PLLuM-8B-chat-2512</td>
+        <td>Llama 3.1</td>
+        <td><span class="pill lic-llama">llama3.1</span></td>
+      </tr>
+      <tr>
+        <td><a href="https://huggingface.co/mozarcik/PLLuM-12B-chat-2512-awq">PLLuM-12B-chat-2512-awq</a></td>
+        <td>CYFRAGOVPL/PLLuM-12B-chat-2512</td>
+        <td>Mistral-Nemo-Base-2407</td>
+        <td><span class="pill lic-apache">apache-2.0</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="muted">The two Run-3 variants carry different licenses because they derive from different base families. The 8B is a Llama 3.1 derivative (Llama 3.1 Community License). The 12B is a Mistral-Nemo derivative (Apache 2.0).</p>
+
+  <h2>Calibration dataset</h2>
+  <p>One AWQ calibration corpus, shared across all 8B / 12B / 70B quantizations. Cross-variant quantization-quality comparisons stay corpus-controlled.</p>
+  <div class="card">
+    <h3><a href="https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration">mozarcik/clinical-pl-smpc-awq-calibration</a> <span class="pill lic-other">license: other</span></h3>
+    <p>418 fragments of Polish <em>Charakterystyka Produktu Leczniczego</em> (ChPL / SmPC) text published by the European Medicines Agency (EMA), ~512 tokens each. It covers 61 medicines drawn from a curated catalog of 81 INN across 9 NFZ drug programmes, with a pulmonology and thoracic oncology focus. <strong>No PHI.</strong> Reusable as a calibration corpus for other Polish-clinical quantization work.</p>
+    <p class="muted">Licensed separately from the repository. It derives from third-party EMA-published regulatory documents and is governed by the dataset's own license, not the root CC-BY-4.0 / MIT.</p>
+  </div>
+
+  <div class="callout embargo">
+    <p><strong>What is not on this page.</strong> Per-model and cross-model <em>performance</em> numbers stay back until the papers are published. That covers per-N throughput, latency distributions, KV-occupancy curves, energy-per-token, and any quantization-vs-quantization scaling comparison. The engineering <em>envelope</em> figures that are public appear on the <a href="results.html">Results</a> page: weight footprint, KV budget, max-concurrency.</p>
+  </div>
+
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+    <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the <a href="cite.html#ai">AI-usage disclosure</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

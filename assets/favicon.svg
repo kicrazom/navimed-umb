@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NaviMed-UMB">
+  <rect width="64" height="64" rx="13" fill="#0b5d8a"/>
+  <path d="M16 48 V16 H24 L40 40 V16 H48 V48 H40 L24 24 V48 Z" fill="#ffffff"/>
+  <rect x="16" y="51" width="32" height="5" rx="2.5" fill="#e2711d"/>
+</svg>
