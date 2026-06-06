@@ -36,7 +36,7 @@
   </div>
 
   <h2>Llama-PLLuM-70B family: 8 variants</h2>
-  <p>Quantized from the <a href="https://huggingface.co/CYFRAGOVPL">CYFRAGOVPL</a> Llama-PLLuM-70B base / instruct / chat checkpoints. Deployment target: <strong>2× R9700 (TP = 2)</strong>. Released 2026-05-23. License: <span class="pill lic-llama">llama3.1</span> (Llama 3.1 Community License). Each card ships with full <code>NOTICE</code> / <code>LICENSE</code> / <code>USE_POLICY.md</code> compliance.</p>
+  <p>Quantized from the <a href="https://huggingface.co/CYFRAGOVPL">CYFRAGOVPL</a> Llama-PLLuM-70B base / instruct / chat checkpoints. Calibration ran on an <strong>AMD Instinct MI300X</strong> via the AMD Developer Cloud, powered by DigitalOcean, under the AMD Developer Program. Its 192 GB of HBM3 holds the 70B in one calibration pass. Deployment then runs locally on <strong>2× R9700 (TP = 2)</strong>. Released 2026-05-23. License: <span class="pill lic-llama">llama3.1</span> (Llama 3.1 Community License). Each card ships with full <code>NOTICE</code> / <code>LICENSE</code> / <code>USE_POLICY.md</code> compliance.</p>
   <div class="table-scroll">
   <table>
     <thead><tr><th>Variant</th><th>Checkpoint</th><th>Base model</th><th>License</th></tr></thead>
@@ -54,7 +54,7 @@
   </div>
 
   <h2>Run-3 consumer-GPU variants: single R9700</h2>
-  <p>Released 2026-05-26. Both were quantized locally on a <strong>single 32 GB R9700</strong> (TP = 1). Both deploy on one consumer card under vLLM, leaving the second GPU free for a parallel sweep or co-located training. Each passed a 5/5 Polish-clinical Gate 1 sanity grid (see <a href="results.html">Results</a>).</p>
+  <p>Released 2026-05-26. Unlike the 70B family, both were quantized locally on a <strong>single 32 GB R9700</strong> (TP = 1). They are small enough to calibrate on one consumer card. Both deploy on one consumer card under vLLM, leaving the second GPU free for a parallel sweep or co-located training. Each passed a 5/5 Polish-clinical Gate 1 sanity grid (see <a href="results.html">Results</a>).</p>
   <div class="table-scroll">
   <table>
     <thead><tr><th>Checkpoint</th><th>Base model</th><th>Base family</th><th>License</th></tr></thead>

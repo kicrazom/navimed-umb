@@ -70,7 +70,7 @@ vllm serve mozarcik/Llama-PLLuM-8B-chat-2512-awq \
   <h2>What you can reproduce from public artifacts</h2>
   <ul>
     <li><strong>The engineering envelope.</strong> Load behaviour, weight footprint, KV-cache budget, and max-concurrency for each released checkpoint. These figures are on the <a href="results.html">Results</a> page and the model cards.</li>
-    <li><strong>The quantization.</strong> Re-quantize any base checkpoint against the published <a href="https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration">calibration corpus</a> with the pinned <code>llm-compressor</code> version.</li>
+    <li><strong>The quantization.</strong> Re-quantize any base checkpoint against the published <a href="https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration">calibration corpus</a> with the pinned <code>llm-compressor</code> version. The 8B and 12B were quantized locally on one R9700. The 70B family was quantized on an AMD Instinct MI300X (192 GB) via the AMD Developer Cloud on DigitalOcean, under the AMD Developer Program. A 70B AWQ pass needs more memory than two R9700 cards leave free. The scripts and their MI300X paths are under <code>calibration/quantization/</code>.</li>
     <li><strong>The methodology.</strong> The full Phase 1 and Phase 2 protocol, statistical design, and plotting scripts are in the repository.</li>
   </ul>
 
