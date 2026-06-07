@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conclusions · NaviMed-UMB</title>
+<meta name="description" content="What the project establishes: open-weight Polish clinical LLMs run on-premise on a consumer dual AMD R9700 workstation, plus the gfx1201 engineering findings behind the released checkpoints.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
+    <nav class="site" aria-label="Primary">
+      <a href="index.html">Overview</a>
+      <a href="models.html">Models</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="conclusions.html" class="active">Conclusions</a>
+      <a href="reproduce.html">Reproduce</a>
+      <a href="limitations.html">Limitations</a>
+      <a href="cite.html">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+  <h1>Conclusions</h1>
+  <p class="lead">What the project establishes, and the engineering findings behind it. No performance numbers — throughput, latency, and energy stay embargoed until the papers are published (see <a href="results.html">Results</a> and <a href="limitations.html">Limitations</a>).</p>
+
+  <h2>What this establishes</h2>
+  <p>Open-weight Polish clinical language models — the Llama-PLLuM family and Bielik — run <strong>on-premise on a consumer dual AMD Radeon AI PRO R9700 workstation</strong> (64 GB VRAM) under vLLM / ROCm, with no patient data leaving the building. The project ships three concrete artifacts: a set of <a href="models.html">public AWQ checkpoints</a> (the first vLLM-native W4A16 quantization of each variant, to the author's knowledge), a shared SmPC calibration dataset, and a <a href="reproduce.html">documented, reproducible method</a> with its public <a href="results.html">engineering envelope</a> (weight footprint, KV-cache budget, max-concurrency, Gate-1 sanity).</p>
+  <p>The single-card AWQ variants (8B, 12B) leave the second R9700 free for a parallel sweep or co-located training; the 70B family uses both cards at TP&nbsp;=&nbsp;2. This is a deployment profile a clinic or department can actually own and run.</p>
+
+  <h2>Engineering findings</h2>
+  <p>What surfaced while bringing these models up on RDNA&nbsp;4 (gfx1201). Engineering notes only — no performance numbers.</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3><code>enforce_eager</code> is mandatory on gfx1201</h3>
+      <p>With hybrid attention, the default CUDA-graph path crashes on gfx1201 (<code>HSA_STATUS_ERROR_INVALID_PACKET_FORMAT</code>). <code>enforce_eager=True</code> fixes it. This is a runtime constraint, not a model defect.</p>
+    </div>
+    <div class="card">
+      <h3>AWQ runs slower than BF16 here</h3>
+      <p>On this gfx1201 / ROCm 7.2.0 / vLLM 0.19.0 build, the AWQ kernels are slower than BF16 for the same model. The kernels are still young on RDNA 4. The size of the gap is embargoed.</p>
+    </div>
+    <div class="card">
+      <h3>Sanity bypasses the chat template</h3>
+      <p>Prompts go straight to <code>/v1/completions</code>. The chat-template path produced failures that came from the harness, not the model. So the documented pattern skips it.</p>
+    </div>
+  </div>
+
+  <h2>What remains</h2>
+  <p>The performance story — per-N throughput, latency distributions, energy per token, and any quantization-vs-quantization comparison — is held back until peer-reviewed publication. The <a href="methodology.html">method</a> page documents the plot design; the numbers fill in by a data swap once the papers are out, with the layout unchanged.</p>
+
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+    <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the <a href="cite.html#ai">AI-usage disclosure</a>.</p>
+  </div>
+</footer>
+
+</body>
+</html>

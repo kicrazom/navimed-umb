@@ -19,6 +19,7 @@
       <a href="models.html">Models</a>
       <a href="methodology.html">Methodology</a>
       <a href="results.html" class="active">Results</a>
+      <a href="conclusions.html">Conclusions</a>
       <a href="reproduce.html">Reproduce</a>
       <a href="limitations.html">Limitations</a>
       <a href="cite.html">Cite</a>
@@ -82,22 +83,7 @@
   <p>Each single-card variant passed 5/5 on a Polish-clinical prompt grid. The grid has one factual prompt and four clinical ones: definitional, syndrome, instructional, procedural. Prompts go through <code>/v1/completions</code> with the chat template bypassed. This checks that the model runs and stays coherent. It does not score quality. Raw outputs sit under <code>environment/sanity-tests/</code> in the repo.</p>
 
   <h2>What we found</h2>
-  <p>Engineering notes. No performance numbers, those stay embargoed.</p>
-
-  <div class="cards">
-    <div class="card">
-      <h3><code>enforce_eager</code> is mandatory on gfx1201</h3>
-      <p>With hybrid attention, the default CUDA-graph path crashes on gfx1201 (<code>HSA_STATUS_ERROR_INVALID_PACKET_FORMAT</code>). <code>enforce_eager=True</code> fixes it. This is a runtime constraint, not a model defect.</p>
-    </div>
-    <div class="card">
-      <h3>AWQ runs slower than BF16 here</h3>
-      <p>On this gfx1201 / ROCm 7.2.0 / vLLM 0.19.0 build, the AWQ kernels are slower than BF16 for the same model. The kernels are still young on RDNA 4. The size of the gap is embargoed.</p>
-    </div>
-    <div class="card">
-      <h3>Sanity bypasses the chat template</h3>
-      <p>Prompts go straight to <code>/v1/completions</code>. The chat-template path produced failures that came from the harness, not the model. So the documented pattern skips it.</p>
-    </div>
-  </div>
+  <p>The gfx1201 engineering findings behind these figures — <code>enforce_eager</code> being mandatory, AWQ running slower than BF16 here, and the sanity chat-template bypass — are written up on the <a href="conclusions.html">Conclusions</a> page. No performance numbers; those stay embargoed.</p>
 
   <h2>Why no plots</h2>
   <p>The scaling plots put concrete per-N values on their axes. That makes them paper-bound, so they wait for acceptance. Anything not shown above as public is held back too. The <a href="methodology.html">method</a> page covers the plot design.</p>
