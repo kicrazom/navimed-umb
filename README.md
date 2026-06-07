@@ -4,7 +4,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19851346.svg)](https://doi.org/10.5281/zenodo.19851346)
 [![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.4.0)
 
-**📊 Live dashboard → [kicrazom.github.io/navimed-umb](https://kicrazom.github.io/navimed-umb/)** — interactive hardware-envelope table, model cards, and methodology.
+**📊 Live dashboard → [NaviMed-UMB](https://kicrazom.github.io/navimed-umb/)** — interactive hardware-envelope table, model cards, and methodology.
 
 Reproducible benchmark suite, model-card releases, and methodology for
 deploying Polish clinical large-language-model inference on a consumer-grade
