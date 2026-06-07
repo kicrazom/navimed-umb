@@ -120,15 +120,85 @@
 // 70B figures are from the public model card (TP=2, max_seq_len 8192): total
 // weight across two cards, KV reported in tokens there (n/a in the GiB column),
 // max-concurrency at 8192 tokens/request (not comparable to the 2048 rows).
+// max-concurrency (`conc`) normalized to ctx 24576 tokens (present in 10/11 maxctx
+// probes) so the column is comparable across rows. Exceptions carry an explicit note:
+//   - Run-3 AWQ 8B/12B: no maxctx probe for the AWQ checkpoints → conc @ ctx 2048
+//     (METHODOLOGY Run-3 addendum); 70B-chat-2512: conc @ ctx 8192 (model card).
+//   - weight/KV in GiB are public only for the two Run-3 models; elsewhere the public
+//     envelope reports KV in tokens with no separate weights figure → rendered n/a.
 const ROWS = [
+  // ── PLLuM — deployed AWQ ──────────────────────────────────────────────────
   { model: "Llama-PLLuM-8B-chat-2512", hf: "mozarcik/Llama-PLLuM-8B-chat-2512-awq",
-    family: "PLLuM", quant: "AWQ", tp: 1, ctx: 2048, weight: 5.53, kv: 22.22, conc: 88.89, gate: "5/5" },
+    family: "PLLuM", quant: "AWQ", tp: 1, ctx: 2048, weight: 5.53, kv: 22.22,
+    conc: 88.89, gate: "5/5", note: "conc @ ctx 2048 (Run-3)" },
   { model: "PLLuM-12B-chat-2512", hf: "mozarcik/PLLuM-12B-chat-2512-awq",
-    family: "PLLuM", quant: "AWQ", tp: 1, ctx: 2048, weight: 8.03, kv: 19.77, conc: 63.27, gate: "5/5" },
+    family: "PLLuM", quant: "AWQ", tp: 1, ctx: 2048, weight: 8.03, kv: 19.77,
+    conc: 63.27, gate: "5/5", note: "conc @ ctx 2048 (Run-3)" },
   { model: "Llama-PLLuM-70B-chat-2512", hf: "mozarcik/Llama-PLLuM-70B-chat-2512-awq",
-    family: "PLLuM", quant: "AWQ", tp: 2, ctx: 8192, weight: 37.56, kv: null, conc: 6.7, gate: null },
-  { model: "Bielik-11B-v3.0-Instruct", hf: "",
-    family: "Bielik", quant: "AWQ", tp: 1, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep in progress" },
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: 8192, weight: 37.56, kv: null,
+    conc: 6.7, gate: null, note: "conc @ ctx 8192 (model card)" },
+  // ── PLLuM — 70B AWQ pending (Run-2 MI300X, sweep deferred) ────────────────
+  { model: "Llama-PLLuM-70B-chat-2412", hf: "mozarcik/Llama-PLLuM-70B-chat-2412-awq",
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep pending" },
+  { model: "Llama-PLLuM-70B-chat-2508", hf: "mozarcik/Llama-PLLuM-70B-chat-2508-awq",
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep pending" },
+  { model: "Llama-PLLuM-70B-instruct-2412", hf: "mozarcik/Llama-PLLuM-70B-instruct-2412-awq",
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep pending" },
+  { model: "Llama-PLLuM-70B-instruct-2508", hf: "mozarcik/Llama-PLLuM-70B-instruct-2508-awq",
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep pending" },
+  { model: "Llama-PLLuM-70B-instruct-2512", hf: "mozarcik/Llama-PLLuM-70B-instruct-2512-awq",
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep pending" },
+  { model: "Llama-PLLuM-70B-base-2412", hf: "mozarcik/Llama-PLLuM-70B-base-2412-awq",
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep pending" },
+  { model: "Llama-PLLuM-70B-base-2508", hf: "mozarcik/Llama-PLLuM-70B-base-2508-awq",
+    family: "PLLuM", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep pending" },
+  // ── PLLuM — BF16 parent models (maxctx probe @ 24576) ────────────────────
+  { model: "Llama-PLLuM-8B-instruct", hf: "CYFRAGOVPL/Llama-PLLuM-8B-instruct",
+    family: "PLLuM", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 4.12, gate: null },
+  { model: "PLLuM-12B-chat", hf: "CYFRAGOVPL/PLLuM-12B-chat",
+    family: "PLLuM", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.19, gate: null },
+  // ── PLLuM — 70B BF16 (not deployable on 2× R9700) ────────────────────────
+  { model: "Llama-PLLuM-70B-base", hf: "CYFRAGOVPL/Llama-PLLuM-70B-base",
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+  { model: "Llama-PLLuM-70B-instruct", hf: "CYFRAGOVPL/Llama-PLLuM-70B-instruct", // pragma: allowlist secret
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+  { model: "Llama-PLLuM-70B-chat", hf: "CYFRAGOVPL/Llama-PLLuM-70B-chat",
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+  { model: "Llama-PLLuM-70B-base-250801", hf: "CYFRAGOVPL/Llama-PLLuM-70B-base-250801", // pragma: allowlist secret
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+  { model: "Llama-PLLuM-70B-chat-250801", hf: "CYFRAGOVPL/Llama-PLLuM-70B-chat-250801", // pragma: allowlist secret
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+  // ── Bielik ────────────────────────────────────────────────────────────────
+  { model: "Bielik-4.5B-v3.0-Instruct", hf: "speakleash/Bielik-4.5B-v3.0-Instruct",
+    family: "Bielik", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 13.21, gate: null },
+  { model: "Bielik-11B-v3.0-Instruct", hf: "speakleash/Bielik-11B-v3.0-Instruct-AWQ",
+    family: "Bielik", quant: "AWQ", tp: 1, ctx: 24576, weight: null, kv: null, conc: 4.58, gate: null },
+  { model: "Bielik-11B-v2.3-Instruct-AWQ", hf: "speakleash/Bielik-11B-v2.3-Instruct-AWQ",
+    family: "Bielik", quant: "AWQ", tp: 1, ctx: 24576, weight: null, kv: null, conc: 4.37, gate: null },
+  { model: "Bielik-11B-v3.0", hf: "speakleash/Bielik-11B-v3.0",
+    family: "Bielik", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.40, gate: null },
+  { model: "Bielik-PL-11B-v3.0-Instruct", hf: "speakleash/Bielik-PL-11B-v3.0-Instruct",
+    family: "Bielik", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.40, gate: null },
+  { model: "Bielik-11B-v2.3-Instruct", hf: "speakleash/Bielik-11B-v2.3-Instruct",
+    family: "Bielik", quant: "FP16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.40, gate: null },
+  // ── Qwen ──────────────────────────────────────────────────────────────────
+  { model: "Qwen2.5-7B-Instruct", hf: "Qwen/Qwen2.5-7B-Instruct",
+    family: "Qwen", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 9.74, gate: null },
+  { model: "Qwen2.5-72B-Instruct", hf: "Qwen/Qwen2.5-72B-Instruct-AWQ",
+    family: "Qwen", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sweep pending" },
+  { model: "Qwen3.5-9B", hf: "Qwen/Qwen3.5-9B",
+    family: "Qwen", quant: "BF16", tp: 1, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "sanity PASS; maxctx not probed" },
+  { model: "Qwen3.6-27B", hf: "Qwen/Qwen3.6-27B",
+    family: "Qwen", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, pending: true, note: "maxctx not probed" },
+  { model: "Qwen3.6-27B-FP8", hf: "Qwen/Qwen3.6-27B-FP8",
+    family: "Qwen", quant: "FP8", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "ctx 24576 not probed; nearest 8.53× @ 32768" },
+  // ── International ─────────────────────────────────────────────────────────
+  { model: "Mistral-Nemo-Instruct-2407", hf: "mistralai/Mistral-Nemo-Instruct-2407",
+    family: "Mistral", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.19, gate: null },
+  { model: "Mixtral-8x7B-Instruct-v0.1", hf: "TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ",
+    family: "Mixtral", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "inference broken — MoE kernel unsupported on gfx1201" },
+  { model: "Kimi-Dev-72B", hf: "abhishekchohan/Kimi-Dev-72B-AWQ",
+    family: "Kimi", quant: "AWQ", tp: null, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "not deployable on 2× R9700 — TP alignment failure" },
 ];
 
 const $ = (s) => document.querySelector(s);
@@ -156,7 +226,7 @@ function rowHTML(r) {
   return `<tr class="${r.pending ? "pending" : ""}">
     <td class="model">${modelCell(r)}</td>
     <td>${r.quant}</td>
-    <td class="num">${r.tp}</td>
+    <td class="num">${r.tp == null ? "<span class='na'>n/a</span>" : r.tp}</td>
     <td>${intCell(r.ctx, r)}</td>
     <td>${num(r.weight, r)}</td>
     <td>${num(r.kv, r)}</td>
