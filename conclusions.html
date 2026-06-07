@@ -38,22 +38,7 @@
   <p>The single-card AWQ variants (8B, 12B) leave the second R9700 free for a parallel sweep or co-located training; the 70B family uses both cards at TP&nbsp;=&nbsp;2. This is a deployment profile a clinic or department can actually own and run.</p>
 
   <h2>Engineering findings</h2>
-  <p>What surfaced while bringing these models up on RDNA&nbsp;4 (gfx1201). Engineering notes only — no performance numbers.</p>
-
-  <div class="cards">
-    <div class="card">
-      <h3><code>enforce_eager</code> is mandatory on gfx1201</h3>
-      <p>With hybrid attention, the default CUDA-graph path crashes on gfx1201 (<code>HSA_STATUS_ERROR_INVALID_PACKET_FORMAT</code>). <code>enforce_eager=True</code> fixes it. This is a runtime constraint, not a model defect.</p>
-    </div>
-    <div class="card">
-      <h3>AWQ runs slower than BF16 here</h3>
-      <p>On this gfx1201 / ROCm 7.2.0 / vLLM 0.19.0 build, the AWQ kernels are slower than BF16 for the same model. The kernels are still young on RDNA 4. The size of the gap is embargoed.</p>
-    </div>
-    <div class="card">
-      <h3>Sanity bypasses the chat template</h3>
-      <p>Prompts go straight to <code>/v1/completions</code>. The chat-template path produced failures that came from the harness, not the model. So the documented pattern skips it.</p>
-    </div>
-  </div>
+  <p>Bringing these models up on RDNA&nbsp;4 (gfx1201) surfaced three runtime facts — engineering notes only, with no performance numbers. First, <code>enforce_eager</code> is mandatory: with hybrid attention the default CUDA-graph path crashes on gfx1201 (<code>HSA_STATUS_ERROR_INVALID_PACKET_FORMAT</code>), and setting <code>enforce_eager=True</code> resolves it — a runtime constraint, not a model defect. Second, on this gfx1201 / ROCm&nbsp;7.2.0 / vLLM&nbsp;0.19.0 build the AWQ kernels run slower than BF16 for the same model; the RDNA&nbsp;4 kernels are still young, and the size of that gap is embargoed. Third, the Gate-1 sanity check bypasses the chat template, sending prompts straight to <code>/v1/completions</code>, because the chat-template path produced failures that came from the harness rather than the model — so the documented pattern skips it.</p>
 
   <h2>What remains</h2>
   <p>The performance story — per-N throughput, latency distributions, energy per token, and any quantization-vs-quantization comparison — is held back until peer-reviewed publication. The <a href="methodology.html">method</a> page documents the plot design; the numbers fill in by a data swap once the papers are out, with the layout unchanged.</p>
