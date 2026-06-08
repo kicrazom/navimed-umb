@@ -121,3 +121,7 @@ _index.md
 *_index.md
 _claude_ai_metadata.md
 .obsidian/
+
+# local-only dashboard preview (never deploy)
+site/_preview_*
+site/_preview_build.py
