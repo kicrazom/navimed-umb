@@ -242,6 +242,30 @@ MODELS = {
         "verbose_eager": "True (mandatory for Qwen 3.5/3.6)",
         "results_header": "RESULTS - Qwen 3.6 27B {quant} TP={tp}",
     },
+    # Qwen 3.5 9B BF16, TP1 — international baseline at the canonical ctx 8192
+    # (Paper #1 option A, 2026-06-08). 9B fits a single 32 GB card; eager mandatory
+    # for the Qwen 3.5/3.6 arch on gfx1201. Arch served text-only (multimodal heads
+    # unused) per METHODOLOGY §3 sanity (PASS 2026-05-21).
+    "qwen3.5-9b": {
+        "label": "Qwen 3.5 9B",
+        "quants": {
+            "bf16": {
+                "model_path": os.path.expanduser("~/models/qwen3.5-9b"),
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "bf16",
+        "dtype": "auto",
+        "awq_marlin": False,
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (mandatory for Qwen 3.5/3.6)",
+        "results_header": "",
+    },
     # test_concurrent_bielik_11b.py — Bielik 11B v2.3, FP16/AWQ.
     "bielik-11b": {
         "label": "Bielik 11B v2.3",

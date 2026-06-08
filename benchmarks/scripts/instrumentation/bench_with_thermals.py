@@ -134,6 +134,25 @@ MODELS = {
         "print_quant": True,
         "exit_on_rc": False,
     },
+    # Qwen 3.5 9B BF16, TP1 — international baseline for the canonical §3.3 ladder
+    # (Paper #1 option A, 2026-06-08). MODERN policy (timeout_flag/catch_timeout/
+    # exit_on_rc=True like bielik-4.5b-v30) so the v3 recovery harness's uniform
+    # --timeout works and inner failures are scored honestly. ctx 8192 (comparable
+    # to the 15 Polish models); 9B fits one 32 GB card.
+    "qwen3.5-9b": {
+        "quants": ["bf16"],
+        "default_quant": "bf16",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
     # bench_with_thermals_bielik_11b.py — Bielik 11B v2.3, FP16/AWQ.
     # Tier-A overnight policy aligned to the v3.0 siblings (2026-06-05): this is
     # one of the four Polish variants in run_bielik_tierA_n10_sweep.sh, which
