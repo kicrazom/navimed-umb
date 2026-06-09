@@ -35,8 +35,8 @@ FIG = REPO / "paper" / "figures"
 DATASET = FIG / "canonical_dataset.csv"
 PLATEAU_FRAC = 0.95  # within 5% of peak ⇒ plateaued
 
-TIER_ORDER = ["4.5B", "8B", "11B", "12B", "70B"]
-FAMILY_COLOR = {"PLLuM": "#1f77b4", "Bielik": "#d62728"}
+TIER_ORDER = ["4.5B", "8B", "9B", "11B", "12B", "70B"]
+FAMILY_COLOR = {"PLLuM": "#1f77b4", "Bielik": "#d62728", "Qwen": "#7f7f7f"}
 
 
 def load():
@@ -120,7 +120,8 @@ def plot_f1(rows):
         ax.grid(True, which="both", ls=":", alpha=0.4)
         ax.legend(fontsize=6, ncol=2, loc="upper left")
     fig.suptitle(
-        "F1 · Canonical §3.3 throughput scaling — 15 Polish LLMs " "(EMBARGOED §11.3)",
+        "F1 · Canonical §3.3 throughput scaling — 15 Polish LLMs + Qwen-9B baseline "
+        "(EMBARGOED §11.3)",
         fontweight="bold",
     )
     fig.tight_layout()
