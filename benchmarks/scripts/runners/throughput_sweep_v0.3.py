@@ -79,6 +79,55 @@ DEFAULT_NS = [10, 25, 50, 100, 200]
 UTIL = 0.90
 MAX_LEN = 8192  # sweep at suite-standard context (matches sanity envelope)
 COOLDOWN_S = 15  # METHODOLOGY §5.2
+
+
+def _read_bios_version() -> str:
+    """Motherboard BIOS version from DMI (e.g. '2202'). 'unknown' on failure."""
+    try:
+        return Path("/sys/class/dmi/id/bios_version").read_text().strip() or "unknown"
+    except Exception:
+        return "unknown"
+
+
+def _read_bios_date() -> str:
+    """BIOS release date from DMI (e.g. '04/15/2026'). 'unknown' on failure."""
+    try:
+        return Path("/sys/class/dmi/id/bios_date").read_text().strip() or "unknown"
+    except Exception:
+        return "unknown"
+
+
+def _read_agesa_version() -> str:
+    """AGESA version from fwupd's Secure Processor summary, e.g.
+    'AGESA ComboAm5PI 1.3.0.1'. Returns 'unknown' if fwupd is absent or
+    no match is found.
+
+    AGESA is not exposed via sysfs DMI; fwupd's Secure Processor device
+    reports it in its Summary field. Read-only, --no-authenticate, best-effort.
+    """
+    try:
+        r = subprocess.run(
+            ["fwupdmgr", "get-devices", "--no-authenticate"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        clean = re.sub(r"\x1b\[[0-9;]*m", "", r.stdout)  # strip ANSI colour codes
+        m = re.search(r"AGESA\s+(\S+)\s+(\S+)", clean)
+        if m:
+            return f"AGESA {m.group(1)} {m.group(2)}"
+    except Exception:
+        pass
+    return "unknown"
+
+
+# Host firmware is constant per run — capture once at module load. Per the
+# Lerchner (2026) "complete vehicle specification" principle (METHODOLOGY §3),
+# BIOS/AGESA complete the provenance that the software version triple omits.
+BIOS_VERSION = _read_bios_version()
+BIOS_DATE = _read_bios_date()
+AGESA_VERSION = _read_agesa_version()
 IDLE_BEFORE_S = 5.0
 IDLE_AFTER_S = 5.0
 PER_RUN_TIMEOUT_S = 900
@@ -348,6 +397,9 @@ def run_n(
         "power_mean_w": therm.get("power_mean_w"),
         "power_peak_w": therm.get("power_peak_w"),
         "tuning": "stock",
+        "bios_version": BIOS_VERSION,
+        "bios_date": BIOS_DATE,
+        "agesa_version": AGESA_VERSION,
     }
     # W/tok energy efficiency (§7.1)
     if (
@@ -393,6 +445,9 @@ CSV_COLS = [
     "power_peak_w",
     "w_per_tok",
     "tuning",
+    "bios_version",
+    "bios_date",
+    "agesa_version",
     "error",
 ]
 
@@ -434,6 +489,7 @@ def write_summary(
         f"- **Sweep wall time:** {wall_s/60:.1f} min",
         "- **Stack:** vLLM 0.19.0+rocm721, transformers 5.8.1, ROCm 7.2,"
         " 2× R9700 gfx1201",
+        f"- **Firmware:** BIOS {BIOS_VERSION} ({BIOS_DATE}), {AGESA_VERSION}",
         "",
         "## Results table (§7.1 schema)",
         "",
