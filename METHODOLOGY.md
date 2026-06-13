@@ -37,6 +37,12 @@ The platform deliberately does **not** measure model quality, reasoning capabili
 
 The system exposes three GPUs to ROCm: `card0` and `card1` are the R9700 pair, `card2` is the integrated RAPHAEL graphics. All compute work is restricted to the R9700 pair via `ROCR_VISIBLE_DEVICES=0,1`. Per-GPU sampling code MUST filter by `Card Series` string match rather than by index assumption, because index ordering is not stable across kernel boots.
 
+### 2.1 Firmware — platform version boundary
+
+Phase 1 (hardware envelope) was collected under **BIOS 1715 / AGESA ComboAm5PI 1.2.0.3g**. The platform BIOS is updated to **2202 / AGESA ComboAm5PI 1.3.0.1** on **2026-06-13**, in the clean window between Phase 1 (complete) and Phase 2 (not yet started); Phase 2 (throughput, latency, thermal, power) is therefore collected under BIOS 2202 / AGESA 1.3.0.1. Envelope quantities (load success, VRAM footprint, KV-cache capacity, max-concurrency) are determined by the model–quantization–vLLM/ROCm stack and are **firmware-independent**; only host-platform firmware (CPU microcode, DDR5 training) changed between phases. The R9700 GPU VBIOS (`113-R9700AT-F40`) and the compute path are unchanged.
+
+> **Status 2026-06-13:** BIOS update in progress; Phase 2 not yet started. Convert the Phase-2 clause to past tense ("was collected under 2202") once Phase 2 completes on the updated platform. Optional max-rigor control: re-measure one Phase-1 envelope cell on 2202 to document the envelope is unchanged across the boundary.
+
 ---
 
 ## 3. Software stack
@@ -71,7 +77,7 @@ For every model with hybrid attention (Qwen 3.5 family, Qwen 3.6 family, includi
 
 ### 3.3 Causal closure
 
-Every benchmark JSON record captures the full software stack version triple (`rocm_version`, `vllm_version`, `torch_version`, `torch_hip_version`) plus the full env-var dictionary. Any reproduction attempt that does not reproduce this triple is not a reproduction; it is a different experiment. This requirement follows Lerchner (2026) — computation as description requires complete vehicle specification.
+Every benchmark JSON record captures the full software stack version triple (`rocm_version`, `vllm_version`, `torch_version`, `torch_hip_version`) plus the full env-var dictionary. From the Phase-2 v0.3 runner onward, each record additionally captures host firmware (`bios_version`, `bios_date`, `agesa_version`; read live at run time from sysfs DMI and fwupd) — see the §2.1 platform version boundary. Any reproduction attempt that does not reproduce this triple is not a reproduction; it is a different experiment. This requirement follows Lerchner (2026) — computation as description requires complete vehicle specification, of which platform firmware is a part.
 
 ---
 
