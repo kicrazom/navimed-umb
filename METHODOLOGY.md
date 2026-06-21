@@ -188,7 +188,7 @@ Each model is measured in two phases with disjoint outputs, separate filesystems
 
 **Goal:** Characterize aggregate throughput, latency, thermal, and power under increasing concurrent load.
 
-**Procedure:** At Phase 1 envelope-validated best configurations (typically one per quantization, sometimes additional configs covering trade-off space), run the concurrent benchmark at `N ∈ {10, 25, 50, 100, 200, 500, 1000}` requests. The N values are chosen to span:
+**Procedure:** At Phase 1 envelope-validated best configurations (typically one per quantization, sometimes additional configs covering trade-off space), run the benchmark at `N ∈ {1, 10, 25, 50, 100, 200, 500, 1000}` requests, where **N = 1 is the single-stream anchor** — one request, sequential decode: the latency-regime baseline and the only point directly comparable to the prevailing single-stream inference literature (MLC `llm-perf-bench`, `llama-bench`, vendor numbers). N ≥ 10 form the concurrency ladder proper. The concurrency-ladder N values are chosen to span:
 
 - Linear-scaling region below `max_concurrency`
 - Knee at `N ≈ max_concurrency`
@@ -289,6 +289,8 @@ Phase 2 cells are measured in one of two tiers.
 - **`n_runs` per cell is recorded explicitly**; a cell with fewer than REPS valid reps is aggregated over what completed and flagged.
 
 The aggregator (`finalize_*` scripts) emits both a per-rep raw table (`phase2_sweep_raw.csv`) and the per-cell descriptive-statistics table (`phase2_sweep.csv`, carrying the median / p95 / p99 columns of §7.1). When the text asserts a **difference** between configurations as meaningful (rather than merely describing one cell), the family-wise error rate across the N-ladder is controlled with **Holm–Bonferroni**; absent that test, comparative statements remain descriptive only and claim no significance — consistent with the §8 humility position.
+
+**N = 1 single-stream anchor.** N = 1 is measured under Tier A (REPS = 10) for every model × TP configuration — internal consistency requires it (§ Guiding principle) — and recorded with the universal schema (§7.1). It is a **distinct regime**, however: single-stream latency, not concurrency-saturated throughput. It is therefore **reported as a separate single-stream reference and excluded from the knee / scaling analysis and from the Holm–Bonferroni family over the {10..1000} ladder.** Its role is twofold — a cross-framework comparability anchor (the metric the external literature actually reports), and the floor that makes explicit how much of the deployment envelope (concurrency × thermal × power) the prevailing single-number benchmarks omit. Protocol detail: `paper/2026-06-21-N1-singlestream-anchor.md`.
 
 Tiering does not change embargo: per-cell statistics for Polish models remain **EMBARGOED §11.3**; this protocol section is PUBLIC.
 
