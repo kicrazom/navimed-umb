@@ -50,6 +50,14 @@ MODEL_DIRS=(
     "Llama-PLLuM-70B-instruct-2512-awq"
 )
 
+# Optional batching: positional args = subset of model dir names (no args = full roster).
+if (( $# > 0 )); then
+    _want=" $* "; _sub=()
+    for _md in "${MODEL_DIRS[@]}"; do [[ "$_want" == *" $_md "* ]] && _sub+=("$_md"); done
+    (( ${#_sub[@]} )) || { echo "ERROR: no model dirs match: $*" >&2; exit 1; }
+    MODEL_DIRS=("${_sub[@]}")
+fi
+
 RUNNER="$REPO_ROOT/benchmarks/scripts/runners/throughput_scaling_phase2.py"
 KILL_PORT="$REPO_ROOT/scripts/kill_port.sh"
 RESULTS_ROOT="$REPO_ROOT/benchmarks/results"

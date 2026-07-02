@@ -64,6 +64,14 @@ CONFIGS=(
   "qwen3.5-9b bf16 1"
 )
 
+# Optional batching: positional args = subset of model KEYs (no args = full roster).
+if (( $# > 0 )); then
+    _want=" $* "; _sub=()
+    for _cfg in "${CONFIGS[@]}"; do read -r _k _ <<<"$_cfg"; [[ "$_want" == *" $_k "* ]] && _sub+=("$_cfg"); done
+    (( ${#_sub[@]} )) || { echo "ERROR: no roster keys match: $*" >&2; exit 1; }
+    CONFIGS=("${_sub[@]}")
+fi
+
 write_embargo_header() {
     {
         echo "# EMBARGO=YES — paper-bound (Polish models, METHODOLOGY §11.2/§11.3)"

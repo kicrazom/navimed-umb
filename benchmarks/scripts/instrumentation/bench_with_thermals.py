@@ -235,6 +235,22 @@ MODELS = {
         "print_quant": True,
         "exit_on_rc": True,
     },
+    # Precision-ablation AWQ (PLAN-2026-06-30): fresh W4A16 quants, same-checkpoint
+    # BF16 pairs already swept. Same robust overnight policy as the AWQ entries above.
+    "bielik-4.5b-v30-awq": {
+        "quants": ["awq"],
+        "default_quant": "awq",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
     # Run-3 consumer-GPU AWQ — Llama-PLLuM 8B + PLLuM 12B chat-2512.
     # Same robust overnight policy as bielik-11b-v30 (timeout caught and
     # finalized as rc=124, plotting best-effort, exit mirrors inner rc).

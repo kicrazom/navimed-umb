@@ -17,6 +17,32 @@ become mandatory** as model size and quantization vary?
 Headline numbers and per-model analysis live in each study's `results/`
 subdir and in [`../RELEASES.md`](../RELEASES.md).
 
+## Sub-studies (Paper #1)
+
+Two design-doc-led sub-studies extend the core concurrency sweep. Both
+report structure and method publicly; the measured numbers are embargoed
+per METHODOLOGY §11.2/§11.3.
+
+- **Precision ablation — BF16 vs AWQ**
+  ([`PLAN-2026-06-30-precision-ablation-bf16-vs-awq.md`](PLAN-2026-06-30-precision-ablation-bf16-vs-awq.md))
+  — a same-checkpoint BF16 ↔ AWQ matrix spanning architecture × size
+  (4.5–12B across Qwen, Llama, Mistral, Bielik) on RDNA 4, plus a W/token
+  energy axis. De-confounds the AWQ-kernel finding from the Polish-only
+  model pairs. Drivers: `scripts/orchestrators/run_ablation_bielik45_awq_sweep.sh`
+  (single-cell full-ladder Tier-A sweep of the AWQ half) and
+  `run_envelope_gate1_ablation.sh` (envelope probe + Gate-1 for the fresh
+  AWQ quants). Aggregation via `scripts/analysis/aggregate_power_efficiency.py`
+  + `power_efficiency_plots.R` and `plot_family_split.py`.
+- **N=1 single-stream anchor**
+  ([`PLAN-2026-06-21-N1-anchor-run.md`](PLAN-2026-06-21-N1-anchor-run.md))
+  — the single-request (sequential decode) latency-regime baseline at
+  Tier A, kept in a separate results tree and reported apart from the
+  {10..1000} concurrency ladder (METHODOLOGY §7.4). Drivers:
+  `scripts/orchestrators/run_n1_anchor_smallmid.sh` (small/mid configs) and
+  `run_n1_anchor_70b.sh` (Llama-PLLuM-70B AWQ family). Aggregation via
+  `scripts/analysis/aggregate_n1_anchor.py` + `ladder_table_plots.R`
+  (joined into one N {1..1000} ladder by `regen_ladder.sh`).
+
 ## Layout
 
 ```

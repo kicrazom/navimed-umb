@@ -394,6 +394,31 @@ MODELS = {
         "verbose_eager": "True (graphs path segfaults on gfx1201)",
         "results_header": "",
     },
+    # Precision-ablation (PLAN-2026-06-30) — Bielik 4.5B v3.0 AWQ. compressed-tensors
+    # W4A16 (llm-compressor quant_llmc.py, Run-3 recipe). Same primitive as
+    # bielik-11b-v30-instruct-awq: vLLM auto-detects → NO explicit quant kwarg.
+    # Same-checkpoint BF16 pair = "bielik-4.5b-v30" (already swept full ladder).
+    "bielik-4.5b-v30-awq": {
+        "label": "Bielik 4.5B v3.0 AWQ",
+        "banner_quant": False,
+        "quants": {
+            "awq": {
+                "model_path": "/home/mozarcik/models/bielik-4.5b-v30-awq",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "awq",
+        "dtype": "auto",
+        "awq_marlin": False,  # compressed-tensors auto-detected, NOT classic AWQ
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "results_header": "",
+    },
     # Run-3 consumer-GPU AWQ — Llama-PLLuM 8B chat-2512 (Llama 3.1 base).
     # compressed-tensors pack-quantized W4A16 → vLLM auto-detects from
     # config.json; no explicit quantization kwarg (awq_marlin=False).
