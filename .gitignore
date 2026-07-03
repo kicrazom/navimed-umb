@@ -125,3 +125,6 @@ _claude_ai_metadata.md
 # local-only dashboard preview (never deploy)
 site/_preview_*
 site/_preview_build.py
+
+# Local-only full results (embargoed §11.2/§11.3 — never publish)
+site/_local-*.html
