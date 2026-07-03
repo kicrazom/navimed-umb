@@ -465,6 +465,50 @@ MODELS = {
         "verbose_eager": "True (graphs path segfaults on gfx1201)",
         "results_header": "",
     },
+    # Precision-ablation BF16 side (PLAN-2026-06-30) — same-checkpoint partners for
+    # pllum-8b-awq / pllum-12b-awq. Llama-PLLuM-8B (Llama 3.1) + PLLuM-12B (Mistral-Nemo).
+    "pllum-8b": {
+        "label": "Llama-PLLuM 8B chat-2512 BF16",
+        "quants": {
+            "bf16": {
+                "model_path": "/home/mozarcik/models/Llama-PLLuM-8B-chat-2512",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "bf16",
+        "dtype": "bfloat16",
+        "awq_marlin": False,
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "verbose_dtype": "bfloat16",
+        "results_header": "",
+    },
+    "pllum-12b": {
+        "label": "PLLuM 12B chat-2512 BF16",
+        "quants": {
+            "bf16": {
+                "model_path": "/home/mozarcik/models/PLLuM-12B-chat-2512",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "bf16",
+        "dtype": "bfloat16",
+        "awq_marlin": False,
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "verbose_dtype": "bfloat16",
+        "results_header": "",
+    },
 }
 
 

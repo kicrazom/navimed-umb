@@ -282,6 +282,35 @@ MODELS = {
         "print_quant": True,
         "exit_on_rc": True,
     },
+    # Precision-ablation BF16 side (PLAN-2026-06-30) — same-checkpoint partners.
+    "pllum-8b": {
+        "quants": ["bf16"],
+        "default_quant": "bf16",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
+    "pllum-12b": {
+        "quants": ["bf16"],
+        "default_quant": "bf16",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
 }
 
 
