@@ -257,12 +257,13 @@ configurations, including per-run thermal instrumentation.
 
 [![Scaling curve](benchmarks/results/qwen2.5-7b-fp16/scaling_curve.png)](benchmarks/results/qwen2.5-7b-fp16/scaling_curve.png)
 
-Key measurements:
+Key findings (PUBLIC; concrete throughput numbers reserved for the forthcoming
+preprint per [METHODOLOGY §11.2](METHODOLOGY.md)):
 
-- TP=1 plateau: 3870 tok/s (saturates from N=500, std dev 0.3%)
-- TP=2 plateau: 2940 tok/s (24% PCIe all_reduce tax vs TP=1)
-- TP=2 only wins at N=50 (+9%), loses at every higher concurrency
-- Thermal asymmetry between GPU 0 and GPU 1 (5C delta, airflow-dependent)
+- TP=1 throughput saturates at high concurrency, with very low run-to-run variance.
+- TP=2 pays a PCIe all-reduce penalty and plateaus below TP=1.
+- TP=2 wins only at low concurrency; TP=1 leads at every higher batch size.
+- Thermal asymmetry between GPU 0 and GPU 1 (airflow-dependent).
 
 See
 [`benchmarks/results/qwen2.5-7b-fp16/README.md`](benchmarks/results/qwen2.5-7b-fp16/README.md)

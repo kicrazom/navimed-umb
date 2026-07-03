@@ -104,10 +104,12 @@ Papers #1–#4 are the supporting evidence track for the synthesis paper (★).
 
 ## AI assistance
 
-Developed with generative AI tools — Claude Opus 4.7 (web and Claude Code
-CLI), GPT-5.5 Deep Thinking (web), Gemini (web review), and a locally-served
-Bielik-11B-v3.0-instruct-AWQ (via vLLM on one R9700, used for Polish-language
-proofreading of documentation in May 2026). All experimental design,
+Developed with generative AI tools — Claude Opus 4.7 and 4.8 (web and Claude
+Code CLI, orchestration and analysis), Claude Fable 5 (Claude Code subagents —
+site design, drafting, and review), GPT-5.5 Deep Thinking (web), Gemini (web
+review), and a locally-served Bielik-11B-v3.0-instruct-AWQ (via vLLM on one
+R9700, used for Polish-language proofreading of documentation in May 2026).
+All experimental design,
 hardware configuration, empirical measurements, and scientific claims are
 the sole responsibility of the author. Full table: [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md).
 
