@@ -6,7 +6,7 @@
 **Embargo:** liczby = §11.2/§11.3; cloud-run = synthetic prompts (§6), **zero PHI**.
 
 ## Po co dokładnie (hipoteza do testu)
-Na R9700 (gfx1201) **AWQ jest 4–10× wolniejszy od BF16** (§5.2 errata — brak AITER, słabe FP8 W8A8 kernele; single-stream 70B-AWQ = **2.33 tok/s**). **MI300X (gfx942) MA AITER** → hipoteza: **AWQ na MI300X NIE ma tego slowdownu**. Jeśli się potwierdzi, to mocny wynik: ten sam stack (vLLM-ROCm) na innym AMD daje radykalnie inny obraz — i wyjaśnia, że slowdown to artefakt gfx1201, nie formatu. `[hipoteza — do zmierzenia]`
+Na R9700 (gfx1201) **AWQ jest 4–10× wolniejszy od BF16** (§5.2 errata — brak AITER, słabe FP8 W8A8 kernele; single-stream 70B-AWQ = **[EMBARGOED §11.3]**). **MI300X (gfx942) MA AITER** → hipoteza: **AWQ na MI300X NIE ma tego slowdownu**. Jeśli się potwierdzi, to mocny wynik: ten sam stack (vLLM-ROCm) na innym AMD daje radykalnie inny obraz — i wyjaśnia, że slowdown to artefakt gfx1201, nie formatu. `[hipoteza — do zmierzenia]`
 
 ## AMD Developer Program — uwidocznienie (acknowledgment + provenance)
 MI300X compute jedzie na **AMD Developer Program** (przez DigitalOcean) — tak jak wcześniej kwantyzacja 70B×8

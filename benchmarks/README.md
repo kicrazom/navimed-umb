@@ -31,8 +31,13 @@ per METHODOLOGY §11.2/§11.3.
   model pairs. Drivers: `scripts/orchestrators/run_ablation_bielik45_awq_sweep.sh`
   (single-cell full-ladder Tier-A sweep of the AWQ half) and
   `run_envelope_gate1_ablation.sh` (envelope probe + Gate-1 for the fresh
-  AWQ quants). Aggregation via `scripts/analysis/aggregate_power_efficiency.py`
-  + `power_efficiency_plots.R` and `plot_family_split.py`.
+  AWQ quants); same-checkpoint PLLuM pairs run both halves back-to-back via
+  `run_ablation_pllum8b_pair_sweep.sh` and `run_ablation_pllum12b_pair_sweep.sh`
+  (each sweeps the BF16 cell then the AWQ cell of one checkpoint, keyed
+  `pllum-8b` / `pllum-12b` alongside the existing `pllum-8b-awq` / `pllum-12b-awq`
+  in `run_concurrent.py` + `bench_with_thermals.py`). Aggregation via
+  `scripts/analysis/aggregate_power_efficiency.py` + `power_efficiency_plots.R`
+  and `plot_family_split.py`.
 - **N=1 single-stream anchor**
   ([`PLAN-2026-06-21-N1-anchor-run.md`](PLAN-2026-06-21-N1-anchor-run.md))
   — the single-request (sequential decode) latency-regime baseline at

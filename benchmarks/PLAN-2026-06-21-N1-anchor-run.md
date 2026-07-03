@@ -37,15 +37,15 @@ Uruchom w tle (background). Gotowe gdy oba sentinele istnieją:
 | Leg | Runów | Czas |
 |---|---|---|
 | small/mid | 150 | ~3–3.5 h |
-| 70B (decode-bound: single-stream 2.33 tok/s) | 80 | ~5 h |
+| 70B (decode-bound: single-stream [EMBARGOED §11.3]) | 80 | ~5 h |
 | **TOTAL** | **230** | **~8–9 h (overnight/cały dzień)** |
 
 Opcja skrócenia: w obu wrapperach zmień `COOLDOWN_S=30`/`INTER_REP_COOLDOWN_S=30` → `5`
 (uzasadnione: N=1 ~zero thermal, smoke stabilny bez cooldownu) → **~7 h**.
 
 ## Smoke (zwalidowane 2026-06-21, oba runnery OK)
-- Bielik-4.5B BF16 TP=1 N=1 → **20.2 tok/s** (σ ≈ 0.2%, 2 reps), artefakty §7.1 OK.
-- PLLuM-70B-base-2412 AWQ TP=2 N=1 → **2.33 tok/s**, 216s/rep, artefakty OK. (smoke posprzątany)
+- Bielik-4.5B BF16 TP=1 N=1 → **[EMBARGOED §11.3]** (σ ≈ 0.2%, 2 reps), artefakty §7.1 OK.
+- PLLuM-70B-base-2412 AWQ TP=2 N=1 → **[EMBARGOED §11.3]**, artefakty OK. (smoke posprzątany)
 
 ## Monitoring w trakcie
 - Progress: `results/_n1_anchor_smallmid_logs/progress.log`, `_n1_anchor_70b_logs/progress.log` (ETA per run)
@@ -62,8 +62,8 @@ Opcja skrócenia: w obu wrapperach zmień `COOLDOWN_S=30`/`INTER_REP_COOLDOWN_S=
 6. Embargo §11.3 respektowany; commit dopiero po akceptacji per artefakt.
 
 ## Finding preview (czemu to się opłaca)
-70B-AWQ single-stream na R9700 = **2.33 tok/s** (gfx1201 AWQ kernel slowdown, §5.2 errata) — w benchmarku
-„jedna liczba" wygląda fatalnie (MLC Llama2-70B 7900XTX = 29.9). Ale agregat pod współbieżnością = **~167 tok/s**.
+70B-AWQ single-stream na R9700 = **[EMBARGOED §11.3]** (gfx1201 AWQ kernel slowdown, §5.2 errata) — w benchmarku
+„jedna liczba" wygląda fatalnie (MLC Llama2-70B 7900XTX = 29.9). Ale agregat pod współbieżnością = **[EMBARGOED §11.3]**.
 Anchor N=1 + drabina = twardy dowód **„envelope > single-number"**: single-stream ukrywa, że R9700 jest viable
 do multi-user CDSS. To jest punkt, który domyka paper i daje materiał na talk AMD (PyStok jesień).
 
