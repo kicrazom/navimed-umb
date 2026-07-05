@@ -44,10 +44,10 @@
   <p>Ingest reads the vault and a local model embeds each note into a Qdrant collection, which is live and serves vector retrieval today. On the dev harness, retrieval is hybrid: a lexical BM25 index and a dense index over the same chunks are fused by reciprocal rank fusion, and a local MCP server already exposes that retrieval to Claude Code — the workstation deployment of the same server is the next step. The graph arm is in progress: LightRAG entity-relation extraction was evaluated but is not yet reliable, and the current direction (decided 2026-07-04) is an emergent graph built from the vault's own wikilink topology at index time. Model selection for the extraction and synthesis roles is derived from the NaviMed hardware envelope — which open-weight models load and serve on two R9700 cards.</p>
 
   <figure class="svg-figure">
-    <svg class="arch-schematic" viewBox="0 0 1000 460" role="img"
+    <svg class="arch-schematic" viewBox="0 0 1000 560" role="img"
          aria-labelledby="arch-svg-title arch-svg-desc">
-      <title id="arch-svg-title">Graph-augmented RAG over an Obsidian vault, on-premise on two AMD R9700 GPUs.</title>
-      <desc id="arch-svg-desc">Left to right: the Obsidian vault feeds ingest with local models. Ingest writes to a live Qdrant vector store (built) and, in progress, to an emergent wikilink entity-relation graph. A local MCP server (live on the dev harness, planned on the workstation) exposes both to Claude Code and a planned PyCharm frontend. A dashed orange link marks that the NaviMed benchmarks drive model selection into ingest. A dashed grey loop marks a planned write-back of agent edits into the vault. A shaded band marks the on-premise boundary. Solid nodes and arrows are built; orange-dashed is in progress; grey-dashed is planned.</desc>
+      <title id="arch-svg-title">Hybrid and graph-augmented RAG over an Obsidian vault, on-premise, with percolation-RAG as the next step.</title>
+      <desc id="arch-svg-desc">Left to right: the Obsidian vault feeds ingest with local models. Ingest writes to three indexes: a live vector store (built), a lexical BM25 index (built), and an emergent wikilink graph (in progress). A percolation-RAG layer above the graph is planned as the next step. A built local MCP server fuses the vector and BM25 arms by reciprocal rank fusion and serves Claude Code today on the dev harness; the graph-RAG query path and the percolation layer will join it. An eval harness with a frozen baseline measures retrieval. A dashed orange link marks benchmark-derived model selection into ingest. A dashed grey loop marks a planned write-back of agent edits into the vault. A shaded band marks the on-premise boundary. Solid nodes and arrows are built; orange-dashed is in progress; grey-dashed is planned.</desc>
 
       <defs>
         <marker id="ah-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
@@ -62,10 +62,10 @@
       </defs>
 
       <!-- on-premise band -->
-      <rect class="band" x="8" y="120" width="764" height="252" rx="14"/>
-      <text class="band-label" x="26" y="360">ON-PREMISE · 2× AMD R9700 · LOCAL MODELS</text>
+      <rect class="band" x="8" y="120" width="764" height="340" rx="14"/>
+      <text class="band-label" x="26" y="448">ON-PREMISE · LOCAL MODELS · DEV HARNESS → 2× AMD R9700</text>
       <!-- trust boundary between the local substrate and the external agents/clients -->
-      <line x1="792" y1="130" x2="792" y2="362" stroke="#5b6770" stroke-width="1" stroke-dasharray="3 5" opacity="0.5"/>
+      <line x1="792" y1="130" x2="792" y2="450" stroke="#5b6770" stroke-width="1" stroke-dasharray="3 5" opacity="0.5"/>
 
       <!-- benchmark source (built; a design input into ingest) -->
       <rect class="node source" x="176" y="54" width="212" height="44" rx="10"/>
@@ -77,46 +77,67 @@
       <!-- pipeline nodes -->
       <rect class="node"          x="20"  y="200" width="136" height="62" rx="10"/>
       <rect class="node"          x="214" y="200" width="136" height="62" rx="10"/>
-      <rect class="node"          x="408" y="150" width="152" height="54" rx="10"/>
-      <rect class="node wip"      x="408" y="262" width="152" height="54" rx="10"/>
-      <rect class="node planned"  x="622" y="200" width="136" height="62" rx="10"/>
+      <rect class="node"          x="408" y="134" width="152" height="46" rx="10"/>
+      <rect class="node"          x="408" y="210" width="152" height="46" rx="10"/>
+      <rect class="node wip"      x="408" y="286" width="152" height="46" rx="10"/>
+      <rect class="node planned"  x="408" y="368" width="152" height="46" rx="10"/>
+      <rect class="node"          x="214" y="368" width="136" height="46" rx="10"/>
+      <rect class="node"          x="622" y="200" width="136" height="62" rx="10"/>
       <rect class="node"          x="822" y="168" width="150" height="52" rx="10"/>
       <rect class="node planned"  x="822" y="250" width="150" height="52" rx="10"/>
 
       <text class="node-title" x="88"  y="236" text-anchor="middle">Obsidian vault</text>
       <text class="node-title" x="282" y="236" text-anchor="middle">Ingest</text>
-      <text class="node-title" x="484" y="182" text-anchor="middle">Qdrant vectors</text>
-      <text class="node-title" x="484" y="294" text-anchor="middle">Wikilink graph</text>
+      <text class="node-title" x="484" y="162" text-anchor="middle">Vector index</text>
+      <text class="node-title" x="484" y="238" text-anchor="middle">BM25 index</text>
+      <text class="node-title" x="484" y="314" text-anchor="middle">Wikilink graph</text>
+      <text class="node-title" x="484" y="396" text-anchor="middle">Percolation-RAG</text>
+      <text class="node-title" x="282" y="396" text-anchor="middle">Eval harness</text>
       <text class="node-title" x="690" y="236" text-anchor="middle">MCP server</text>
       <text class="node-title" x="897" y="199" text-anchor="middle">Claude Code</text>
       <text class="node-title" x="897" y="281" text-anchor="middle">PyCharm frontend</text>
 
       <text class="node-sub"    x="88"  y="280" text-anchor="middle">research vault</text>
-      <text class="node-sub"    x="282" y="280" text-anchor="middle">local models · vLLM</text>
-      <text class="node-sub"    x="484" y="222" text-anchor="middle">vector RAG · live</text>
-      <text class="tag-wip"     x="484" y="334" text-anchor="middle">IN PROGRESS</text>
-      <text class="tag-planned" x="690" y="280" text-anchor="middle">PLANNED</text>
+      <text class="node-sub"    x="282" y="280" text-anchor="middle">local models</text>
+      <text class="node-sub"    x="484" y="196" text-anchor="middle">semantic · live</text>
+      <text class="node-sub"    x="484" y="272" text-anchor="middle">lexical · live</text>
+      <text class="tag-wip"     x="484" y="348" text-anchor="middle">IN PROGRESS</text>
+      <text class="tag-planned" x="484" y="430" text-anchor="middle">NEXT STEP · epistemic layer</text>
+      <text class="node-sub"    x="282" y="430" text-anchor="middle">frozen baseline · nightly</text>
+      <text class="node-sub"    x="690" y="280" text-anchor="middle">live · dev harness</text>
       <text class="node-sub"    x="897" y="238" text-anchor="middle">coding agent</text>
       <text class="tag-planned" x="897" y="320" text-anchor="middle">PLANNED</text>
 
       <!-- built runtime flow (solid) + animated shimmer overlay -->
       <path class="flow" d="M158,231 H206" marker-end="url(#ah-blue)"/>
       <path class="flow-pulse" d="M158,231 H206"/>
-      <path class="flow" d="M350,231 C382,231 382,177 406,177" marker-end="url(#ah-blue)"/>
-      <path class="flow-pulse" d="M350,231 C382,231 382,177 406,177"/>
+      <path class="flow" d="M350,231 C382,231 382,157 406,157" marker-end="url(#ah-blue)"/>
+      <path class="flow-pulse" d="M350,231 C382,231 382,157 406,157"/>
+      <path class="flow" d="M350,231 C378,231 378,233 406,233" marker-end="url(#ah-blue)"/>
+      <path class="flow-pulse" d="M350,231 C378,231 378,233 406,233"/>
+      <path class="flow" d="M560,157 C592,157 592,220 620,220" marker-end="url(#ah-blue)"/>
+      <path class="flow-pulse" d="M560,157 C592,157 592,220 620,220"/>
+      <path class="flow" d="M560,233 C592,233 592,234 620,234" marker-end="url(#ah-blue)"/>
+      <path class="flow-pulse" d="M560,233 C592,233 592,234 620,234"/>
+      <text class="feed-label" x="576" y="205">RRF fusion</text>
+      <path class="flow" d="M758,222 C790,222 790,194 820,194" marker-end="url(#ah-blue)"/>
+      <path class="flow-pulse" d="M758,222 C790,222 790,194 820,194"/>
+      <!-- eval harness measures the retrieval stack (built, nightly) -->
+      <path class="flow" d="M420,256 C420,330 386,391 352,391" marker-end="url(#ah-blue)"/>
 
-      <!-- in-progress edge: ingest → graph (orange dashed, animated) -->
-      <path class="ingest-graph" d="M350,231 C382,231 382,289 406,289" marker-end="url(#ah-orange)"/>
+      <!-- in-progress edge: ingest → wikilink graph (orange dashed, animated) -->
+      <path class="ingest-graph" d="M350,231 C382,231 382,309 406,309" marker-end="url(#ah-orange)"/>
 
-      <!-- planned links (grey dashed, static): indexes → MCP → agents -->
-      <path class="link-planned" d="M560,177 C592,177 592,222 620,222" marker-end="url(#ah-grey)"/>
-      <path class="link-planned" d="M560,289 C592,289 592,244 620,244" marker-end="url(#ah-grey)"/>
-      <path class="link-planned" d="M758,222 C790,222 790,194 820,194" marker-end="url(#ah-grey)"/>
+      <!-- planned links (grey dashed, static): graph-RAG path, percolation layer, frontend -->
+      <path class="link-planned" d="M560,309 C592,309 592,248 620,248" marker-end="url(#ah-grey)"/>
+      <text class="feed-label" x="570" y="292">graph-RAG</text>
+      <path class="link-planned" d="M484,332 V366" marker-end="url(#ah-grey)"/>
+      <path class="link-planned" d="M560,391 C604,391 604,262 622,260" marker-end="url(#ah-grey)"/>
       <path class="link-planned" d="M758,244 C790,244 790,276 820,276" marker-end="url(#ah-grey)"/>
 
       <!-- planned write-back loop: agent edits return to the vault -->
-      <path class="writeback" d="M972,194 C992,194 992,414 890,414 H100 C60,414 40,404 40,264" marker-end="url(#ah-grey)"/>
-      <text class="writeback-label" x="500" y="446" text-anchor="middle">write-back · agent edits return to the vault (planned)</text>
+      <path class="writeback" d="M972,194 C992,194 992,500 890,500 H100 C60,500 40,490 40,264" marker-end="url(#ah-grey)"/>
+      <text class="writeback-label" x="500" y="532" text-anchor="middle">write-back · agent edits return to the vault (planned)</text>
     </svg>
   </figure>
   <ul class="legend" aria-label="Schematic legend">
@@ -126,7 +147,7 @@
     <li><span class="swatch planned"></span> planned (links, nodes, write-back)</li>
     <li><span class="swatch band"></span> on-premise boundary</li>
   </ul>
-  <p class="fig-caption">Solid blue is the working retrieval path — the vault embedded into a live Qdrant store. The graph arm (an emergent wikilink graph; LightRAG was evaluated first) and the workstation MCP server are drawn dashed because they are in progress and planned respectively — on the portable dev harness an MCP server already serves hybrid retrieval to Claude Code. The orange dashed link is a derivation, not a runtime flow: the benchmarks decide which local models fill the extraction and synthesis roles. When motion is enabled, faint travelling dashes trace where data actually moves; static dashes mark what does not flow yet.</p>
+  <p class="fig-caption">Solid blue is the working retrieval path: the vault feeds three indexes, and the MCP server — live on the dev harness — fuses the vector and BM25 arms by reciprocal rank fusion for Claude Code, while the eval harness measures every change against a frozen baseline. The wikilink graph is dashed orange because its build is in progress (an emergent graph from the vault's own links; LightRAG was evaluated first). Grey-dashed is the next step: the graph-RAG query path into the MCP server, and above it percolation-RAG — an epistemic layer where claims carry graduated status and promote when independent evidence paths converge (see <a href="evidence-percolation.html">Evidence percolation</a>). The orange dashed link is a derivation, not a runtime flow: the benchmarks decide which local models fill the extraction and synthesis roles. When motion is enabled, faint travelling dashes trace where data actually moves; static dashes mark what does not flow yet.</p>
 
   <h2>Substrate</h2>
   <p>The substrate is the research vault itself: plain-Markdown notes on disk, versioned in git. Nothing is copied into a proprietary store; the notes stay the source of truth, and the indexes are derived, disposable views over them.</p>
@@ -137,6 +158,7 @@
     <li><strong>An entity-relation graph</strong> — <em>in progress</em>. LightRAG extraction over the vault was evaluated and is not yet reliable; the current direction (decided 2026-07-04, custom build) is an emergent graph derived from the vault's own <code>[[wikilink]]</code> topology at index time — the links the researcher already curates, rather than a model's guess at them.</li>
   </ul>
   <p>The design goal is a query that draws on all of these — graph neighbourhood, vector neighbours, and lexical anchors — with a local model synthesising the retrieved context into an answer. Keeping the indexes distinct follows the project's retrieval principle: match the primitive to the shape of the knowledge rather than forcing everything through one vector store.</p>
+  <p>The step after the graph is <strong>percolation-RAG</strong>: edges in the graph carry graduated epistemic status rather than flat truth, retrieval discounts speculation against canon, and a claim promotes only when independent evidence paths converge on it — the retrieval-side application of the project's <a href="evidence-percolation.html">evidence-percolation</a> model. That layer is design-stage, and it is the reason the graph arm is built from curated wikilinks rather than model-extracted triples alone: the links are the evidence paths.</p>
 
   <h2>Measurement layer</h2>
   <p>Every retrieval change is measured before it is believed. A seed set of Polish questions, each hand-labelled with the note that should answer it, drives a small harness computing recall@k and MRR@k; the hybrid-without-graph configuration is <strong>frozen as the baseline</strong>, and every subsequent component lands as a measured delta against it, organised as a 2×2 ablation grid — baseline, +reranker, +graph, +both. Each result is stamped with the embedding-model version and chunking strategy, so numbers stay attributable to the configuration that produced them. Consistent with this page's scope, the figures live in the project repository, not here.</p>
@@ -182,6 +204,8 @@
     <li><span class="pill built">Built</span> Nightly incremental maintenance on the dev harness — content-hash re-embedding of changed notes plus a regression check against the frozen baseline.</li>
     <li><span class="pill wip">In&nbsp;prog.</span> The graph arm — redirected (2026-07-04) to an emergent wikilink graph built at index time; LightRAG extraction evaluated, not yet reliable.</li>
     <li><span class="pill planned">Planned</span> Workstation deployment of the MCP server, exposing the graph arm alongside vectors.</li>
+    <li><span class="pill planned">Planned</span> The graph-RAG query path — graph-neighbourhood expansion joining the fused retrieval, measured as a delta in the ablation grid.</li>
+    <li><span class="pill planned">Planned</span> Percolation-RAG — the graduated epistemic layer over the graph (next step; see <a href="evidence-percolation.html">Evidence percolation</a>).</li>
     <li><span class="pill planned">Planned</span> Write-back of agent edits into the vault.</li>
     <li><span class="pill planned">Planned</span> A PyCharm frontend for the operator.</li>
   </ul>
