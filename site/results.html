@@ -8,25 +8,10 @@
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <style>
-  /* Family grouping — subtle band header before each family's rows */
-  #env tbody tr.fam-group th {
-    text-align: left;
-    background: var(--accent-soft, #eaf3f8);
-    color: var(--accent-deep, #084a70);
-    font: 700 0.8rem/1.3 inherit;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 0.32rem 0.6rem;
-    border-top: 2px solid var(--accent-line, #cfe3ee);
-    border-bottom: 1px solid var(--accent-line, #cfe3ee);
-  }
-  #env tbody tr.fam-group:first-child th { border-top: 0; }
-  #env tbody tr.fam-group .fam-n {
-    color: var(--muted, #5b6770);
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-  }
+  /* Family column — subtle accent; default sort is by family, so equal
+     families cluster. A hairline marks each family change in that view. */
+  #env td.fam { color: var(--accent-deep, #084a70); font-weight: 600; white-space: nowrap; }
+  #env tbody tr.fam-start td { border-top: 2px solid var(--accent-line, #cfe3ee); }
 </style>
 <script src="assets/motion.js"></script>
 </head>
@@ -79,6 +64,7 @@
   <table class="envelope" id="env">
     <thead>
       <tr>
+        <th class="sortable" data-key="family">Family <span class="arrow"></span></th>
         <th class="sortable" data-key="model">Model <span class="arrow"></span></th>
         <th class="sortable" data-key="quant">Quant <span class="arrow"></span></th>
         <th class="sortable" data-key="tp">TP <span class="arrow"></span></th>
@@ -214,11 +200,11 @@ const ROWS = [
 const $ = (s) => document.querySelector(s);
 const body = $("#envBody");
 const fQuant = $("#fQuant"), fFamily = $("#fFamily"), fTp = $("#fTp"), q = $("#q");
-let sortKey = "conc", sortDir = -1; // within-family sort key (default: max-concurrency descending)
+let sortKey = "family", sortDir = 1; // default view: sort by family (clusters families)
 
-// Family display order: Polish families first (Bielik, PLLuM, Qwen baseline),
-// then the international/roster envelope-only models. Rows render grouped by
-// family; a subtle band header precedes each group.
+// Family display order used when sorting by the Family column: Polish families
+// first (Bielik, PLLuM, Qwen baseline), then international/roster models. This
+// is a normal sort key — any other header re-sorts and breaks the clusters.
 const FAM_ORDER = ["Bielik", "PLLuM", "Qwen", "Mistral", "Mixtral", "Kimi"];
 const famRank = (f) => { const i = FAM_ORDER.indexOf(f); return i < 0 ? FAM_ORDER.length : i; };
 
@@ -238,8 +224,9 @@ const modelCell = (r) => r.hf
   : `${r.model}${r.note ? ` <span class="pend-pill">${r.note}</span>` : ""}`;
 const L = "<td class='locked'><span class='lock'>🔒</span></td>";
 
-function rowHTML(r) {
-  return `<tr class="${r.pending ? "pending" : ""}">
+function rowHTML(r, famStart) {
+  return `<tr class="${r.pending ? "pending" : ""}${famStart ? " fam-start" : ""}">
+    <td class="fam">${r.family}</td>
     <td class="model">${modelCell(r)}</td>
     <td>${r.quant}</td>
     <td class="num">${r.tp == null ? "<span class='na'>n/a</span>" : r.tp}</td>
@@ -253,6 +240,9 @@ function rowHTML(r) {
 }
 
 function cmp(a, b) {
+  // Family sorts by the curated FAM_ORDER (not alphabetically); rows within a
+  // family keep their source order (stable sort) so the family view stays tidy.
+  if (sortKey === "family") return (famRank(a.family) - famRank(b.family)) * sortDir;
   let x = a[sortKey], y = b[sortKey];
   // nulls always sink to the bottom regardless of direction
   if (x == null && y == null) return 0;
@@ -269,17 +259,16 @@ function render() {
     (!fQuant.value || r.quant === fQuant.value) &&
     (!fFamily.value || r.family === fFamily.value) &&
     (!fTp.value || String(r.tp) === fTp.value)
-  );
-  // Group by family (FAM_ORDER); within each family sort by the active column.
-  const fams = [...new Set(rows.map(r => r.family))]
-    .sort((a, b) => famRank(a) - famRank(b) || a.localeCompare(b));
-  const html = fams.map(fam => {
-    const fr = rows.filter(r => r.family === fam).sort(cmp);
-    return `<tr class="fam-group"><th colspan="11" scope="colgroup">${fam} <span class="fam-n">${fr.length}</span></th></tr>`
-      + fr.map(rowHTML).join("");
-  }).join("");
-  body.innerHTML = html ||
-    `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:1rem">No models match the current filter.</td></tr>`;
+  ).sort(cmp);
+  // In the family view, draw a hairline where the family changes so the
+  // clusters read as groups. Other sorts render as a plain flat table.
+  const byFam = sortKey === "family";
+  let prev = null;
+  body.innerHTML = rows.map(r => {
+    const start = byFam && r.family !== prev; prev = r.family;
+    return rowHTML(r, start);
+  }).join("") ||
+    `<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:1rem">No models match the current filter.</td></tr>`;
   $("#count").textContent = `${rows.length} / ${ROWS.length} models`;
   document.querySelectorAll("th.sortable").forEach(th => {
     const on = th.dataset.key === sortKey;
@@ -291,13 +280,13 @@ function render() {
 
 document.querySelectorAll("th.sortable").forEach(th => th.addEventListener("click", () => {
   const k = th.dataset.key;
-  if (k === sortKey) sortDir = -sortDir; else { sortKey = k; sortDir = (k === "model" || k === "quant") ? 1 : -1; }
+  if (k === sortKey) sortDir = -sortDir; else { sortKey = k; sortDir = (k === "model" || k === "quant" || k === "family") ? 1 : -1; }
   render();
 }));
 [q, fQuant, fFamily, fTp].forEach(el => el.addEventListener("input", render));
 $("#reset").addEventListener("click", () => {
   q.value = ""; fQuant.value = ""; fFamily.value = ""; fTp.value = "";
-  sortKey = "conc"; sortDir = -1; render();
+  sortKey = "family"; sortDir = 1; render();
 });
 render();
 </script>
