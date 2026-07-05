@@ -5,7 +5,7 @@ spanning architektura × rozmiar, na 2× R9700 (gfx1201). De-konfunduje obecny f
 „AWQ kernel slowdown" (dziś oparty wyłącznie na polskich modelach) i dorzuca **energetyczny**
 kąt (W/tok). Wyniki → **Paper #1** jako sub-study „Precision ablation".
 
-**Geneza:** pytanie Adama Białasa (30.06) — „czemu nie wszystkie modele w BF16 i AWQ?".
+**Geneza:** pytanie współpracownika (30.06) — „czemu nie wszystkie modele w BF16 i AWQ?".
 Odpowiedź envelope (70B BF16 132 GB > 64 GB → AWQ wymuszone; ≤27B → BF16 natywnie) jest
 poprawna, ale obnaża lukę: kontrast precyzji żyje tylko w polskich parach (Bielik/PLLuM),
 i te nie są same-checkpoint (Bielik #9 base vs #10 instruct). Domykamy.
