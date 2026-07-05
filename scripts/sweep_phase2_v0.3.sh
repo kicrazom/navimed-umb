@@ -137,7 +137,7 @@ phase_b_serve_examples() {
 }
 
 # ============================================================================
-# PHASE C — multimodal probe (Broncho-Nome scoping, follow-up paper)
+# PHASE C — multimodal probe (domain-specific scoping, follow-up paper)
 # Embargo: SEPARATE — explicitly tagged "VL" in benchmark dataset
 # ============================================================================
 phase_c_download() {
