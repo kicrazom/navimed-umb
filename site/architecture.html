@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Architecture · NaviMed-UMB</title>
-<meta name="description" content="A graph-augmented RAG over an Obsidian research vault: hybrid lexical + dense retrieval with a frozen evaluation baseline on a portable dev harness, a live Qdrant vector store, and an emergent wikilink graph in progress. Local models on-premise on 2× AMD R9700; model selection derived from the NaviMed benchmarks.">
+<meta name="description" content="A graph-augmented RAG over an Obsidian research vault: hybrid lexical + dense retrieval with a frozen evaluation baseline on a portable dev harness, a live Qdrant vector store, and an emergent wikilink graph as the decided next step. Local models on-premise on 2× AMD R9700; model selection derived from the NaviMed benchmarks.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <script src="assets/motion.js"></script>
@@ -34,7 +34,7 @@
 <div class="wrap">
 
   <h1>Architecture</h1>
-  <p class="lead">A graph-augmented retrieval system over an Obsidian research vault. Local models run on-premise on a dual AMD Radeon AI PRO R9700 workstation; a live Qdrant vector store already serves retrieval, and a graph arm is being built alongside it. The system is developed on two machines by design: a portable dev harness — hybrid lexical + dense retrieval with a frozen evaluation baseline, already serving Claude Code through a local MCP server — runs on a laptop-class GPU, and moves to this workstation by a change of configuration profile, not code. The choice of local models is derived from the NaviMed benchmarks.</p>
+  <p class="lead">A graph-augmented retrieval system over an Obsidian research vault. Local models run on-premise on a dual AMD Radeon AI PRO R9700 workstation; a live Qdrant vector store already serves retrieval, and an emergent wikilink graph arm is the decided next step alongside it. The system is developed on two machines by design: a portable dev harness — hybrid lexical + dense retrieval with a frozen evaluation baseline, already serving Claude Code through a local MCP server — runs on a laptop-class GPU, and moves to this workstation by a change of configuration profile, not code. The choice of local models is derived from the NaviMed benchmarks.</p>
 
   <div class="callout">
     <p><strong>What this page is.</strong> A description of structure and method — how the pieces connect and why, and what is built versus planned. It reports no performance figures. Retrieval quality, throughput, latency, and energy are out of scope here, and none appear on this page.</p>
@@ -188,11 +188,11 @@
   <div class="substrate-band">shared substrate — <strong>one Obsidian research vault</strong> (Markdown, git-versioned)</div>
 
   <h2>On-premise</h2>
-  <p>Every component in the shaded band runs on the local workstation: the vault on disk, the extraction and synthesis models under vLLM on the two R9700 cards, the Qdrant vector store, the in-progress graph, and — once built — the MCP server. Retrieval and embedding happen without an external API call for the local-model roles. Claude Code is the one party at the boundary — a coding agent that consumes the store rather than holding it.</p>
+  <p>Every component in the shaded band runs on the local workstation: the vault on disk, the extraction and synthesis models under vLLM on the two R9700 cards, the Qdrant vector store, the planned graph, and — once deployed there — the MCP server. Retrieval and embedding happen without an external API call for the local-model roles. Claude Code is the one party at the boundary — a coding agent that consumes the store rather than holding it.</p>
   <p>The separation of vaults is enforced in code, not by convention. Only the research vault is ingested. The clinical vault, which holds patient-related material, is excluded at the ingest layer and is never indexed, embedded, or exposed. Nothing patient-related enters this pipeline.</p>
 
   <h2>Status — built vs planned</h2>
-  <p>The retrieval substrate exists and is partly in use; the parts drawn dashed in the schematic are in progress or planned. Marked to the current build:</p>
+  <p>The retrieval substrate exists and is partly in use; the parts drawn dashed in the schematic are planned. Marked to the current build:</p>
   <ul class="status-list">
     <li><span class="pill built">Built</span> The Obsidian research vault as substrate — Markdown on disk, git-versioned.</li>
     <li><span class="pill built">Built</span> Local models on 2× R9700 under vLLM — extraction and synthesis inference.</li>
