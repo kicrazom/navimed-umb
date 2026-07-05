@@ -5,6 +5,87 @@ results for each tagged version. The current release summary lives in
 [`README.md`](README.md); the universal benchmark protocol lives in
 [`METHODOLOGY.md`](METHODOLOGY.md).
 
+## v0.5.0 — 2026-07-05
+
+This release closes the statistical-rigor and documentation surface opened by
+the v0.4.0 public pipeline. It consolidates the Tier-A re-run campaign, a
+precision-ablation sub-study, the single-stream latency anchor, a host-firmware
+provenance reconciliation, and the first public documentation of the Layer 2
+retrieval architecture. Per the per-artifact embargo policy
+([`METHODOLOGY.md`](METHODOLOGY.md) §11), this entry describes the work
+performed; per-N throughput, latency, and power figures remain EMBARGOED
+§11.2 / §11.3 pending paper acceptance.
+
+**Tier-A statistical re-runs (§7.4).** The Phase 2 concurrency sweep is re-run
+at the full Tier-A protocol — n = 10 reps per `(quant, TP, N)` cell, each rep a
+fresh vLLM process with a full model load and cooldown, results reported as
+descriptive statistics (median / IQR / p95 / p99 / min / max) rather than the
+single-shot exploratory (Tier 0) measurements of the v0.2 era. This puts the
+suite on one statistical standard and supersedes the n = 1 characterisations for
+the covered cells.
+
+**Precision-ablation sub-study (§5.3).** A same-checkpoint BF16 ↔ AWQ
+comparison over three model pairs — Bielik-4.5B-v3.0, PLLuM-8B, PLLuM-12B —
+computed 2026-07-03, holding model identity fixed to isolate the quantisation
+effect (the fixed-model-identity condition of Limitation 9). **Raw compute is
+complete; the aggregation script is still in progress** — this release does not
+yet ship a finished BF16/AWQ comparison table. Firmware consistency is noted per
+pair (both PLLuM pairs on BIOS 2202; the Bielik-4.5B pair reuses a 1715 BF16
+member, carrying a cross-firmware caveat).
+
+**N = 1 single-stream anchor (§5.2 / §7.4).** The single-stream latency anchor
+is complete for all model families, including the full eight-variant
+Llama-PLLuM-70B AWQ family. It provides the lower-concurrency end of the
+single-stream-to-plateau envelope; because it was collected under BIOS 2202
+while the concurrency plateau was collected under BIOS 1715, the envelope ratio
+is reported with an explicit cross-firmware provenance caveat.
+
+**Firmware / PCIe reconciliation (§2.1).** Host-firmware provenance is
+reconciled against the per-run records (referee finding M7): the Phase 1
+envelope and the Phase 2 concurrency ladder were collected under BIOS 1715, the
+N = 1 anchor and the precision-ablation pre-checks under BIOS 2202 (flashed
+2026-06-13). The 2202 update also restored both R9700 cards to a symmetric
+x8 / x8 PCIe link. Envelope quantities (load success, VRAM footprint, KV-cache
+capacity, max-concurrency) are firmware-independent; only the
+single-stream-to-plateau ratio crosses the boundary and is flagged as such.
+
+**Site — Layer 2 architecture documentation.** Two new pages describe the
+retrieval layer publicly for the first time: `architecture.html` (the
+three-layer design and the Layer 2 retrieval schematic) and
+`evidence-percolation.html` (hybrid retrieval — BM25 + dense embeddings +
+reciprocal-rank fusion — a frozen measurement baseline, an ablation grid, the
+emergent wikilink-graph direction, and percolation-RAG as the next step). The
+architecture schematic was redesigned (no crossing edges, labels off the paths),
+an index-layout fix was applied, and the cite and disclosure pages were updated.
+
+**AI usage disclosure (v1.5).** Claude Opus 4.8 and Claude Fable 5 (Anthropic)
+are added to the tooling profile — Opus 4.8 for orchestration and analysis,
+Fable 5 for Claude Code subagent tasks (the RAG-architecture and
+evidence-percolation pages, the site redesign, adversarial pre-release review,
+compute-results table extraction and figure generation, repository-consistency
+auditing, and RAG backend-abstraction code), in every case operating on the
+author's own measured data and decisions. The Fable 5 disclosure now appears on
+both the Zenodo deposit notes and the cite page.
+
+**Documentation consistency pass.** This release resolves a batch of
+documentation gaps found in a repository-consistency audit: the version string
+is synced to 0.5.0 across README, `CITATION.cff`, the site, and the
+METHODOLOGY §13 version table; `CITATION.cff` gains an `identifiers:` block
+carrying the concept DOI; and the METHODOLOGY citation line is corrected from
+the v0.1.0 version DOI to the concept DOI.
+
+**Embargo classification (PUBLIC §11.1, in this release).** Tier-A protocol
+description, engineering envelope, firmware provenance, single-stream-anchor
+methodology, precision-ablation design, site documentation, AI-usage
+disclosure, and version/citation metadata.
+
+**Embargo classification (EMBARGOED §11.2 / §11.3, NOT in this release).**
+Per-N throughput, latency distributions, KV-cache occupancy curves, mean output
+length, W/tok, single-stream tok/s, the single-stream-to-plateau ratio, the
+BF16-vs-AWQ precision-ablation numbers, and any cross-model comparative claim
+using concrete numbers. These remain in the gitignored `benchmarks/results/`
+tree pending paper #1 acceptance.
+
 ## 2026-05-26 — Run-3 consumer-GPU PLLuM AWQ (between-version event, under v0.4.0)
 
 Run-3 closes the consumer-GPU surface of the PLLuM family. Two new public AWQ-4bit checkpoints quantized locally on a single Radeon AI PRO R9700 (gfx1201) and published on HuggingFace under `mozarcik/`:
