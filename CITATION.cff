@@ -44,8 +44,7 @@ abstract: >-
   first public AWQ W4A16 vLLM-native quantization of the entire Llama-PLLuM-70B family (eight model cards and one reusable
   Polish clinical SmPC calibration dataset, on HuggingFace under the mozarcik namespace), a Phase 2 throughput sweep on six
   sanity-PASS variants of that family on the METHODOLOGY section 6 standard N grid, a documented Gate 2 human-verdict-override
-  extension to the coherence-probe boundary in METHODOLOGY section 8, a new eval-rag sub-project (a five-model RAG benchmark of
-  Polish versus multilingual LLMs on the SmPC corpus, with design and outreach drafts to potential co-authors), and a four-paper
-  publication roadmap supporting a synthesis paper as the third pillar of the author's habilitation. Raw Phase 2 throughput
+  extension to the coherence-probe boundary in METHODOLOGY section 8, and a new eval-rag sub-project (a five-model RAG benchmark of
+  Polish versus multilingual LLMs on the SmPC corpus). Raw Phase 2 throughput
   numbers remain under publication embargo per METHODOLOGY section 11; engineering envelope, methodology, and external release
   artifacts are public.
