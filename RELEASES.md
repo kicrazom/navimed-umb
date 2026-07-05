@@ -163,17 +163,6 @@ checked in along with outreach drafts to two proposed external co-authors
 (identities withheld pending their consent). Generation pipeline
 is BLOCKED on reviewer responses; no answers have been generated.
 
-**Coordinated multi-paper publication roadmap.** This release adds a
-four-paper publication plan (`#1` Quantization Trade-offs / MDPI
-Electronics or IEEE Access · `#2` Broncho-Nome HL7 normalization / JBI or
-JAMIA Open · `#3` Capno-Nome persistent homology / Respiratory Medicine or
-Sensors · `#4a/4b` NaviMed L2 RAG architecture + L3 Arena methodology /
-IEEE Access or JBI / JAMIA Open) plus a synthesis paper (`★` Three-Layer
-Architecture for Sovereign Clinical Knowledge Management / Patterns or NPJ
-Digital Medicine) targeted as the third pillar of the author's habilitation.
-The papers are scaffolded by the QAIF AIntern 2026 submission round (Phase
-1 deadline 2026-05-31).
-
 **Documentation.** The repository README has been rewritten to reflect the
 widened scope (benchmark suite + release pipeline + paper hub, rather than
 the v0.3.0-era "engineering log of a workstation build"). The
