@@ -7,6 +7,27 @@
 <meta name="description" content="The public engineering envelope: weight footprint, KV-cache budget, and max-concurrency for the released AWQ variants, plus the gfx1201 findings behind them.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<style>
+  /* Family grouping — subtle band header before each family's rows */
+  #env tbody tr.fam-group th {
+    text-align: left;
+    background: var(--accent-soft, #eaf3f8);
+    color: var(--accent-deep, #084a70);
+    font: 700 0.8rem/1.3 inherit;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.32rem 0.6rem;
+    border-top: 2px solid var(--accent-line, #cfe3ee);
+    border-bottom: 1px solid var(--accent-line, #cfe3ee);
+  }
+  #env tbody tr.fam-group:first-child th { border-top: 0; }
+  #env tbody tr.fam-group .fam-n {
+    color: var(--muted, #5b6770);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+</style>
 <script src="assets/motion.js"></script>
 </head>
 <body>
@@ -193,7 +214,13 @@ const ROWS = [
 const $ = (s) => document.querySelector(s);
 const body = $("#envBody");
 const fQuant = $("#fQuant"), fFamily = $("#fFamily"), fTp = $("#fTp"), q = $("#q");
-let sortKey = "conc", sortDir = -1; // default: max-concurrency descending
+let sortKey = "conc", sortDir = -1; // within-family sort key (default: max-concurrency descending)
+
+// Family display order: Polish families first (Bielik, PLLuM, Qwen baseline),
+// then the international/roster envelope-only models. Rows render grouped by
+// family; a subtle band header precedes each group.
+const FAM_ORDER = ["Bielik", "PLLuM", "Qwen", "Mistral", "Mixtral", "Kimi"];
+const famRank = (f) => { const i = FAM_ORDER.indexOf(f); return i < 0 ? FAM_ORDER.length : i; };
 
 // populate filter dropdowns from data
 const uniq = (k) => [...new Set(ROWS.map(r => r[k]))].sort();
@@ -242,8 +269,16 @@ function render() {
     (!fQuant.value || r.quant === fQuant.value) &&
     (!fFamily.value || r.family === fFamily.value) &&
     (!fTp.value || String(r.tp) === fTp.value)
-  ).sort(cmp);
-  body.innerHTML = rows.map(rowHTML).join("") ||
+  );
+  // Group by family (FAM_ORDER); within each family sort by the active column.
+  const fams = [...new Set(rows.map(r => r.family))]
+    .sort((a, b) => famRank(a) - famRank(b) || a.localeCompare(b));
+  const html = fams.map(fam => {
+    const fr = rows.filter(r => r.family === fam).sort(cmp);
+    return `<tr class="fam-group"><th colspan="11" scope="colgroup">${fam} <span class="fam-n">${fr.length}</span></th></tr>`
+      + fr.map(rowHTML).join("");
+  }).join("");
+  body.innerHTML = html ||
     `<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:1rem">No models match the current filter.</td></tr>`;
   $("#count").textContent = `${rows.length} / ${ROWS.length} models`;
   document.querySelectorAll("th.sortable").forEach(th => {
