@@ -223,8 +223,7 @@ Zenodo/DataCite relation types.
 
 - **FAIR / citable research artifact.** Reusable infrastructure (corpus-controlled
   cross-lingual calibration), not a by-product of one model. A standalone DOI lets it be
-  cited independently and contributes a discrete data output toward the author's
-  habilitation portfolio.
+  cited independently and contributes a discrete, reusable data output.
 - **Bilingual calibration set.** Together with the PL corpus this forms a controlled
   PL/EN pair over identical medicines — citable as the substrate for cross-lingual
   quantization-quality studies.
