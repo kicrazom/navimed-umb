@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Architecture · NaviMed-UMB</title>
-<meta name="description" content="A graph-augmented RAG over an Obsidian research vault: a live Qdrant vector store plus an in-progress LightRAG entity-relation graph, local models for extraction and synthesis, on-premise on 2× AMD R9700. Model selection is derived from the NaviMed benchmarks.">
+<meta name="description" content="A graph-augmented RAG over an Obsidian research vault: hybrid lexical + dense retrieval with a frozen evaluation baseline on a portable dev harness, a live Qdrant vector store, and an emergent wikilink graph in progress. Local models on-premise on 2× AMD R9700; model selection derived from the NaviMed benchmarks.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <script src="assets/motion.js"></script>
@@ -34,20 +34,20 @@
 <div class="wrap">
 
   <h1>Architecture</h1>
-  <p class="lead">A graph-augmented retrieval system over an Obsidian research vault. Local models run on-premise on a dual AMD Radeon AI PRO R9700 workstation; a live Qdrant vector store already serves retrieval, an entity-relation graph (LightRAG) is being built alongside it, and the store is designed to reach Claude Code through a local MCP server. The choice of local models is derived from the NaviMed benchmarks.</p>
+  <p class="lead">A graph-augmented retrieval system over an Obsidian research vault. Local models run on-premise on a dual AMD Radeon AI PRO R9700 workstation; a live Qdrant vector store already serves retrieval, and a graph arm is being built alongside it. The system is developed on two machines by design: a portable dev harness — hybrid lexical + dense retrieval with a frozen evaluation baseline, already serving Claude Code through a local MCP server — runs on a laptop-class GPU, and moves to this workstation by a change of configuration profile, not code. The choice of local models is derived from the NaviMed benchmarks.</p>
 
   <div class="callout">
     <p><strong>What this page is.</strong> A description of structure and method — how the pieces connect and why, and what is built versus planned. It reports no performance figures. Retrieval quality, throughput, latency, and energy are out of scope here, and none appear on this page.</p>
   </div>
 
   <h2>System at a glance</h2>
-  <p>Ingest reads the vault and a local model embeds each note into a Qdrant collection, which is live and serves vector retrieval today. The same ingest is being extended to extract entities and relations into a LightRAG graph; that extraction is not yet reliable. A local MCP server that exposes both indexes to the agent is the next step, not a current capability. Model selection for the extraction and synthesis roles is derived from the NaviMed hardware envelope — which open-weight models load and serve on two R9700 cards.</p>
+  <p>Ingest reads the vault and a local model embeds each note into a Qdrant collection, which is live and serves vector retrieval today. On the dev harness, retrieval is hybrid: a lexical BM25 index and a dense index over the same chunks are fused by reciprocal rank fusion, and a local MCP server already exposes that retrieval to Claude Code — the workstation deployment of the same server is the next step. The graph arm is in progress: LightRAG entity-relation extraction was evaluated but is not yet reliable, and the current direction (decided 2026-07-04) is an emergent graph built from the vault's own wikilink topology at index time. Model selection for the extraction and synthesis roles is derived from the NaviMed hardware envelope — which open-weight models load and serve on two R9700 cards.</p>
 
   <figure class="svg-figure">
     <svg class="arch-schematic" viewBox="0 0 1000 460" role="img"
          aria-labelledby="arch-svg-title arch-svg-desc">
       <title id="arch-svg-title">Graph-augmented RAG over an Obsidian vault, on-premise on two AMD R9700 GPUs.</title>
-      <desc id="arch-svg-desc">Left to right: the Obsidian vault feeds ingest with local models. Ingest writes to a live Qdrant vector store (built) and, in progress, to a LightRAG entity-relation graph. A planned local MCP server exposes both to Claude Code and a planned PyCharm frontend. A dashed orange link marks that the NaviMed benchmarks drive model selection into ingest. A dashed grey loop marks a planned write-back of agent edits into the vault. A shaded band marks the on-premise boundary. Solid nodes and arrows are built; orange-dashed is in progress; grey-dashed is planned.</desc>
+      <desc id="arch-svg-desc">Left to right: the Obsidian vault feeds ingest with local models. Ingest writes to a live Qdrant vector store (built) and, in progress, to an emergent wikilink entity-relation graph. A local MCP server (live on the dev harness, planned on the workstation) exposes both to Claude Code and a planned PyCharm frontend. A dashed orange link marks that the NaviMed benchmarks drive model selection into ingest. A dashed grey loop marks a planned write-back of agent edits into the vault. A shaded band marks the on-premise boundary. Solid nodes and arrows are built; orange-dashed is in progress; grey-dashed is planned.</desc>
 
       <defs>
         <marker id="ah-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7.5" markerHeight="7.5" orient="auto-start-reverse">
@@ -86,7 +86,7 @@
       <text class="node-title" x="88"  y="236" text-anchor="middle">Obsidian vault</text>
       <text class="node-title" x="282" y="236" text-anchor="middle">Ingest</text>
       <text class="node-title" x="484" y="182" text-anchor="middle">Qdrant vectors</text>
-      <text class="node-title" x="484" y="294" text-anchor="middle">LightRAG graph</text>
+      <text class="node-title" x="484" y="294" text-anchor="middle">Wikilink graph</text>
       <text class="node-title" x="690" y="236" text-anchor="middle">MCP server</text>
       <text class="node-title" x="897" y="199" text-anchor="middle">Claude Code</text>
       <text class="node-title" x="897" y="281" text-anchor="middle">PyCharm frontend</text>
@@ -126,16 +126,20 @@
     <li><span class="swatch planned"></span> planned (links, nodes, write-back)</li>
     <li><span class="swatch band"></span> on-premise boundary</li>
   </ul>
-  <p class="fig-caption">Solid blue is the working retrieval path — the vault embedded into a live Qdrant store. The LightRAG graph and the MCP server are drawn dashed because they are in progress and planned respectively. The orange dashed link is a derivation, not a runtime flow: the benchmarks decide which local models fill the extraction and synthesis roles. When motion is enabled, faint travelling dashes trace where data actually moves; static dashes mark what does not flow yet.</p>
+  <p class="fig-caption">Solid blue is the working retrieval path — the vault embedded into a live Qdrant store. The graph arm (an emergent wikilink graph; LightRAG was evaluated first) and the workstation MCP server are drawn dashed because they are in progress and planned respectively — on the portable dev harness an MCP server already serves hybrid retrieval to Claude Code. The orange dashed link is a derivation, not a runtime flow: the benchmarks decide which local models fill the extraction and synthesis roles. When motion is enabled, faint travelling dashes trace where data actually moves; static dashes mark what does not flow yet.</p>
 
   <h2>Substrate</h2>
   <p>The substrate is the research vault itself: plain-Markdown notes on disk, versioned in git. Nothing is copied into a proprietary store; the notes stay the source of truth, and the indexes are derived, disposable views over them.</p>
   <p>Retrieval is hybrid by design, not a single vector database. Two shapes of knowledge are intended to sit side by side:</p>
   <ul>
-    <li><strong>A vector index</strong> in Qdrant — <em>built and live</em>. Notes are embedded locally into a vault RAG collection that serves semantic recall today: the fuzzy-prose half of retrieval.</li>
-    <li><strong>An entity-relation graph</strong> built with LightRAG — <em>in progress</em>. A local model reads each note and extracts entities and the relations between them, so the store can answer questions that depend on how things connect. Extraction over the vault is not yet reliable, so the graph is not in routine use.</li>
+    <li><strong>A vector index</strong> — <em>built and live</em>. Notes are embedded locally and serve semantic recall today: the fuzzy-prose half of retrieval. On the workstation this is a Qdrant collection; the portable dev harness keeps the same contract on an embedded local store (with sqlite-vec / DuckDB-VSS as the recorded scaling path — a deliberate decision of 2026-07-04 to prefer embedded backends over a server dependency).</li>
+    <li><strong>A lexical index</strong> (BM25) — <em>built, dev harness</em>. Exact names, abbreviations, and Polish inflection are retrieval signals that embeddings blur; a BM25 arm over the same chunks is fused with the dense arm by reciprocal rank fusion, so neither half has to carry the whole query.</li>
+    <li><strong>An entity-relation graph</strong> — <em>in progress</em>. LightRAG extraction over the vault was evaluated and is not yet reliable; the current direction (decided 2026-07-04, custom build) is an emergent graph derived from the vault's own <code>[[wikilink]]</code> topology at index time — the links the researcher already curates, rather than a model's guess at them.</li>
   </ul>
-  <p>The design goal is a query that draws on both — graph neighbourhood and vector neighbours — with a local model synthesising the retrieved context into an answer. Keeping the two indexes distinct follows the project's retrieval principle: match the primitive to the shape of the knowledge rather than forcing everything through one vector store.</p>
+  <p>The design goal is a query that draws on all of these — graph neighbourhood, vector neighbours, and lexical anchors — with a local model synthesising the retrieved context into an answer. Keeping the indexes distinct follows the project's retrieval principle: match the primitive to the shape of the knowledge rather than forcing everything through one vector store.</p>
+
+  <h2>Measurement layer</h2>
+  <p>Every retrieval change is measured before it is believed. A seed set of Polish questions, each hand-labelled with the note that should answer it, drives a small harness computing recall@k and MRR@k; the hybrid-without-graph configuration is <strong>frozen as the baseline</strong>, and every subsequent component lands as a measured delta against it, organised as a 2×2 ablation grid — baseline, +reranker, +graph, +both. Each result is stamped with the embedding-model version and chunking strategy, so numbers stay attributable to the configuration that produced them. Consistent with this page's scope, the figures live in the project repository, not here.</p>
 
   <h2>Model selection from NaviMed</h2>
   <p>The extraction and synthesis roles run on local open-weight models, and which models are viable is decided by the NaviMed hardware envelope, not by guesswork. The benchmark suite already establishes, for this exact workstation, which models load and serve on two R9700 cards, their weight footprint, the KV-cache budget that remains, and how much concurrency each configuration admits.</p>
@@ -157,7 +161,7 @@
     <div class="role">
       <p class="role-k">Role 3</p>
       <h3>Maintenance</h3>
-      <p>Scheduled local jobs keep the indexes honest: re-ingest changed notes, rebuild the graph and vectors, and flag duplicates, contradictions, and staleness.</p>
+      <p>Scheduled local jobs keep the indexes honest. Built on the dev harness: a nightly loop re-embeds only notes whose content changed and re-runs the retrieval evaluation against the frozen baseline, flagging regressions. Planned: duplicate, contradiction, and staleness sweeps.</p>
     </div>
   </div>
   <div class="substrate-band">shared substrate — <strong>one Obsidian research vault</strong> (Markdown, git-versioned)</div>
@@ -173,9 +177,12 @@
     <li><span class="pill built">Built</span> Local models on 2× R9700 under vLLM — extraction and synthesis inference.</li>
     <li><span class="pill built">Built</span> A live Qdrant vector store — a vault RAG collection serving semantic retrieval.</li>
     <li><span class="pill built">Built</span> The NaviMed benchmark suite — the model-selection input.</li>
-    <li><span class="pill wip">In&nbsp;prog.</span> The LightRAG entity-relation graph over the vault — extraction / ingest not yet reliable.</li>
-    <li><span class="pill planned">Planned</span> Exposing LightRAG as a local MCP server.</li>
-    <li><span class="pill planned">Planned</span> Live incremental maintenance and write-back of agent edits.</li>
+    <li><span class="pill built">Built</span> A portable dev harness — hybrid BM25 + dense retrieval fused by RRF, with a local MCP server already consumed by Claude Code; moves to the workstation by configuration profile.</li>
+    <li><span class="pill built">Built</span> The measurement layer — Polish seed set with ground-truth sources, recall@k / MRR@k harness, frozen no-graph baseline for the ablation grid.</li>
+    <li><span class="pill built">Built</span> Nightly incremental maintenance on the dev harness — content-hash re-embedding of changed notes plus a regression check against the frozen baseline.</li>
+    <li><span class="pill wip">In&nbsp;prog.</span> The graph arm — redirected (2026-07-04) to an emergent wikilink graph built at index time; LightRAG extraction evaluated, not yet reliable.</li>
+    <li><span class="pill planned">Planned</span> Workstation deployment of the MCP server, exposing the graph arm alongside vectors.</li>
+    <li><span class="pill planned">Planned</span> Write-back of agent edits into the vault.</li>
     <li><span class="pill planned">Planned</span> A PyCharm frontend for the operator.</li>
   </ul>
   <p class="muted">Status reflects the current state of the build, not a deployed product. The solid, orange-dashed, and grey-dashed elements of the schematic mirror built, in-progress, and planned.</p>
