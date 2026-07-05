@@ -43,7 +43,7 @@ scripts/download_progress.py
 references/
 
 # === EMBARGO: paper-bound benchmark results ===
-# Until arXiv preprint / IEEE Access submission, the following are kept
+# Until peer-reviewed publication, the following are kept
 # local-only. Public release scheduled with paper publication.
 # See benchmarks/results/README.md for full embargo policy.
 benchmarks/results/scaling/*.json
