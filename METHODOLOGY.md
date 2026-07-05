@@ -18,7 +18,7 @@ NaviMed-UMB is a universal AI hardware envelope and inference benchmark platform
 
 2. **Scaling sweep (EMBARGOED until publication):** At envelope-validated best configurations, how does aggregate throughput, latency, and power efficiency scale with concurrent request count `N`, where does the throughput knee occur relative to `max_concurrency`, and how do these properties compare across quantizations, model architectures, and inference backends?
 
-The platform deliberately does **not** measure model quality, reasoning capability, or clinical utility. Those questions belong to the separate NaviMed Arena methodology paper and to domain-specific validation studies (e.g., Broncho-Nome). Mixing hardware engineering with semantic evaluation conflates two distinct epistemic regimes; this is the methodological humility position elaborated in §8.
+The platform deliberately does **not** measure model quality, reasoning capability, or clinical utility. Those questions belong to the separate NaviMed Arena methodology paper and to domain-specific clinical validation studies. Mixing hardware engineering with semantic evaluation conflates two distinct epistemic regimes; this is the methodological humility position elaborated in §8.
 
 **Guiding principle — scientific rigor over time and cost.** Where methodological faithfulness and wall-clock / GPU-hours conflict, rigor wins. Statistical claims use the full Tier-A protocol (§7.4, n = 10) with no shortened N-ladders and no reduced rep counts, and the suite is kept internally consistent even when that means re-running already-measured models. The Llama-PLLuM-70B family is re-run at full n = 10 for exactly this reason — completeness and comparability take priority over speed.
 
@@ -156,7 +156,7 @@ Three follow-up contenders (Phase B from `scripts/sweep_phase2_v0.3.sh`) are dow
 - **Kimi-Linear-48B-A3B-Instruct** — MoE, linear attention, requires `--no-enable-prefix-caching`
 - **Qwen3.6-35B-A3B-FP8** — MoE benchmark
 
-A multimodal probe suite (Phase C — Kimi-VL-A3B-Thinking-2506, Llama-4-Scout-17B-16E-Instruct) is scoped for Broncho-Nome work and tagged `VL` in the benchmark dataset.
+A multimodal probe suite (Phase C — Kimi-VL-A3B-Thinking-2506, Llama-4-Scout-17B-16E-Instruct) is scoped for future domain-specific work and tagged `VL` in the benchmark dataset.
 
 ### 4.7 Lemonade Server reference (planned v0.4)
 
@@ -243,7 +243,7 @@ All Phase 2 sweeps use a synthetic prompt generator identical across models, ens
 - **Sampling:** `temperature=0.7`, `max_tokens=128`
 - **Warmup:** `min(5, N)` prompts before timed run, results discarded
 
-Synthetic prompts are not equivalent to real medical workloads. This is a stated limitation (§10). Domain-specific evaluation belongs to the NaviMed Arena and to per-domain validation studies (Broncho-Nome).
+Synthetic prompts are not equivalent to real medical workloads. This is a stated limitation (§10). Domain-specific evaluation belongs to the NaviMed Arena and to per-domain validation studies.
 
 ---
 
@@ -435,7 +435,7 @@ Every benchmark session, every result-generating step is explicitly labeled at t
 | v0.1.0 | Hardware envelope paper, Qwen 3.6 27B | Released 2026-04-26, DOI 10.5281/zenodo.19851347 |
 | v0.2.0 | Phase 2 scaling sweep, Qwen 3.6 27B (BF16 + FP8) | Released 2026-04-29 |
 | v0.3.0 | Remaining model suite (Phase 1 + Phase 2, 12 models / 44 N-points) + first public AWQ W4A16 of the Llama-PLLuM-70B family (8 cards) | Released 2026-05-21, DOI 10.5281/zenodo.20317011 |
-| v0.4.0 | Public release pipeline + Run-3 consumer-GPU AWQ (Llama-PLLuM-8B-chat-2512, PLLuM-12B-chat-2512) + four-paper roadmap | Released 2026-05-24, DOI 10.5281/zenodo.20364953 |
+| v0.4.0 | Public release pipeline + Run-3 consumer-GPU AWQ (Llama-PLLuM-8B-chat-2512, PLLuM-12B-chat-2512) | Released 2026-05-24, DOI 10.5281/zenodo.20364953 |
 | v0.5.0 | Tier-A statistical re-runs (n=10 per cell, §7.4) of the Phase 2 suite (Run-3 8B/12B + Llama-PLLuM-70B family) + N=1 single-stream anchor (§5.2) + precision-ablation sub-study (§5.3, raw compute complete, aggregation in progress) + firmware reconciliation (§2.1) | Released 2026-07-05 (version DOI backfilled post-mint) |
 | v0.6.0 | Undervolted (-75 mV / +15 W) re-run of the suite | Planned |
 | v0.7.0 | Lemonade Server cross-stack comparison (vLLM vs GGUF / desktop) | Planned |
