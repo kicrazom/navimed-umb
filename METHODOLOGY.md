@@ -1,10 +1,10 @@
 # NaviMed-UMB Benchmark Methodology
 
-**Document version:** 1.6 (2026-07-03)
+**Document version:** 1.7 (2026-07-05)
 **Maintainer:** Łukasz Minarowski, UMB Białystok (ORCID 0000-0002-2536-3508)
 **Repository:** https://github.com/kicrazom/navimed-umb
 **License:** CC-BY-4.0 (text), MIT (code)
-**Citation:** Minarowski Ł. NaviMed-UMB Benchmark Methodology. Zenodo. DOI 10.5281/zenodo.19851347
+**Citation:** Minarowski Ł. NaviMed-UMB Benchmark Methodology. Zenodo. DOI 10.5281/zenodo.19851346
 
 This document is the single source of truth for how every model in the NaviMed-UMB benchmark suite is measured and reported. Every per-model session report, every paper figure, and every public release derives from the conventions defined here. When in doubt during a benchmarking session, this document overrides ad-hoc decisions.
 
@@ -436,16 +436,17 @@ Every benchmark session, every result-generating step is explicitly labeled at t
 | v0.2.0 | Phase 2 scaling sweep, Qwen 3.6 27B (BF16 + FP8) | Released 2026-04-29 |
 | v0.3.0 | Remaining model suite (Phase 1 + Phase 2, 12 models / 44 N-points) + first public AWQ W4A16 of the Llama-PLLuM-70B family (8 cards) | Released 2026-05-21, DOI 10.5281/zenodo.20317011 |
 | v0.4.0 | Public release pipeline + Run-3 consumer-GPU AWQ (Llama-PLLuM-8B-chat-2512, PLLuM-12B-chat-2512) + four-paper roadmap | Released 2026-05-24, DOI 10.5281/zenodo.20364953 |
-| v0.5.0 | Tier-A statistical re-runs (n=10 per cell, §7.4) of the Phase 2 suite — Run-3 8B/12B + Llama-PLLuM-70B family | In progress 2026-05-31 |
+| v0.5.0 | Tier-A statistical re-runs (n=10 per cell, §7.4) of the Phase 2 suite (Run-3 8B/12B + Llama-PLLuM-70B family) + N=1 single-stream anchor (§5.2) + precision-ablation sub-study (§5.3, raw compute complete, aggregation in progress) + firmware reconciliation (§2.1) | Released 2026-07-05 (version DOI backfilled post-mint) |
 | v0.6.0 | Undervolted (-75 mV / +15 W) re-run of the suite | Planned |
 | v0.7.0 | Lemonade Server cross-stack comparison (vLLM vs GGUF / desktop) | Planned |
 
-This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.6) and are recorded in the changelog at the bottom of this file.
+This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.7) and are recorded in the changelog at the bottom of this file.
 
 ---
 
 ## Changelog
 
+- **1.7 (2026-07-05):** v0.5.0 release alignment. §13 version table: v0.5.0 row moved from "In progress" to "Released 2026-07-05" and its scope expanded to name the N=1 single-stream anchor (§5.2), the precision-ablation sub-study (§5.3, raw compute complete / aggregation in progress), and the firmware reconciliation (§2.1); version DOI backfilled post-mint. Document self-citation (header) corrected from the v0.1.0 version DOI `10.5281/zenodo.19851347` to the concept DOI `10.5281/zenodo.19851346` (the …347 in the §13 v0.1.0 row is the genuine v0.1.0 version DOI and is unchanged). No methodological change; embargo (§11) unchanged.
 - **1.6 (2026-07-03):** Firmware reconciliation (referee finding M7) + precision-ablation documentation. **§2.1 rewritten** to state the true firmware per data regime, established from the per-run records: the Phase-1 envelope and the Phase-2 concurrency ladder (Paper #1 dataset) were collected under **BIOS 1715** (late-April to early-June 2026 campaign, pre the 2026-06-13 flash; no `bios_version` field in those records — pre/post-update split is per file, since `hardware_envelope/` also holds later 2202 AWQ probes), and the **N = 1 single-stream anchor** under **BIOS 2202** (small/mid 2026-06-22; 70B family 2026-06-24…26, `bios_version = 2202` live in 80 `scaling-n1` records). This reverses the previous §2.1 claim ("BIOS updated 2026-06-13 in a clean window before Phase 2; Phase 2 collected under 2202"), which contradicted the records and the Paper #1 methods draft (M7). The study straddles two firmware states; the single-stream-to-plateau envelope ratio is flagged as comparing across the boundary. **§3.3 corrected** — host-firmware capture was added with the N = 1 anchor runner (late 2026-06), not "from the Phase-2 v0.3 runner onward"; pre-anchor records infer firmware from collection date. **New §5.3** — precision-ablation sub-study (same-checkpoint BF16↔AWQ pairs: bielik-4.5b-v30, pllum-8b, pllum-12b) satisfying the fixed-model-identity condition of Limitation 9; Tier-A `CANON_N` ladder both TP, gated by an envelope + Gate-1 pre-check; firmware-consistency noted per pair (pllum pairs both on 2202; bielik-4.5b reuses a 1715 BF16 member → cross-firmware caveat). **§7.4** N=1-anchor exclusion now names `CANON_N` explicitly. Method/design only; no embargoed per-N performance numbers added (§11.2/§11.3 unchanged).
 - **1.5 (2026-06-01):** §7.5 default visualization set to the **scaling line + min–max band** (`plot_scaling_band.py`) after visual validation — at the observed run-to-run CV ≈ 1 % a box-and-whisker collapses below marker size and the reps overlap; the connected median line per TP + thin band reads clearly. Box-and-whisker retained as the larger-spread alternative.
 - **1.4 (2026-06-01):** New §7.5 (Statistical analysis and presentation) — distribution-first reporting: median + IQR (not mean ± SD) for right-skewed throughput/latency; box-and-whisker with all individual reps overlaid (Weissgerber 2015 / Tukey / SAMPL); non-parametric comparisons (Mann–Whitney) under Holm–Bonferroni with effect sizes. Added `benchmarks/scripts/plotting/plot_boxwhisker.py`. Run-3 8B/12B Tier-A figures rendered (EMBARGOED §11.3, local-only).
