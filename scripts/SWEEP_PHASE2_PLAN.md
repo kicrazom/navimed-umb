@@ -5,7 +5,6 @@ domain: [navimed-umb, ai-stack, benchmarking]
 created: 2026-05-17
 related_projects:
   - "[[navimed-umb]]"
-  - "[[broncho-nome]]"
   - "[[ego-architecture-ai]]"
 ---
 
@@ -15,7 +14,7 @@ related_projects:
 
 Rozszerzyć Phase 2 inference sweep o (A) odświeżone wersje obecnych modeli,
 (B) nowych pretendentów (Kimi-Dev-72B, Kimi-Linear, Qwen3.6-35B-A3B),
-(C) multimodal probe (Kimi-VL, Llama-4-Scout) pod kątem Broncho-Nome.
+(C) multimodal probe (Kimi-VL, Llama-4-Scout) pod kątem przyszłych zastosowań domenowych.
 
 ## Embargo
 
@@ -51,7 +50,7 @@ Rozszerzyć Phase 2 inference sweep o (A) odświeżone wersje obecnych modeli,
 
 | Lokalny katalog | HF repo | Po co |
 |---|---|---|
-| `kimi-vl-a3b-thinking-2506` | `moonshotai/Kimi-VL-A3B-Thinking-2506` | bronchoskopia obrazy, RTG, krzywe |
+| `kimi-vl-a3b-thinking-2506` | `moonshotai/Kimi-VL-A3B-Thinking-2506` | obrazy medyczne, RTG, krzywe |
 | `llama-4-scout-17b-16e-instruct` | `meta-llama/Llama-4-Scout-17B-16E-Instruct` | natywny multimodal, alternatywa VL |
 
 ## Modele POMIJANE
@@ -101,5 +100,5 @@ Rozszerzyć Phase 2 inference sweep o (A) odświeżone wersje obecnych modeli,
 ## Powiązania
 
 - Główne repo navimed-umb: `[[navimed-umb]]`
-- Kontekst multimodal: `[[broncho-nome]]` (Faza C)
+- Kontekst multimodal: przyszłe zastosowania domenowe (Faza C)
 - AI Stack MOC: `[[90_Meta/MOC-AI-Stack]]`
