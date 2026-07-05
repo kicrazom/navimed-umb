@@ -13,7 +13,7 @@ vLLM 0.19.
 
 The project began as a workstation engineering log and has grown into the
 infrastructure underlying a series of forthcoming methodology, quantization,
-and clinical-AI papers (see [Roadmap](#roadmap) below). It is the L1 pillar
+and clinical-AI papers. It is the L1 pillar
 of a three-layer architecture (workstation → retrieval → arena) targeted at
 sovereign, on-premise medical-AI deployment.
 
@@ -85,25 +85,6 @@ variants), and a same-checkpoint BF16↔AWQ precision-ablation sub-study.
 Per-N throughput/latency/power numbers are embargoed §11.2/§11.3 pending
 paper acceptance; engineering envelope, methodology, and site documentation
 are public.
-
-## Roadmap
-
-The repository feeds a coordinated multi-paper publication track that is the
-third pillar of the author's habilitation plan. (The QAIF AIntern programme
-was previously planned as a delivery vehicle for papers #2/#3/#4 but was
-dropped 2026-05-25 — these now follow the habilitation timeline directly,
-with organic intern recruitment via PJATK contacts and the LBC application
-to KE UMB, deadline 31.12.2026, as the compliance backbone.)
-
-| # | Paper (working title) | Venue (target) | Status |
-|---|---|---|---|
-| 1 | Quantization Trade-offs for Polish Clinical LLMs on AMD RDNA 4 | MDPI Electronics / IEEE Access (Q1) | data complete, draft pending |
-| 2 | Polish Bronchoscopy Reports → HL7 v2.3 / ICD-9 / JGP via Local LLMs (`Broncho-Nome`) | JBI / JAMIA Open (Q1) | habilitation roadmap |
-| 3 | Pattern Burden in tcPCO₂: Persistent Homology of Hypercapnic Episodes (`Capno-Nome`) | Respiratory Medicine / Sensors | habilitation roadmap |
-| 4a / 4b | NaviMed L2 RAG architecture / L3 Arena methodology (`navimed-rag` + `navimed-arena`) | IEEE Access / JBI / JAMIA Open (Q1) | habilitation roadmap (in scoping) |
-| ★ | NaviMed: Three-Layer Architecture for Sovereign Clinical Knowledge Management (synthesis) | Patterns (Cell Press, Q1) / NPJ Digital Medicine | habilitation centerpiece |
-
-Papers #1–#4 are the supporting evidence track for the synthesis paper (★).
 
 ## AI assistance
 
