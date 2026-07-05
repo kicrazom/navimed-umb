@@ -116,7 +116,7 @@ Worker config z log: `tensor_parallel_size=2, pipeline_parallel_size=1, data_par
 
 **TP=2 quintuples KV-cache capacity and max_concurrency, at the cost of ~43% single-stream generation throughput.** Ratio match is striking: 183968/37584 = 4.90× tokens, 22.46/4.59 = 4.89× concurrency — perfect coupling.
 
-To bezpośrednio replikuje obserwację METHODOLOGY §4 dla Qwen 7B ("TP=2 harmful below high N"). Bielik 11B BF16 pokazuje **ten sam wzorzec przy tym samym progu architekturalnym** (gęsta uwaga Llama/Mistral-base, fp16-class weights). Konsekwencja operacyjna: dla **single-request latency** (CDSS interaktywny, jeden klinicysta) TP=1 wygrywa. Dla **batch / queue** (N > ~3 jednoczesnych żądań, np. Broncho-Nome przetwarzające serię badań) TP=2 zaczyna wygrywać przez wyższą capacity.
+To bezpośrednio replikuje obserwację METHODOLOGY §4 dla Qwen 7B ("TP=2 harmful below high N"). Bielik 11B BF16 pokazuje **ten sam wzorzec przy tym samym progu architekturalnym** (gęsta uwaga Llama/Mistral-base, fp16-class weights). Konsekwencja operacyjna: dla **single-request latency** (CDSS interaktywny, jeden klinicysta) TP=1 wygrywa. Dla **batch / queue** (N > ~3 jednoczesnych żądań, np. wsadowe przetwarzanie serii badań) TP=2 zaczyna wygrywać przez wyższą capacity.
 
 Phase 2 sweep zmierzy *concrete crossover N* (EMBARGOED per §11.2).
 
@@ -153,7 +153,7 @@ Brak runtime errors, brak HSA_STATUS_*, brak crash CUDA graphs (eager mode aktyw
 2. **TP=2 with `enforce_eager=False`** — Bielik (Llama/Mistral base, dense attention) nie ma hybrydowej uwagi z §3.2 (która wymaga eager dla gfx1201). Testowy run z CUDA graphs aktywne — czy single-stream throughput odzyskuje (oczekiwany +20-40% na decode loop)? Jeśli tak, TP=2 + CUDA graphs ≈ TP=1 throughput ale z 5× max_concurrency = jednoznaczna wygrana. Jeśli HSA crash → eager pozostaje default.
 3. **Phase 2 sweep dla Bielik 11B v3.0 (TP=1 vs TP=2 crossover)** — przy `max_concurrency=4.59x` (TP=1) i `22.46x` (TP=2) zaplanować N grid `{1, 2, 4, 8, 16, 32, 64, 128}` dla obu konfiguracji. Knee TP=1 oczekiwany ~N=18-20, knee TP=2 ~N=90-100. Crossover (gdzie agregat tok/s TP=2 ≥ TP=1) prawdopodobnie ~N=3-5 (gdy preempcja TP=1 zaczyna boleć). EMBARGOED per §11.2.
 4. **`kv_cache_size_gb` introspection patch** (powtórka z TP=1 §9) — vLLM 0.19 nie wystawia `gpu_cache_size_bytes`; v0.3 runner powinien dokomponować z `kv_cache_geometry × num_layers × dtype_bytes`.
-5. **Halucynacja-watch confirmation** — TP=2 output byte-identical z TP=1 dla PEEP — żadne TP-parallel corruption / numerical drift w środowisku gfx1201 / dual-R9700. Dla downstream Broncho-Nome / Capno-Nome inference to istotny sanity (asymmetric risk medical, METHODOLOGY §11.3).
+5. **Halucynacja-watch confirmation** — TP=2 output byte-identical z TP=1 dla PEEP — żadne TP-parallel corruption / numerical drift w środowisku gfx1201 / dual-R9700. Dla downstream klinicznego inference to istotny sanity (asymmetric risk medical, METHODOLOGY §11.3).
 
 ## §10 — Embargo classification
 
