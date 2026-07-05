@@ -23,7 +23,7 @@ artifacts:
 **Operator:** Łukasz Minarowski <lukasz.minarowski@umb.edu.pl>
 **Methodology:** [[METHODOLOGY|METHODOLOGY.md]] v1.0 §3.1, §3.3, §5.1, §8, §9, §11
 **Embargo:** **PUBLIC** (Phase 1 envelope, single sanity prompt, OpenAI-compatible transport)
-**Related:** [[2026-05-17-bielik-4.5b-v30-post-refactor-sanity|4.5B sibling sanity (same session, lighter model)]], [[navimed-umb]], [[broncho-nome]], [[capno-nome]]
+**Related:** [[2026-05-17-bielik-4.5b-v30-post-refactor-sanity|4.5B sibling sanity (same session, lighter model)]], [[navimed-umb]]
 
 ## §1 — Methodological humility (Lerchner 2026, METHODOLOGY §8)
 
