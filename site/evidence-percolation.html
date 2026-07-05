@@ -559,7 +559,7 @@
   <p class="eq-cap"><span class="pill prop">proposed</span> <span class="glo">Anti-bonds subtract from the net local support and can collapse the claim's connection probability <math><msub><mi>s</mi><mi>h</mi></msub></math> — de-percolation. When the opposing evidence dominates — its competing component outgrowing the corroborating one — <math><mi>h</mi></math> is displaced into the <em>contradicted</em> sink from any prior rung, as the framework requires.<sup class="cite"><a href="#ref-8">8</a></sup> The check is mandatory before any promotion, so a contradiction is tested at every step, not only at the top.</span></p>
 
   <h2>Roadmap: the four shapes of knowledge</h2>
-  <p>Evidence percolation is not a retrieval engine on its own — it is a promotion rule that sits <em>on top of</em> retrieval. The retrieval layer follows the project's core principle: knowledge comes in four shapes, and no single vector database serves all four.<sup class="cite"><a href="#ref-8">8</a></sup> The working core today is a hybrid of an entity-relation <strong>graph</strong> plus a <strong>vector</strong> index (see <a href="architecture.html">Architecture</a>). The remaining primitives are planned, each matched to a shape the core does not cover, then orchestrated.</p>
+  <p>Evidence percolation is not a retrieval engine on its own — it is a promotion rule that sits <em>on top of</em> retrieval. The retrieval layer follows the project's core principle: knowledge comes in four shapes, and no single vector database serves all four.<sup class="cite"><a href="#ref-8">8</a></sup> The working core today is a hybrid of a <strong>vector</strong> index plus a <strong>BM25 lexical</strong> index, fused by reciprocal rank fusion (see <a href="architecture.html">Architecture</a>); the entity-relation graph — an emergent wikilink graph, decided 2026-07-04 — is planned as the next arm. The remaining primitives are planned, each matched to a shape the core does not cover, then orchestrated.</p>
 
   <div class="table-scroll" tabindex="0" aria-label="Table: planned retrieval primitives, scrollable">
   <table>
@@ -581,14 +581,14 @@
       <tr>
         <td>Entity-relation graph</td>
         <td>relational</td>
-        <td>answers that depend on how things connect, not on surface similarity; the substrate the percolation model runs over.</td>
-        <td><span class="pill built">Built</span></td>
+        <td>answers that depend on how things connect, not on surface similarity; the substrate the percolation model runs over. Direction decided 2026-07-04: emergent wikilink graph (LightRAG evaluated and set aside).</td>
+        <td><span class="pill planned">Planned</span></td>
       </tr>
       <tr>
         <td>BM25 lexical</td>
         <td>exact terms</td>
         <td>precise keyword, code-token, and rare-identifier match that dense vectors blur; a recall floor no embedding guarantees.</td>
-        <td><span class="pill planned">Planned</span></td>
+        <td><span class="pill built">Built</span></td>
       </tr>
       <tr>
         <td>Document-tree</td>
@@ -626,8 +626,8 @@
 
   <p>The intended query-time sequence layers these primitives in order — parallel retrieval across shapes, then fusion, then a safety gate, then grading:</p>
   <div class="flow" aria-label="Query-time retrieval sequence">
-    <div class="flow-step">Working core — graph neighbourhood + vector neighbours</div>
-    <div class="flow-step">+ BM25 lexical, document-tree, tabular/SQL — retrieve across all four shapes in parallel</div>
+    <div class="flow-step">Working core — vector neighbours + BM25 lexical, fused by RRF</div>
+    <div class="flow-step">+ graph neighbourhood (wikilink graph), document-tree, tabular/SQL — retrieve across all four shapes in parallel</div>
     <div class="flow-step">Reranker — late fusion of the merged candidate set</div>
     <div class="flow-step">CRAG-style evaluator — abstain on low confidence, not CRAG's web-search fallback (safer offline)</div>
     <div class="flow-step">Evidence percolation — grade &amp; promote on the six-rung scale (Eqs. 9–12)</div>
