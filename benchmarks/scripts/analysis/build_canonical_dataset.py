@@ -131,8 +131,8 @@ MODELS = [
     ),
     ("PLLuM-12B-chat-2512", "PLLuM-12B-chat-2512-awq", "PLLuM", "12B", "AWQ", [1, 2]),
     # International baseline (NOT a Polish-model peer; §8.9 — envelope/context only,
-    # not a direct cross-quant throughput claim). Canonical ladder, ctx 8192, TP1.
-    ("Qwen3.5-9B", "qwen3.5-9b", "Qwen", "9B", "BF16", [1]),
+    # not a direct cross-quant throughput claim). Canonical ladder, ctx 8192, TP1+TP2.
+    ("Qwen3.5-9B", "qwen3.5-9b", "Qwen", "9B", "BF16", [1, 2]),
 ]
 
 
