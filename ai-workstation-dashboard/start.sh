@@ -6,6 +6,9 @@ VENV_DIR="$SCRIPT_DIR/.venv"
 BACKEND="$SCRIPT_DIR/backend"
 PYTHON="$VENV_DIR/bin/python3"
 
+# Port is configurable via env; keep default in sync with backend/server.py
+PORT="${DASHBOARD_PORT:-8666}"
+
 # Auto-setup if venv doesn't exist yet
 if [ ! -f "$PYTHON" ]; then
     echo "⚠ venv not found — running setup first..."
@@ -16,8 +19,8 @@ fi
 
 echo "┌──────────────────────────────────────────────┐"
 echo "│  AI Workstation Dashboard                     │"
-echo "│  http://localhost:8000                        │"
-echo "│  http://$(hostname -I | awk '{print $1}'):8000                │"
+echo "│  http://localhost:$PORT"
+echo "│  http://$(hostname -I | awk '{print $1}'):$PORT"
 echo "│  Press Ctrl+C to stop                         │"
 echo "└──────────────────────────────────────────────┘"
 echo ""

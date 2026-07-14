@@ -3,19 +3,32 @@
 AI Workstation Dashboard — Backend
 ───────────────────────────────────
 FastAPI server collecting real system metrics via psutil + rocm-smi,
-streamed to React frontend over WebSocket.
+plus health of local AI services (Qdrant, vLLM), streamed to a
+self-contained vanilla-JS frontend over WebSocket.
 
 Usage:
     python server.py
-    # or: uvicorn server:app --host 0.0.0.0 --port 8000
+    # or: uvicorn server:app --host 0.0.0.0 --port 8666
+
+Configuration (environment variables):
+    DASHBOARD_HOST   bind address              (default 0.0.0.0)
+    DASHBOARD_PORT   HTTP/WS port              (default 8666)
+    QDRANT_URL       Qdrant base URL           (default http://127.0.0.1:6333)
+    VLLM_EMBED_URL   vLLM embedder base URL    (default http://127.0.0.1:8101)
+    VLLM_CHAT_URL    vLLM generation base URL  (default http://127.0.0.1:8102)
 """
 
 import asyncio
 import json
+import logging
+import os
 import re
 import socket
 import subprocess
+import threading
 import time
+import urllib.error
+import urllib.request
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
@@ -27,7 +40,53 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-TICK_INTERVAL = 1.0
+log = logging.getLogger("ai-dashboard")
+
+# ── Configuration ────────────────────────────────────────────────────────────
+
+
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, ""))
+    except ValueError:
+        return default
+
+
+HOST = os.environ.get("DASHBOARD_HOST", "0.0.0.0")
+PORT = _env_int("DASHBOARD_PORT", 8666)
+QDRANT_URL = os.environ.get("QDRANT_URL", "http://127.0.0.1:6333").rstrip("/")
+
+# vLLM instances are DISCOVERED from the running processes (discover_vllm()), so a
+# new `vllm serve` on a new port appears by itself — nothing here to edit.
+# VLLM_PORTS only seeds extra ports that should be probed anyway (and reported as
+# DOWN when absent), e.g. an instance expected to come up shortly.
+VLLM_HOST = os.environ.get("VLLM_HOST", "127.0.0.1")
+VLLM_SEED_PORTS = [
+    int(p)
+    for p in os.environ.get("VLLM_PORTS", "").replace(",", " ").split()
+    if p.isdigit()
+]
+
+TICK_INTERVAL = 1.0  # seconds between WebSocket pushes
+SNAPSHOT_TTL = 0.8  # shared snapshot cache — N clients ≠ N× rocm-smi calls
+SERVICES_TTL = 5.0  # service health polled less often than system metrics
+HTTP_TIMEOUT = 1.5  # per-request timeout for local service probes
+
+
+# ── Load truth: power, not "GPU use %" ───────────────────────────────────────
+#
+# On this machine `GPU use (%)` is NOT a usable load signal. A vLLM engine that is
+# merely resident keeps the GPU queue busy and the driver reports 100% even when
+# nothing is being computed. Measured on GPU 0 (R9700, 300 W cap), sysfs @0.4 s:
+#
+#   idle-spin (2 vLLM engines resident, no requests) : busy 100%,  94–107 W (≤36% cap)
+#   real work (parallel bge-m3 embedding burst)      : busy 100%, up to 304 W (100% cap)
+#
+# busy% read 100 in BOTH states — it carries no information. Power separates them
+# cleanly, so POWER decides whether a card is really working. The threshold sits
+# between the measured idle ceiling (0.36) and real work (≈1.0), with margin.
+POWER_ACTIVE_FRAC = 0.50  # ≥50% of the card's power cap ⇒ genuinely computing
+IDLE_SPIN_BUSY = 75  # busy% ≥ this while drawing idle power ⇒ idle-spin
 
 
 @dataclass
@@ -39,6 +98,11 @@ class GpuInfo:
     vram_used_b: Optional[int] = None
     vram_total_b: Optional[int] = None
     gpu_type: str = "discrete"
+    power_w: Optional[float] = None
+    power_cap_w: Optional[float] = None
+    power_frac: Optional[float] = None  # power_w / power_cap_w
+    working: Optional[bool] = None  # True = real compute; None = can't tell
+    idle_spin: bool = False  # high busy% but the card draws idle power
 
 
 def run_cmd(cmd: list[str], timeout: int = 3) -> str:
@@ -55,6 +119,7 @@ def find_rocm_smi() -> str:
     for p in ["rocm-smi", "/opt/rocm/bin/rocm-smi"]:
         if run_cmd([p, "--showuse"]):
             return p
+    log.warning("rocm-smi not responding — GPU panel will be empty")
     return "rocm-smi"
 
 
@@ -78,7 +143,7 @@ def _get_static():
     ip = "127.0.0.1"
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
+        s.connect(("8.8.8.8", 80))  # no packet is sent — just picks the route
         ip = s.getsockname()[0]
         s.close()
     except Exception:
@@ -167,6 +232,7 @@ def _get_static():
         "disk_fs": disk_fs,
         "ram_modules": ram_modules,
         "disks": disks,
+        "dashboard_port": PORT,
     }
 
 
@@ -186,6 +252,8 @@ def parse_gpus_json() -> list[GpuInfo]:
             "--showmeminfo",
             "vram",
             "--showproductname",
+            "--showpower",
+            "--showmaxpower",
         ]
     )
     if not raw:
@@ -239,14 +307,50 @@ def parse_gpus_json() -> list[GpuInfo]:
         except Exception:
             pass
 
+        for fn in (
+            "Average Graphics Package Power (W)",
+            "Current Socket Graphics Package Power (W)",
+        ):
+            if fn in val:
+                try:
+                    gpu.power_w = float(val[fn])
+                except Exception:
+                    pass
+                break
+        try:
+            cap = float(val.get("Max Graphics Package Power (W)", 0))
+            gpu.power_cap_w = cap or None
+        except Exception:
+            pass
+
         if "Graphics" in gpu.name or (
             gpu.vram_total_b and gpu.vram_total_b < 4 * 1024**3
         ):
             gpu.gpu_type = "integrated"
+
+        classify_load(gpu)
         gpus.append(gpu)
 
     gpus.sort(key=lambda g: g.index)
     return gpus
+
+
+def classify_load(gpu: GpuInfo) -> None:
+    """Decide whether a card is really computing, using power — not `use %`.
+
+    Sets power_frac, working and idle_spin. When power or its cap is unreadable
+    (e.g. the iGPU has no cap), working stays None and the UI falls back to the
+    plain busy% reading rather than inventing a verdict.
+    """
+    if gpu.power_w is None or not gpu.power_cap_w:
+        return
+    gpu.power_frac = round(gpu.power_w / gpu.power_cap_w, 3)
+    gpu.working = gpu.power_frac >= POWER_ACTIVE_FRAC
+    gpu.idle_spin = (
+        not gpu.working
+        and gpu.use_percent is not None
+        and gpu.use_percent >= IDLE_SPIN_BUSY
+    )
 
 
 def parse_gpus_text() -> list[GpuInfo]:
@@ -291,6 +395,255 @@ def parse_gpus_text() -> list[GpuInfo]:
 
 def get_gpus() -> list[GpuInfo]:
     return parse_gpus_json() or parse_gpus_text()
+
+
+# ── vLLM ↔ GPU mapping (discovered, never hard-coded) ────────────────────────
+#
+# Which model sits on which card is derived from the live system, two ways:
+#
+#   1. rocm-smi --showpidgpus  → PID → physical GPU index (ground truth: who is
+#      actually computing on the card). NOTE: `--showpids` is NOT usable for this —
+#      its "GPU(s)" column is the *number* of devices, not the index. Also, the
+#      `vllm serve` parent holds no GPU context: the child `VLLM::EngineCore`
+#      process does, so a server's PID must be matched together with its children.
+#   2. HIP_VISIBLE_DEVICES from /proc/<pid>/environ → the PHYSICAL index the
+#      launcher pinned the instance to. (Inside the process that card appears as
+#      device 0; the env value is the physical one, which is what we want.)
+#
+# rocm-smi wins when both are available; env is the fallback; if neither resolves,
+# the GPU is reported as None and the UI shows "?" — we never guess.
+
+
+def _rocm_pid_to_gpus() -> dict[int, list[int]]:
+    """PID → [physical GPU indices], parsed from `rocm-smi --showpidgpus`."""
+    out = run_cmd([ROCM_SMI, "--showpidgpus"])
+    mapping: dict[int, list[int]] = {}
+    pending_pid: Optional[int] = None
+    for line in out.splitlines():
+        line = line.strip()
+        m = re.match(r"PID\s+(\d+)\s+is using\s+(\d+)\s+DRM device", line)
+        if m:
+            pid, count = int(m.group(1)), int(m.group(2))
+            mapping[pid] = []
+            pending_pid = pid if count > 0 else None
+            continue
+        if pending_pid is not None and re.fullmatch(r"[\d\s]+", line) and line:
+            mapping[pending_pid] = [int(x) for x in line.split()]
+            pending_pid = None
+    return mapping
+
+
+def _visible_device_env(proc: psutil.Process) -> Optional[int]:
+    """Physical GPU index this process was pinned to, from its environment."""
+    try:
+        env = proc.environ()
+    except Exception:
+        return None
+    for key in ("HIP_VISIBLE_DEVICES", "ROCR_VISIBLE_DEVICES", "CUDA_VISIBLE_DEVICES"):
+        val = (env.get(key) or "").strip()
+        if val:
+            first = val.split(",")[0].strip()
+            if first.isdigit():
+                return int(first)
+    return None
+
+
+def _parse_vllm_cmdline(cmd: list[str]) -> Optional[dict]:
+    """Extract port + model name from a `vllm serve …` command line."""
+    if not any("vllm" in c for c in cmd) or "serve" not in cmd:
+        return None
+
+    def flag(name: str) -> Optional[str]:
+        for i, c in enumerate(cmd):
+            if c == name and i + 1 < len(cmd):
+                return cmd[i + 1]
+            if c.startswith(name + "="):
+                return c.split("=", 1)[1]
+        return None
+
+    port = flag("--port")
+    served = flag("--served-model-name")
+    if not served:
+        # positional model argument right after `serve` → last path segment
+        i = cmd.index("serve")
+        if i + 1 < len(cmd) and not cmd[i + 1].startswith("-"):
+            served = Path(cmd[i + 1].rstrip("/")).name
+    return {
+        "port": int(port) if port and port.isdigit() else None,
+        "model": served or "unknown",
+    }
+
+
+def discover_vllm() -> list[dict]:
+    """Running vLLM servers: port, model, and the GPU each one computes on."""
+    pid_gpus = _rocm_pid_to_gpus()
+    found: list[dict] = []
+
+    for proc in psutil.process_iter(["pid", "cmdline"]):
+        try:
+            cmd = proc.info.get("cmdline") or []
+            parsed = _parse_vllm_cmdline(cmd)
+            if not parsed or not parsed["port"]:
+                continue
+
+            # The server PID plus its children — the EngineCore child is the one
+            # rocm-smi actually attributes to a card.
+            pids = [proc.pid]
+            try:
+                pids += [c.pid for c in proc.children(recursive=True)]
+            except Exception:
+                pass
+
+            gpu = None
+            source = None
+            for pid in pids:
+                gpus = pid_gpus.get(pid) or []
+                if gpus:
+                    gpu = gpus[0]
+                    source = "rocm-smi"
+                    break
+            if gpu is None:
+                gpu = _visible_device_env(proc)
+                source = "env" if gpu is not None else None
+
+            found.append(
+                {
+                    "pid": proc.pid,
+                    "port": parsed["port"],
+                    "model": parsed["model"],
+                    "gpu": gpu,  # None → unknown, never guessed
+                    "gpu_source": source,
+                }
+            )
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+        except Exception:
+            continue
+
+    found.sort(key=lambda x: x["port"])
+    return found
+
+
+# ── AI services health (Qdrant, vLLM) ────────────────────────────────────────
+
+
+def _http_get_json(url: str, timeout: float = HTTP_TIMEOUT):
+    """GET url, parse JSON. Returns (data, None) or (None, short error string)."""
+    try:
+        req = urllib.request.Request(url, headers={"Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return json.loads(r.read().decode("utf-8", "replace")), None
+    except urllib.error.HTTPError as e:
+        return None, f"HTTP {e.code}"
+    except urllib.error.URLError as e:
+        reason = getattr(e, "reason", e)
+        if isinstance(reason, ConnectionRefusedError):
+            return None, "connection refused"
+        return None, str(reason)
+    except Exception as e:
+        return None, type(e).__name__
+
+
+def _port_of(url: str) -> Optional[int]:
+    m = re.search(r":(\d+)", url.split("//", 1)[-1])
+    return int(m.group(1)) if m else None
+
+
+def check_qdrant() -> dict:
+    svc = {
+        "name": "Qdrant",
+        "kind": "qdrant",
+        "port": _port_of(QDRANT_URL),
+        "status": "down",
+        "detail": "",
+        "collections": [],
+    }
+    data, err = _http_get_json(f"{QDRANT_URL}/collections")
+    if err:
+        svc["detail"] = err
+        return svc
+    svc["status"] = "up"
+    names = [
+        c.get("name")
+        for c in (data or {}).get("result", {}).get("collections", [])
+        if c.get("name")
+    ]
+    total = 0
+    for name in sorted(names):
+        info, err2 = _http_get_json(f"{QDRANT_URL}/collections/{name}")
+        points = None
+        if not err2:
+            points = (info or {}).get("result", {}).get("points_count")
+        if isinstance(points, int):
+            total += points
+        svc["collections"].append({"name": name, "points": points})
+    svc["detail"] = f"{len(names)} collections · {total:,} points".replace(",", " ")
+    return svc
+
+
+def check_vllm(port: int, proc: Optional[dict]) -> dict:
+    """Probe one vLLM instance and attach the GPU it was discovered running on."""
+    svc = {
+        "name": "vLLM",
+        "kind": "vllm",
+        "port": port,
+        "status": "down",
+        "detail": "",
+        "models": [],
+        "gpu": (proc or {}).get("gpu"),  # None → unknown
+        "gpu_source": (proc or {}).get("gpu_source"),
+        "pid": (proc or {}).get("pid"),
+    }
+    data, err = _http_get_json(f"http://{VLLM_HOST}:{port}/v1/models")
+    if err:
+        svc["detail"] = err
+        # Process alive but HTTP not answering yet → still loading the weights.
+        if proc:
+            svc["status"] = "loading"
+            svc["detail"] = "starting — API not up yet"
+            svc["models"] = [proc["model"]]
+        return svc
+    svc["status"] = "up"
+    svc["models"] = [m.get("id", "?") for m in (data or {}).get("data", [])]
+    if not svc["models"] and proc:
+        svc["models"] = [proc["model"]]
+    svc["detail"] = ", ".join(svc["models"]) or "no model loaded"
+    return svc
+
+
+_services_lock = threading.Lock()
+_services_cache: Optional[tuple[float, dict]] = None
+
+
+def get_services() -> dict:
+    """Health of local AI services, cached for SERVICES_TTL seconds."""
+    global _services_cache
+    with _services_lock:
+        now = time.monotonic()
+        if _services_cache and now - _services_cache[0] < SERVICES_TTL:
+            return _services_cache[1]
+        procs = discover_vllm()
+        by_port = {p["port"]: p for p in procs}
+        ports = sorted(set(by_port) | set(VLLM_SEED_PORTS))
+        items = [check_qdrant()] + [check_vllm(p, by_port.get(p)) for p in ports]
+
+        # model → GPU, folded per card, for the ring labels. Only cards that
+        # actually host a model get an entry (no empty "none" labels).
+        gpu_models: dict[str, list[str]] = {}
+        for svc in items:
+            if svc.get("kind") != "vllm" or svc.get("gpu") is None:
+                continue
+            if svc["status"] == "down":
+                continue
+            gpu_models.setdefault(str(svc["gpu"]), []).extend(svc.get("models") or [])
+
+        result = {
+            "checked_at": datetime.now().isoformat(timespec="seconds"),
+            "items": items,
+            "gpu_models": gpu_models,
+        }
+        _services_cache = (time.monotonic(), result)
+        return result
 
 
 # ── Metrics snapshot ─────────────────────────────────────────────────────────
@@ -338,12 +691,29 @@ def _pick_primary_iface() -> Optional[str]:
 # Network throughput state — (timestamp, bytes_recv, bytes_sent) of last poll
 _net_prev: Optional[tuple[float, int, int]] = None
 
+# Interfaces excluded from the throughput sum. Loopback matters most: the whole
+# local RAG stack (vLLM, Qdrant) talks over 127.0.0.1, and counting `lo` would
+# report that internal chatter as network traffic.
+_VIRTUAL_IFACE_PREFIXES = ("lo", "docker", "veth", "br-", "virbr", "tun", "tap")
+
+
+def _physical_io() -> tuple[int, int]:
+    """Cumulative (bytes_recv, bytes_sent) over physical interfaces only."""
+    recv = sent = 0
+    for name, io in psutil.net_io_counters(pernic=True).items():
+        if name.startswith(_VIRTUAL_IFACE_PREFIXES):
+            continue
+        recv += io.bytes_recv
+        sent += io.bytes_sent
+    return recv, sent
+
 
 def get_network() -> dict:
-    """Network status + throughput (RX = download, TX = upload) in MB/s.
+    """Network link + throughput (RX = download, TX = upload) in bytes/s.
 
-    Throughput is computed as delta(bytes) / delta(time) between polls, so the
-    first call after startup returns 0.0 until a baseline exists.
+    The kernel counters are cumulative, so throughput is delta(bytes)/delta(time)
+    between polls; the first call after startup returns 0 until a baseline exists.
+    Bytes/s is reported raw — the frontend scales the unit (B/s → KB/s → MB/s).
     """
     global _net_prev
     now = time.time()
@@ -359,21 +729,20 @@ def get_network() -> dict:
         except Exception:
             pass
 
-    rx_mbps = 0.0
-    tx_mbps = 0.0
+    rx_bps = 0.0
+    tx_bps = 0.0
     try:
-        io = psutil.net_io_counters()  # system-wide cumulative counters
-        cur_recv, cur_sent = io.bytes_recv, io.bytes_sent
+        cur_recv, cur_sent = _physical_io()
         if _net_prev is not None:
             dt = now - _net_prev[0]
             if dt > 0:
                 d_recv = cur_recv - _net_prev[1]
                 d_sent = cur_sent - _net_prev[2]
-                # Guard against counter resets (e.g. iface restart)
+                # Guard against counter resets (e.g. interface restart)
                 if d_recv >= 0:
-                    rx_mbps = round(d_recv / dt / (1024**2), 3)
+                    rx_bps = round(d_recv / dt, 1)
                 if d_sent >= 0:
-                    tx_mbps = round(d_sent / dt / (1024**2), 3)
+                    tx_bps = round(d_sent / dt, 1)
         _net_prev = (now, cur_recv, cur_sent)
     except Exception:
         pass
@@ -382,8 +751,8 @@ def get_network() -> dict:
         "iface": iface or "n/a",
         "link_up": link_up,
         "link_speed_mbps": link_speed,
-        "rx_mbps": rx_mbps,
-        "tx_mbps": tx_mbps,
+        "rx_bps": rx_bps,
+        "tx_bps": tx_bps,
     }
 
 
@@ -473,14 +842,32 @@ def build_snapshot() -> dict:
         "network": get_network(),
         "gpus": [asdict(g) for g in get_gpus()],
         "processes": get_top_procs(),
+        "services": get_services(),
     }
+
+
+# Shared snapshot cache — with several WebSocket clients connected, metrics
+# (including the rocm-smi subprocess) are still collected only once per tick.
+_snap_lock = threading.Lock()
+_snap_cache: Optional[tuple[float, dict]] = None
+
+
+def get_snapshot() -> dict:
+    global _snap_cache
+    with _snap_lock:
+        now = time.monotonic()
+        if _snap_cache and now - _snap_cache[0] < SNAPSHOT_TTL:
+            return _snap_cache[1]
+        snap = build_snapshot()
+        _snap_cache = (time.monotonic(), snap)
+        return snap
 
 
 # ── FastAPI ──────────────────────────────────────────────────────────────────
 
 app = FastAPI(title="AI Workstation Dashboard")
 app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+    CORSMiddleware, allow_origins=["*"], allow_methods=["GET"], allow_headers=["*"]
 )
 
 FRONTEND = Path(__file__).parent / "frontend"
@@ -500,7 +887,13 @@ if (FRONTEND / "index.html").exists():
 
 @app.get("/api/snapshot")
 async def snapshot():
-    return build_snapshot()
+    # to_thread: psutil + subprocess + urllib are blocking — keep the loop free
+    return await asyncio.to_thread(get_snapshot)
+
+
+@app.get("/api/services")
+async def services():
+    return await asyncio.to_thread(get_services)
 
 
 @app.websocket("/ws")
@@ -508,10 +901,13 @@ async def ws_endpoint(ws: WebSocket):
     await ws.accept()
     try:
         while True:
-            await ws.send_json(build_snapshot())
+            snap = await asyncio.to_thread(get_snapshot)
+            await ws.send_json(snap)
             await asyncio.sleep(TICK_INTERVAL)
-    except (WebSocketDisconnect, Exception):
+    except WebSocketDisconnect:
         pass
+    except Exception as e:
+        log.debug("ws client dropped: %s", e)
 
 
 # Warm up
@@ -529,6 +925,6 @@ if __name__ == "__main__":
 
     print("┌──────────────────────────────────────────────┐")
     print("│  AI Workstation Dashboard                    │")
-    print("│  http://0.0.0.0:8000       ws://…:8000/ws    │")
+    print(f"│  http://{HOST}:{PORT}    ws://…:{PORT}/ws")
     print("└──────────────────────────────────────────────┘")
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
+    uvicorn.run(app, host=HOST, port=PORT, log_level="info")

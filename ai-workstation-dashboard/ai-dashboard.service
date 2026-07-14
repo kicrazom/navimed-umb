@@ -4,22 +4,22 @@ After=network.target
 
 [Service]
 Type=simple
-
+# Adjust to your user and install path before `sudo systemctl enable --now ai-dashboard`.
+User=CHANGEME
+Group=CHANGEME
 WorkingDirectory=/opt/ai-dashboard
-
 ExecStart=/opt/ai-dashboard/start.sh
-
 Restart=always
 RestartSec=3
-
-User=aiuser
-Group=aiuser
-
 StandardOutput=journal
 StandardError=journal
 
+# Read by backend/server.py and start.sh (defaults: 0.0.0.0:8666).
+# 8666 avoids 6665-6669, which Chrome and Firefox block as IRC ports (ERR_UNSAFE_PORT).
+Environment=DASHBOARD_PORT=8666
 
-Environment=PORT=8000
+# Optional: extra vLLM ports to probe, comma-separated (default: 8101,8102,8103).
+# Environment=VLLM_PORTS=8101,8102,8103
 
 [Install]
 WantedBy=multi-user.target

@@ -5,450 +5,704 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Workstation Dashboard</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
+  /* ═══════════════════════════════════════════════════════════════════════════
+     AI Workstation — instrument panel
+
+     DESIGN LANGUAGE: a clinical multi-channel monitor, not a SaaS dashboard.
+     Each compute unit is a CHANNEL that owns a hue for as long as it exists —
+     the convention a patient monitor uses (one parameter, one colour, readable
+     from across the room). Colour therefore encodes identity, not decoration,
+     which is what earns a full palette on a product surface.
+
+     COLOUR STRATEGY: full palette — 4 channel roles (CPU / GPU 0 / GPU 1 / iGPU)
+     + 2 state roles (elevated / critical) + 1 status role (up / down).
+     Every hue has exactly one job and never takes another's.
+
+     Two ink layers per hue, because contrast is not negotiable:
+       · MARK (L≈0.62) — rings, bars, rules: ≥3:1 on the panel (UI components).
+       · INK  (L≈0.72) — labels, chips, any text: ≥6.7:1 on the panel (body text).
+     Neutral ink: 14.8:1 / 7.4:1 / 5.7:1 — nothing below 4.5:1 carries meaning.
+     Ratios computed against the real surfaces, not eyeballed.
+
+     Self-contained: system fonts, inline SVG, no CDN, no libraries.
+     ═══════════════════════════════════════════════════════════════════════════ */
   :root {
-    --bg-deep: #020617;
-    --bg-card: #0f172a;
-    --bg-card2: #1e293b;
-    --border: #1e293b;
-    --text: #e2e8f0;
-    --text-dim: #94a3b8;
-    --text-muted: #64748b;
-    --text-dark: #475569;
-    --cyan: #22d3ee;
-    --purple: #a78bfa;
-    --green: #34d399;
-    --amber: #fbbf24;
-    --red: #f87171;
-    --pink: #f472b6;
-    --orange: #f59e0b;
-    --mono: 'JetBrains Mono', monospace;
-    --sans: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
+    /* Surfaces — bezel, panel, inset well */
+    --bezel: oklch(0.169 0.025 265);
+    --panel: oklch(0.210 0.034 263);
+    --well:  oklch(0.188 0.033 264);
+    --rule:  oklch(0.285 0.044 262);
+
+    /* Neutral ink */
+    --ink:       oklch(0.939 0.013 262);   /* 14.8:1 */
+    --ink-dim:   oklch(0.728 0.037 260);   /*  7.4:1 */
+    --ink-muted: oklch(0.659 0.018 237);   /*  5.7:1 — floor for information */
+
+    /* Channel marks (rings, bars, rules) */
+    --ch-cpu:  oklch(0.622 0.161 255);     /* blue   */
+    --ch-gpu0: oklch(0.635 0.107 217);     /* teal   */
+    --ch-gpu1: oklch(0.596 0.183 316);     /* violet */
+    --ch-igpu: oklch(0.621 0.128 163);     /* green  */
+    /* Channel inks (text, chips) */
+    --in-cpu:  oklch(0.720 0.137 255);
+    --in-gpu0: oklch(0.720 0.091 217);
+    --in-gpu1: oklch(0.720 0.156 316);
+    --in-igpu: oklch(0.720 0.109 163);
+
+    /* State roles — override a channel's hue when a threshold is crossed */
+    --st-elev:     oklch(0.670 0.143 73);  /* amber: >75% or >65 °C */
+    --st-elev-ink: oklch(0.720 0.122 73);
+    --st-crit:     oklch(0.575 0.186 25);  /* red:   >90% or >80 °C */
+    --st-crit-ink: oklch(0.720 0.158 25);
+
+    /* Service status */
+    --up:   oklch(0.621 0.207 143);
+    --down: oklch(0.575 0.186 25);
+
+    --mono: ui-monospace, 'Cascadia Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+
+    /* Motion: ease-out-expo. Arcs settle; nothing bounces, nothing decorates. */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
   }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: linear-gradient(160deg, var(--bg-deep) 0%, var(--bg-card) 40%, var(--bg-deep) 100%);
-    color: var(--text); font-family: var(--sans); padding: 16px 20px; min-height: 100vh;
-    overflow-x: hidden;
+    background: var(--bezel); color: var(--ink); font-family: var(--sans); font-size: 13px;
+    height: 100vh; overflow: hidden; padding: 13px 16px;
+    display: flex; flex-direction: column; gap: 11px;
   }
-  .header {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 16px;
+
+  /* ── Instrument header ────────────────────────────────────────────────────── */
+  .head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 20px;
+    padding-bottom: 9px; border-bottom: 1px solid var(--rule);
   }
-  .header h1 {
-    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
-    background: linear-gradient(90deg, var(--cyan), var(--purple));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  .head h1 { font-size: 15px; font-weight: 600; white-space: nowrap; }
+  .head .machine {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .header .sub { font-size: 11.5px; color: var(--text-muted); font-family: var(--mono); margin-top: 3px; }
-  .header .clock { font-size: 20px; font-weight: 700; font-family: var(--mono); text-align: right; }
-  .header .clock-sub { font-size: 10.5px; color: var(--text-muted); }
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-  .grid2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
-  .card {
-    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card2) 100%);
-    border-radius: 12px; padding: 14px 16px; position: relative; overflow: hidden;
-    min-width: 0;
+  .head .right { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
+  .head .clock { font-family: var(--mono); font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .head .live { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); white-space: nowrap; }
+  .pulse { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; background: var(--up); }
+  .pulse.off { background: var(--down); }
+
+  /* ── Panels ───────────────────────────────────────────────────────────────── */
+  .deck  { display: grid; grid-template-columns: 1.55fr 1fr; gap: 11px; flex: 1.15 1 0; min-height: 0; }
+  .strip { display: grid; grid-template-columns: 0.9fr 0.9fr 1fr 1.9fr; gap: 11px; flex: 1 1 0; min-height: 0; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--rule); border-radius: 4px;
+    padding: 11px 13px; display: flex; flex-direction: column; min-width: 0; min-height: 0;
   }
-  .card .accent-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; opacity: 0.6; }
-  .card-title {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  /* The panel's hue as a rule across the TOP edge — a full rule, never a side
+     stripe. It names the panel the way a legend names a trace. */
+  .panel.ruled { border-top: 2px solid var(--hue); }
+  .p-title {
+    display: flex; align-items: baseline; gap: 8px; margin-bottom: 9px;
+    font-size: 11px; font-weight: 600; color: var(--ink-dim);
   }
-  .card-title .icon { font-size: 16px; }
-  .big-num { font-size: 28px; font-weight: 800; font-family: var(--mono); }
-  .big-num-sm { font-size: 22px; font-weight: 800; font-family: var(--mono); }
-  .big-num-temp { font-size: 28px; font-weight: 800; font-family: var(--mono); }
-  .label { font-size: 14px; color: var(--text-muted); }
-  .detail { font-size: 11px; color: var(--text-muted); }
-  .detail span { color: var(--text); font-family: var(--mono); }
-  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-  .stat-box { text-align: center; padding: 6px 0; background: var(--bg-deep); border-radius: 8px; }
-  .stat-box .val { font-size: 22px; font-weight: 800; font-family: var(--mono); }
-  .stat-box .lbl { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-  .gauge { height: 6px; background: var(--bg-card); border-radius: 3px; overflow: hidden; margin-top: 3px; }
-  .gauge-fill { height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(.4,0,.2,1); }
-  .gauge-row { margin-bottom: 6px; }
-  .gauge-labels { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
-  .gauge-labels .k { color: var(--text-dim); }
-  .gauge-labels .v { color: var(--text); font-family: var(--mono); font-weight: 600; }
-  .sparkline-wrap { margin-top: 6px; }
-  svg.spark { display: block; width: 100%; }
-  .ptable { width: 100%; border-collapse: collapse; font-size: 11.5px; font-family: var(--mono); }
-  .ptable thead th {
-    text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border);
-    color: var(--text-muted); text-transform: uppercase; font-size: 9px; letter-spacing: 0.06em;
+  .p-title .meta {
+    margin-left: auto; font-family: var(--mono); font-size: 10.5px; color: var(--ink-muted);
+    font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .ptable thead th.r { text-align: right; }
-  .ptable tbody td { padding: 3px 8px; border-bottom: 1px solid var(--bg-deep); }
-  .ptable tbody td.r { text-align: right; }
-  .ptable tbody td.pid { color: var(--cyan); }
-  .ptable tbody td.pname { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .footer { text-align: center; font-size: 10px; color: var(--text-dark); letter-spacing: 0.04em; margin-top: 12px; }
-  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
-  .status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .status-dot.err { background: var(--red); box-shadow: 0 0 6px var(--red); }
-  @media (max-width: 900px) {
-    .grid3 { grid-template-columns: 1fr; }
-    .grid2-1 { grid-template-columns: 1fr; }
+
+  /* ── Channels (CPU / GPU 0 / GPU 1 / iGPU) ────────────────────────────────── */
+  .channels {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+    flex: 1; min-height: 0; align-content: center;
+  }
+  /* Two colour layers per channel:
+       --id-*  identity, fixed for the unit's lifetime (model chips keep it — a model
+               is not "critical" just because the card it sits on is hot)
+       --c-*   live colour: identity, unless a state overrides it.
+     Both are set through CLASSES, never inline: an inline custom property outranks
+     `.chan.critical` and would silently disable the state override. */
+  .chan { display: flex; flex-direction: column; align-items: center; min-width: 0;
+          --c-mark: var(--id-mark); --c-ink: var(--id-ink); }
+  .chan.ch-cpu  { --id-mark: var(--ch-cpu);  --id-ink: var(--in-cpu);  }
+  .chan.ch-gpu0 { --id-mark: var(--ch-gpu0); --id-ink: var(--in-gpu0); }
+  .chan.ch-gpu1 { --id-mark: var(--ch-gpu1); --id-ink: var(--in-gpu1); }
+  .chan.ch-igpu { --id-mark: var(--ch-igpu); --id-ink: var(--in-igpu); }
+  .chan .name {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--c-ink);
+  }
+  .chan .hw { font-family: var(--mono); font-size: 9.5px; color: var(--ink-muted); margin-bottom: 4px; }
+  .chan svg.gauge { display: block; width: 100%; max-width: 190px; height: auto; }
+
+  .g-track { stroke: var(--c-mark); opacity: 0.17; }
+  .g-arc {
+    stroke: var(--c-mark); stroke-linecap: round;
+    transition: stroke-dashoffset 700ms var(--ease), stroke 400ms var(--ease);
+  }
+  .g-val  { fill: var(--ink); font-family: var(--mono); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .g-temp { fill: var(--ink-dim); font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  /* State recolours the arc and the channel name; the number never changes. */
+  .chan.elevated { --c-mark: var(--st-elev); --c-ink: var(--st-elev-ink); }
+  .chan.critical { --c-mark: var(--st-crit); --c-ink: var(--st-crit-ink); }
+  .chan.busy .g-arc { filter: drop-shadow(0 0 4px color-mix(in oklab, var(--c-mark) 60%, transparent)); }
+
+  /* VRAM — the reading a ring cannot hold */
+  .vram { width: 100%; max-width: 168px; margin-top: 7px; }
+  .vram .row {
+    display: flex; justify-content: space-between; font-family: var(--mono);
+    font-size: 9.5px; color: var(--ink-muted); margin-bottom: 2px;
+  }
+  .vram .bar { height: 3px; background: var(--well); border-radius: 2px; overflow: hidden; }
+  /* VRAM wears the channel's IDENTITY, not its thermal state — a card at 84 °C with
+     14% VRAM used must not show a red memory bar. VRAM gets its own thresholds. */
+  .vram .bar i {
+    display: block; height: 100%; background: var(--id-mark); border-radius: 2px;
+    transition: width 700ms var(--ease), background-color 400ms var(--ease);
+  }
+
+  /* Power — the metric that cannot be faked by a spinning queue. Sits right under
+     VRAM, same visual grammar, and carries the verdict for the whole channel. */
+  .power { width: 100%; max-width: 168px; margin-top: 5px; }
+  .power .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--mono); font-size: 9.5px; color: var(--ink-muted); margin-bottom: 2px;
+  }
+  .power .bar { height: 3px; background: var(--well); border-radius: 2px; overflow: hidden; }
+  .power .bar i {
+    display: block; height: 100%; background: var(--id-mark); border-radius: 2px;
+    transition: width 700ms var(--ease);
+  }
+  .verdict { font-weight: 700; letter-spacing: 0.03em; }
+  .verdict.is-work { color: var(--id-ink); }
+  /* Idle-spin is an explanation, not an alarm: it reads as muted, never as red. */
+  .verdict.is-spin { color: var(--ink-muted); }
+  .chan.spin .g-arc { opacity: 0.45; }          /* a phantom 100% is drawn as a phantom */
+  .chan.spin .g-val { fill: var(--ink-dim); }
+
+  /* Channel trace — 60 s of load under the figure. A monitor shows the number AND
+     the curve; the number is now, the curve is what just happened (a sweep starting,
+     a card idling out). It is also what makes the panel a panel and not a poster. */
+  .chan .tr { width: 100%; max-width: 168px; height: 42px; display: block; margin-top: 8px; }
+
+  /* Model chips — which model sits on THIS card. Absent when the card is idle. */
+  .chips { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin-top: 6px; max-width: 100%; }
+  .chip {
+    font-family: var(--mono); font-size: 9.5px; line-height: 1; padding: 3px 6px; border-radius: 3px;
+    background: color-mix(in oklab, var(--id-mark) 16%, var(--panel));
+    border: 1px solid color-mix(in oklab, var(--id-mark) 38%, transparent);
+    color: var(--id-ink); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ── Services ─────────────────────────────────────────────────────────────── */
+  .svc-list { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; min-height: 0; flex: 1; }
+  .svc { border: 1px solid var(--rule); border-radius: 3px; padding: 7px 9px; background: var(--well); }
+  .svc.is-up   { border-color: color-mix(in oklab, var(--up) 34%, var(--rule)); }
+  .svc.is-down { border-color: color-mix(in oklab, var(--down) 40%, var(--rule));
+                 background: color-mix(in oklab, var(--down) 7%, var(--well)); }
+  .svc-top { display: flex; align-items: center; gap: 7px; font-size: 12px; }
+  .svc-top .nm { font-weight: 650; }
+  .svc-top .port { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); }
+  .svc-top .flag { margin-left: auto; font-family: var(--mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot.on { background: var(--up); }
+  .dot.off { background: var(--down); }
+  .svc-rows { margin-top: 5px; display: flex; flex-direction: column; gap: 3px; }
+  .svc-row { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--ink-dim); }
+  .svc-row .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .svc-row .r { margin-left: auto; flex-shrink: 0; }
+  .svc-note { font-family: var(--mono); font-size: 10.5px; color: var(--ink-muted); margin-top: 4px; }
+
+  /* ── Meters (RAM, disks) ──────────────────────────────────────────────────── */
+  .fill-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; gap: 8px; }
+  .meter .cap { display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+                font-size: 11px; margin-bottom: 3px; }
+  .meter .cap .k { color: var(--ink-dim); min-width: 0; overflow: hidden; text-overflow: ellipsis;
+                   white-space: nowrap; font-family: var(--mono); }
+  .meter .cap .v { font-family: var(--mono); font-size: 11px; color: var(--ink);
+                   font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .meter .bar { height: 4px; background: var(--well); border-radius: 2px; overflow: hidden; }
+  .meter .bar i {
+    display: block; height: 100%; border-radius: 2px; background: var(--hue);
+    transition: width 700ms var(--ease), background-color 400ms var(--ease);
+  }
+  .big { font-family: var(--mono); font-size: 30px; font-weight: 700; color: var(--hue-ink);
+         font-variant-numeric: tabular-nums; line-height: 1; }
+  .big-sub { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); }
+
+  /* ── Network ──────────────────────────────────────────────────────────────── */
+  .flows { display: grid; grid-template-rows: 1fr 1fr; gap: 11px; min-height: 0; }
+  .flow { padding: 8px 10px; }
+  .flow .cap { display: flex; align-items: baseline; gap: 6px; }
+  .flow .rate { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--hue-ink);
+                font-variant-numeric: tabular-nums; }
+  .flow .unit { font-family: var(--mono); font-size: 10px; color: var(--ink-muted); }
+  .flow .peak { font-family: var(--mono); font-size: 9.5px; color: var(--ink-muted); }
+  svg.trace { display: block; width: 100%; flex: 1; min-height: 20px; margin: 3px 0 2px; }
+
+  /* ── Processes ────────────────────────────────────────────────────────────── */
+  .procs { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; }
+  .procs th {
+    text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--rule);
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--ink-muted);
+  }
+  .procs th.r, .procs td.r { text-align: right; }
+  .procs td { padding: 3px 6px; color: var(--ink-dim); border-bottom: 1px solid var(--well);
+              font-variant-numeric: tabular-nums; }
+  .procs td.nm { color: var(--ink); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .procs tr:last-child td { border-bottom: none; }
+  .scroll { overflow-y: auto; min-height: 0; flex: 1; }
+  .quiet { font-family: var(--mono); font-size: 11px; color: var(--ink-muted); }
+
+  @media (max-width: 1150px), (max-height: 640px) {
+    body { height: auto; overflow: visible; }
+    .deck, .strip { grid-template-columns: 1fr; flex: none; }
+    .channels { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .g-arc, .vram .bar i, .meter .bar i { transition: none; }
   }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <h1>◆ AI Workstation Dashboard</h1>
-    <div class="sub" id="sysinfo">connecting...</div>
+<header class="head">
+  <div style="min-width:0;display:flex;align-items:baseline;gap:12px">
+    <h1>AI Workstation</h1>
+    <div class="machine" id="machine">connecting…</div>
   </div>
-  <div style="text-align:right;flex-shrink:0">
+  <div class="right">
+    <div class="live"><span class="pulse off" id="pulse"></span><span id="link">connecting</span></div>
+    <div class="live" id="uptime">—</div>
     <div class="clock" id="clock">--:--:--</div>
-    <div class="clock-sub"><span class="status-dot" id="ws-dot"></span><span id="ws-status">connecting</span> · <span id="uptime">--</span> · load <span id="loadavg">--</span></div>
   </div>
+</header>
+
+<!-- Deck: the compute channels (dominant) + the services that live on them -->
+<div class="deck">
+  <section class="panel">
+    <div class="p-title">Compute channels <span class="meta" id="cpu-hw">—</span></div>
+    <div class="channels" id="channels"><div class="quiet">waiting for data…</div></div>
+  </section>
+
+  <section class="panel ruled" style="--hue:var(--ch-gpu0)">
+    <div class="p-title">Inference services <span class="meta" id="svc-time">—</span></div>
+    <div class="svc-list" id="svc-list"><div class="quiet">waiting for data…</div></div>
+  </section>
 </div>
 
-<!-- Row 1: CPU / RAM / Disk -->
-<div class="grid3">
-  <div class="card">
-    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--cyan),transparent)"></div>
-    <div class="card-title" style="color:var(--cyan)"><span class="icon">⚡</span> CPU</div>
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
-      <span class="big-num" style="color:var(--cyan)" id="cpu-pct">--</span>
-      <span class="detail" id="cpu-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">--</span>
+<!-- Strip: the supporting instruments -->
+<div class="strip">
+  <section class="panel ruled" style="--hue:var(--ch-gpu1);--hue-ink:var(--in-gpu1)">
+    <div class="p-title">Memory <span class="meta" id="ram-hw">—</span></div>
+    <div class="fill-mid">
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <span class="big" id="ram-used">—</span><span class="big-sub" id="ram-total">/ — GiB</span>
+      </div>
+      <div class="meter" style="--hue:var(--ch-gpu1)">
+        <div class="cap"><span class="k">RAM</span><span class="v" id="ram-pct">—</span></div>
+        <div class="bar"><i id="ram-bar" style="width:0"></i></div>
+      </div>
+      <div class="meter" style="--hue:var(--ink-muted)">
+        <div class="cap"><span class="k">Swap</span><span class="v" id="swap-val">—</span></div>
+        <div class="bar"><i id="swap-bar" style="width:0"></i></div>
+      </div>
     </div>
-    <div class="detail-grid">
-      <div class="detail"><span style="color:var(--text-muted)">Cores </span><span id="cpu-cores">--</span></div>
-      <div class="detail"><span style="color:var(--text-muted)">Freq </span><span id="cpu-freq">--</span></div>
-      <div class="detail"><span style="color:var(--text-muted)">Temp </span><span id="cpu-temp-sm">--</span></div>
-      <div class="detail"><span style="color:var(--text-muted)">Load </span><span id="cpu-load1">--</span></div>
-    </div>
-    <div class="sparkline-wrap"><svg class="spark" id="spark-cpu" viewBox="0 0 100 100" preserveAspectRatio="none" height="36"></svg></div>
+  </section>
+
+  <section class="panel ruled" style="--hue:var(--ch-igpu)">
+    <div class="p-title">Storage</div>
+    <div class="fill-mid" id="disks"><div class="quiet">—</div></div>
+  </section>
+
+  <div class="flows">
+    <section class="panel ruled flow" style="--hue:var(--ch-gpu0);--hue-ink:var(--in-gpu0)">
+      <div class="p-title" style="margin-bottom:2px">Download <span class="meta" id="net-if">—</span></div>
+      <div class="cap"><span class="rate" id="rx">—</span><span class="unit" id="rx-u">KB/s</span></div>
+      <svg class="trace" id="tr-rx" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="peak" id="rx-peak">peak —</div>
+    </section>
+    <section class="panel ruled flow" style="--hue:var(--ch-gpu1);--hue-ink:var(--in-gpu1)">
+      <div class="p-title" style="margin-bottom:2px">Upload <span class="meta" id="net-link">—</span></div>
+      <div class="cap"><span class="rate" id="tx">—</span><span class="unit" id="tx-u">KB/s</span></div>
+      <svg class="trace" id="tr-tx" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="peak" id="tx-peak">peak —</div>
+    </section>
   </div>
 
-  <div class="card">
-    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--purple),transparent)"></div>
-    <div class="card-title" style="color:var(--purple)"><span class="icon">🧠</span> MEMORY</div>
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
-      <span class="big-num" style="color:var(--purple)" id="ram-used">--</span>
-      <span class="label" id="ram-total">/ -- GiB</span>
+  <section class="panel ruled" style="--hue:var(--ch-cpu)">
+    <div class="p-title">Processes <span class="meta">by CPU</span></div>
+    <div class="scroll">
+      <table class="procs">
+        <thead><tr><th>PID</th><th>Process</th><th class="r">CPU %</th><th class="r">RSS</th></tr></thead>
+        <tbody id="procs"></tbody>
+      </table>
     </div>
-    <div class="gauge-row">
-      <div class="gauge-labels"><span class="k">RAM</span><span class="v" id="ram-pct">--%</span></div>
-      <div class="gauge"><div class="gauge-fill" id="ram-bar" style="background:var(--purple);width:0%"></div></div>
-    </div>
-    <div class="gauge-row">
-      <div class="gauge-labels"><span class="k">Swap</span><span class="v" id="swap-info">--</span></div>
-      <div class="gauge"><div class="gauge-fill" id="swap-bar" style="background:var(--text-muted);width:0%"></div></div>
-    </div>
-    <div id="ram-modules" style="margin-top:6px;font-size:10px;color:var(--text-muted);line-height:1.6"></div>
-    <div class="sparkline-wrap"><svg class="spark" id="spark-ram" viewBox="0 0 100 100" preserveAspectRatio="none" height="28"></svg></div>
-  </div>
-
-  <div class="card">
-    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--green),transparent)"></div>
-    <div class="card-title" style="color:var(--green)"><span class="icon">💾</span> STORAGE</div>
-    <div id="disk-partitions"></div>
-    <div id="disk-models" style="margin-top:8px;font-size:10px;color:var(--text-muted);line-height:1.6"></div>
-  </div>
+  </section>
 </div>
-
-<!-- Row 2: GPUs (dynamic) -->
-<div class="grid3" id="gpu-row"></div>
-
-<!-- Row 3: Processes + CPU Temp -->
-<div class="grid2-1">
-  <div class="card">
-    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--pink),transparent)"></div>
-    <div class="card-title" style="color:var(--pink)"><span class="icon">📊</span> TOP PROCESSES</div>
-    <table class="ptable">
-      <thead><tr><th>PID</th><th>Process</th><th class="r">CPU %</th><th class="r">RSS</th></tr></thead>
-      <tbody id="proc-body"></tbody>
-    </table>
-  </div>
-
-  <div class="card">
-    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--red),transparent)"></div>
-    <div class="card-title" style="color:var(--red)"><span class="icon">🌡️</span> CPU TEMPERATURE</div>
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
-      <span class="big-num-temp" id="cpu-temp-big">--</span>
-      <span class="detail">Tctl/Tdie</span>
-    </div>
-    <div class="sparkline-wrap"><svg class="spark" id="spark-temp" viewBox="0 0 100 100" preserveAspectRatio="none" height="60"></svg></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dark);margin-top:4px"><span>0°C</span><span>105°C</span></div>
-  </div>
-</div>
-
-<!-- Row 4: Network — download + upload line charts + link status -->
-<div class="grid2-1">
-  <div class="card">
-    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--orange),transparent)"></div>
-    <div class="card-title" style="color:var(--orange)"><span class="icon">🌐</span> NETWORK — THROUGHPUT</div>
-
-    <!-- RX (download) — amber/orange, matches existing accent line -->
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
-      <span class="big-num" style="color:var(--orange)" id="net-rx-big">--</span>
-      <span class="label">MB/s ↓ download</span>
-    </div>
-    <div class="sparkline-wrap"><svg class="spark" id="spark-net" viewBox="0 0 100 100" preserveAspectRatio="none" height="50"></svg></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dark);margin-top:4px"><span>0 MB/s</span><span id="net-scale-max">peak --</span></div>
-
-    <!-- TX (upload) — cyan, high-contrast complement to RX amber (opposite on color wheel,
-         and already part of the dashboard palette so it stays visually coherent) -->
-    <div style="display:flex;align-items:baseline;gap:8px;margin:12px 0 4px">
-      <span class="big-num" style="color:var(--cyan)" id="net-tx-big">--</span>
-      <span class="label">MB/s ↑ upload</span>
-    </div>
-    <div class="sparkline-wrap"><svg class="spark" id="spark-net-tx" viewBox="0 0 100 100" preserveAspectRatio="none" height="50"></svg></div>
-    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-dark);margin-top:4px"><span>0 MB/s</span><span id="net-tx-scale-max">peak --</span></div>
-  </div>
-
-  <div class="card">
-    <div class="accent-line" style="background:linear-gradient(90deg,transparent,var(--orange),transparent)"></div>
-    <div class="card-title" style="color:var(--orange)"><span class="icon">📡</span> LINK</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div class="stat-box"><div class="val" style="color:var(--orange)" id="net-rx-stat">--</div><div class="lbl">RX MB/s</div></div>
-      <div class="stat-box"><div class="val" style="color:var(--cyan)" id="net-tx-stat">--</div><div class="lbl">TX MB/s</div></div>
-    </div>
-    <div class="detail-grid">
-      <div class="detail"><span style="color:var(--text-muted)">Iface </span><span id="net-iface">--</span></div>
-      <div class="detail"><span style="color:var(--text-muted)">State </span><span id="net-state">--</span></div>
-      <div class="detail"><span style="color:var(--text-muted)">Link </span><span id="net-speed">--</span></div>
-      <div class="detail"><span style="color:var(--text-muted)">Upload </span><span id="net-tx-inline">--</span></div>
-    </div>
-  </div>
-</div>
-
-<div class="footer" id="footer">◆ Connecting to backend... · Refresh 1s</div>
 
 <script>
-const HIST_LEN = 60;
-const hist = { cpu: [], ram: [], temp: [], net: [], netTx: [], gpu: {} };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function pushHist(arr, val) {
-  arr.push(val);
-  if (arr.length > HIST_LEN) arr.shift();
+/* ── Channels ────────────────────────────────────────────────────────────────
+   A channel keeps its hue for life. State (elevated / critical) overrides it —
+   a hot card must read as hot no matter whose colour it wears. */
+const R = 42, CIRC = 2 * Math.PI * R;
+const CH = {
+  cpu:  { mark: 'var(--ch-cpu)',  ink: 'var(--in-cpu)'  },
+  gpu0: { mark: 'var(--ch-gpu0)', ink: 'var(--in-gpu0)' },
+  gpu1: { mark: 'var(--ch-gpu1)', ink: 'var(--in-gpu1)' },
+  igpu: { mark: 'var(--ch-igpu)', ink: 'var(--in-igpu)' },
+};
+const gpuChannel = {};   // physical GPU index → channel key (services chips reuse it)
+
+/* State is CORRELATED — it is not read off `use %`.
+
+   On this machine a resident vLLM engine pins `GPU use (%)` at 100 while computing
+   nothing. Measured on GPU 0 (300 W card): idle-spin = 100% busy at ≤107 W;
+   real work = 100% busy at 300 W. busy% alone cannot tell them apart, so a card
+   only counts as loaded when high busy% is BACKED BY POWER (backend: working).
+   Temperature still escalates on its own — a hot card is hot whatever the cause.
+
+   working === false → power measured, card is idling  → never alarm
+   working == null   → power unreadable (iGPU)         → fall back to busy% */
+/* Temperature thresholds are per unit type, and set from what these parts actually do.
+   A 9950X3D idles at 60-70 °C on Tctl and throttles ~95 °C — the old 65 °C line lit
+   amber on an *idle* CPU, the same class of false alarm as the GPU one. An R9700 is
+   designed to sit at 80-90 °C under load (measured here: idle-spin 65 °C, real work
+   67 °C). Alarms that cry wolf get ignored; these thresholds mean something. */
+const TEMP = {
+  cpu: { elevated: 85, critical: 95 },
+  gpu: { elevated: 85, critical: 95 },
+};
+
+function stateOf(u) {
+  const l = Math.round(u.load ?? 0);
+  const t = u.temp == null ? null : Math.round(u.temp);
+  const lim = TEMP[u.kind] || TEMP.gpu;
+
+  if (t != null && t > lim.critical) return 'critical';   // heat is heat
+  if (u.working === false) return '';                     // idle-spin: never alarm
+  if (l >= 90) return 'critical';
+  if (t != null && t > lim.elevated) return 'elevated';
+  if (l >= 75) return 'elevated';
+  return '';
 }
 
-function makeSpark(svgEl, data, max, color) {
-  if (!data.length || !svgEl) return;
-  const pts = data.map((v, i) => {
-    const x = data.length > 1 ? (i / (data.length - 1)) * 100 : 50;
-    const y = 100 - (Math.min(v, max) / max) * 100;
-    return `${x},${y}`;
-  }).join(' ');
-  const id = 'g' + color.replace('#','');
-  svgEl.innerHTML = `
-    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
-    </linearGradient></defs>
-    <polygon points="0,100 ${pts} 100,100" fill="url(#${id})" />
-    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
-}
-
-function tempColor(t) {
-  if (t > 80) return 'var(--red)';
-  if (t > 65) return 'var(--amber)';
-  return 'var(--green)';
-}
-
-const GPU_COLORS = ['#22d3ee', '#a78bfa', '#f59e0b', '#f472b6', '#34d399'];
-
-function buildGpuCards(gpus) {
-  const row = document.getElementById('gpu-row');
-  row.innerHTML = '';
-  gpus.forEach((g, i) => {
-    const accent = GPU_COLORS[i % GPU_COLORS.length];
-    const isIgpu = g.gpu_type === 'integrated';
-    const label = isIgpu ? 'iGPU' : `GPU ${g.index}`;
-    const vUsed = g.vram_used_b ? (g.vram_used_b / (1024**3)).toFixed(2) : '0';
-    const vTotal = g.vram_total_b ? (g.vram_total_b / (1024**3)).toFixed(2) : '0';
-    const vPct = g.vram_total_b > 0 ? ((g.vram_used_b || 0) / g.vram_total_b * 100) : 0;
-    const use = g.use_percent ?? 0;
-    const temp = g.temp_c ?? 0;
-
-    if (!hist.gpu[g.index]) hist.gpu[g.index] = [];
-    pushHist(hist.gpu[g.index], use);
-
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <div class="accent-line" style="background:linear-gradient(90deg,transparent,${accent},transparent)"></div>
-      <div class="card-title" style="color:${accent}"><span class="icon">🔲</span> ${label}</div>
-      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.name}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div class="stat-box"><div class="val" style="color:${accent}">${use}%</div><div class="lbl">Load</div></div>
-        <div class="stat-box"><div class="val" style="color:${tempColor(temp)}">${Math.round(temp)}°</div><div class="lbl">Temp</div></div>
+function buildChannel(u) {
+  const el = document.createElement('div');
+  // Identity via class (NOT inline style) so `.chan.elevated` / `.chan.critical`
+  // can win the cascade and actually recolour the channel.
+  el.className = 'chan ch-' + u.ch;
+  el.id = 'ch-' + u.id;
+  el.innerHTML = `
+    <div class="name">${esc(u.label)}</div>
+    <div class="hw">${esc(u.hw)}</div>
+    <svg class="gauge" viewBox="0 0 100 100" role="img" aria-label="${esc(u.label)}">
+      <title></title>
+      <circle class="g-track" cx="50" cy="50" r="${R}" fill="none" stroke-width="8"/>
+      <circle class="g-arc" cx="50" cy="50" r="${R}" fill="none" stroke-width="8"
+              transform="rotate(-90 50 50)"
+              stroke-dasharray="${CIRC.toFixed(2)}" stroke-dashoffset="${CIRC.toFixed(2)}"/>
+      <text class="g-val"  x="50" y="46" text-anchor="middle" dominant-baseline="middle" font-size="22">—</text>
+      <text class="g-temp" x="50" y="67" text-anchor="middle" dominant-baseline="middle" font-size="11.5">—</text>
+    </svg>
+    ${u.vram ? `<div class="vram">
+        <div class="row"><span>VRAM</span><span class="vt">—</span></div>
+        <div class="bar"><i style="width:0"></i></div>
       </div>
-      <div class="gauge-row">
-        <div class="gauge-labels"><span class="k">VRAM</span><span class="v">${vUsed} / ${vTotal} GiB</span></div>
-        <div class="gauge"><div class="gauge-fill" style="background:${accent};width:${vPct.toFixed(1)}%"></div></div>
-      </div>
-      <div class="sparkline-wrap"><svg class="spark" id="spark-gpu-${g.index}" viewBox="0 0 100 100" preserveAspectRatio="none" height="28"></svg></div>`;
-    row.appendChild(card);
+      <div class="power">
+        <div class="row"><span class="pw">—</span><span class="verdict"></span></div>
+        <div class="bar"><i style="width:0"></i></div>
+      </div>` : ''}
+    <svg class="tr" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="chips"></div>`;
+  return el;
+}
 
-    requestAnimationFrame(() => {
-      const svg = document.getElementById(`spark-gpu-${g.index}`);
-      if (svg) makeSpark(svg, hist.gpu[g.index], 100, accent);
+const chanHist = {};   // channel id → last 60 load samples
+
+function paintChannel(el, u, models) {
+  const pct = Math.max(0, Math.min(100, u.load ?? 0));
+  const state = stateOf(u);
+  // "busy" (the arc glow) now means REAL work, not a spinning queue.
+  const reallyBusy = u.working === true || (u.working == null && pct >= 20);
+  const cls = ['chan', 'ch-' + u.ch, state, reallyBusy ? 'busy' : '',
+               u.idleSpin ? 'spin' : ''].filter(Boolean).join(' ');
+  if (el.className !== cls) el.className = cls;
+
+  el.querySelector('.g-arc').setAttribute('stroke-dashoffset', (CIRC * (1 - pct / 100)).toFixed(2));
+
+  // 60 s load trace in the channel's live colour. It scales to its own peak with a
+  // 25% floor: on an idle card a 0-100% scale would flat-line at the very bottom and
+  // read as an empty box. The exact figure is in the ring; the trace carries shape.
+  if (!chanHist[u.id]) chanHist[u.id] = [];
+  push(chanHist[u.id], pct);
+  const hue = state === 'critical' ? MARK.crit : state === 'elevated' ? MARK.elev : MARK[u.ch];
+  const ceil = Math.max(25, ...chanHist[u.id]) * 1.12;
+  traceFixed(el.querySelector('.tr'), chanHist[u.id], ceil, hue, u.id);
+
+  const lt = u.load == null ? '—' : `${Math.round(u.load)}%`;
+  const tt = u.temp == null ? '—' : `${Math.round(u.temp)}°C`;
+  const v = el.querySelector('.g-val'), t = el.querySelector('.g-temp');
+  if (v.textContent !== lt) v.textContent = lt;
+  if (t.textContent !== tt) t.textContent = tt;
+
+  if (u.vram) {
+    const used = u.vram.used / 1024 ** 3, total = u.vram.total / 1024 ** 3;
+    const vpct = total > 0 ? used / total * 100 : 0;
+    el.querySelector('.vt').textContent = `${used.toFixed(1)} / ${total.toFixed(0)} GiB`;
+    const bar = el.querySelector('.vram .bar i');
+    bar.style.width = vpct.toFixed(1) + '%';
+    // VRAM has its OWN thresholds — memory pressure, not the card's temperature.
+    bar.style.background = meterHue(vpct, 'var(--id-mark)');
+  }
+
+  // Power — the metric a spinning queue cannot fake. Watts + share of the card's cap.
+  // Hidden entirely where there is no cap to normalise against (the iGPU reports
+  // socket power, which is not this card's power — showing "0 W" there would be noise).
+  const pw = el.querySelector('.power');
+  if (pw) {
+    const measurable = u.powerW != null && u.powerCapW;
+    pw.style.visibility = measurable ? 'visible' : 'hidden';
+    if (measurable) {
+      pw.querySelector('.pw').textContent = `${Math.round(u.powerW)} W / ${Math.round(u.powerCapW)}`;
+      const verdict = pw.querySelector('.verdict');
+      verdict.textContent = u.idleSpin ? 'idle-spin' : (u.working ? 'working' : '');
+      verdict.className = 'verdict' + (u.idleSpin ? ' is-spin' : u.working ? ' is-work' : '');
+      pw.querySelector('.bar i').style.width = Math.min(100, u.powerFrac * 100).toFixed(1) + '%';
+    }
+  }
+
+  // Model chips: only for cards that actually host something.
+  const chips = el.querySelector('.chips');
+  const want = (models || []).join('|');
+  if (chips.dataset.models !== want) {
+    chips.dataset.models = want;
+    chips.innerHTML = (models || []).map(m => `<span class="chip">${esc(m)}</span>`).join('');
+  }
+
+  const desc = `${u.label} — load ${lt}, temperature ${tt}` +
+               (u.powerW != null ? `, power ${Math.round(u.powerW)} watts` : '') +
+               (u.idleSpin ? ' (idle-spin: busy queue, no real compute)' : '') +
+               (models && models.length ? `, serving ${models.join(', ')}` : '') +
+               `, state ${state || 'nominal'}`;
+  const svg = el.querySelector('svg');
+  svg.setAttribute('aria-label', desc);
+  svg.querySelector('title').textContent = desc;
+}
+
+function unitsOf(d) {
+  const units = [{ id: 'cpu', ch: 'cpu', kind: 'cpu', label: 'CPU', hw: `${d.cpu_cores} threads`,
+                   load: d.cpu_percent, temp: d.cpu_temp }];
+  let n = 0;
+  (d.gpus || []).forEach(g => {
+    const igpu = g.gpu_type === 'integrated';
+    const ch = igpu ? 'igpu' : (n++ === 0 ? 'gpu0' : 'gpu1');
+    gpuChannel[g.index] = ch;
+    units.push({
+      id: 'gpu' + g.index, ch, kind: 'gpu', gpuIndex: g.index,
+      label: igpu ? 'iGPU' : `GPU ${g.index}`,
+      hw: igpu ? 'Radeon Graphics' : 'R9700',
+      load: g.use_percent, temp: g.temp_c,
+      vram: { used: g.vram_used_b || 0, total: g.vram_total_b || 0 },
+      powerW: g.power_w, powerCapW: g.power_cap_w, powerFrac: g.power_frac,
+      working: g.working, idleSpin: !!g.idle_spin,
     });
+  });
+  return units;
+}
+
+function renderChannels(d) {
+  const host = document.getElementById('channels');
+  const units = unitsOf(d);
+  const key = units.map(u => u.id).join(',');
+  if (host.dataset.key !== key) {
+    host.innerHTML = '';
+    units.forEach(u => host.appendChild(buildChannel(u)));
+    host.dataset.key = key;
+  }
+  const gpuModels = (d.services && d.services.gpu_models) || {};
+  units.forEach(u => {
+    const el = document.getElementById('ch-' + u.id);
+    if (el) paintChannel(el, u, u.gpuIndex != null ? gpuModels[String(u.gpuIndex)] : null);
   });
 }
 
-function updateDash(d) {
-  const t = new Date(d.timestamp);
-  document.getElementById('clock').textContent = t.toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  document.getElementById('sysinfo').textContent = `${d.hostname} · ${d.os_name} · ${d.kernel} · ${d.ip}`;
-  document.getElementById('uptime').textContent = d.uptime_str;
-  document.getElementById('loadavg').textContent = d.load.map(l => l.toFixed(2)).join(' / ');
+/* ── Services — every vLLM instance, and the card it computes on ─────────────── */
+function renderServices(services) {
+  const items = (services && services.items) || [];
+  const host = document.getElementById('svc-list');
+  if (!items.length) { host.innerHTML = '<div class="quiet">no services detected</div>'; return; }
 
-  document.getElementById('cpu-pct').textContent = d.cpu_percent.toFixed(1) + '%';
-  document.getElementById('cpu-name').textContent = d.cpu_name;
-  document.getElementById('cpu-cores').textContent = d.cpu_cores;
-  document.getElementById('cpu-freq').textContent = d.cpu_freq_ghz + ' GHz';
-  const ct = d.cpu_temp;
-  const ctStr = ct != null ? ct.toFixed(1) + '°C' : 'n/a';
-  const ctEl = document.getElementById('cpu-temp-sm');
-  ctEl.textContent = ctStr;
-  ctEl.style.color = ct != null ? tempColor(ct) : 'var(--text-dim)';
-  document.getElementById('cpu-load1').textContent = d.load[0].toFixed(2);
+  host.innerHTML = items.map(s => {
+    const up = s.status === 'up';
+    const loading = s.status === 'loading';
+    const flag = up ? 'UP' : loading ? 'LOADING' : 'DOWN';
+    const flagCol = up ? 'var(--up)' : loading ? 'var(--st-elev-ink)' : 'var(--down)';
+
+    let rows;
+    if (s.kind === 'qdrant' && up) {
+      rows = (s.collections || []).map(c =>
+        `<div class="svc-row"><span class="n">${esc(c.name)}</span>
+           <span class="r" style="color:var(--ink-muted)">${c.points != null ? c.points.toLocaleString('pl-PL') : '—'} pts</span></div>`
+      ).join('');
+    } else if (s.kind === 'vllm' && (up || loading)) {
+      // GPU assignment: rocm-smi first, HIP_VISIBLE_DEVICES as fallback. Unknown → "GPU ?".
+      const ch = s.gpu != null ? gpuChannel[s.gpu] : null;
+      const style = ch
+        ? `--id-mark:${CH[ch].mark};--id-ink:${CH[ch].ink}`
+        : '--id-mark:var(--rule);--id-ink:var(--ink-muted)';
+      const chip = `<span class="chip" style="${style}">${s.gpu != null ? 'GPU ' + s.gpu : 'GPU ?'}</span>`;
+      rows = (s.models || []).map(m =>
+        `<div class="svc-row"><span class="n">${esc(m)}</span><span class="r">${chip}</span></div>`
+      ).join('');
+    } else {
+      rows = `<div class="svc-row"><span class="n">${esc(s.detail || 'not reachable')}</span></div>`;
+    }
+
+    const note = s.kind === 'qdrant' && up ? `<div class="svc-note">${esc(s.detail || '')}</div>` : '';
+    return `
+      <article class="svc ${up ? 'is-up' : loading ? '' : 'is-down'}">
+        <div class="svc-top">
+          <span class="dot ${up ? 'on' : 'off'}"${loading ? ' style="background:var(--st-elev)"' : ''}></span>
+          <span class="nm">${esc(s.name)}</span>
+          <span class="port">:${s.port ?? '?'}</span>
+          <span class="flag" style="color:${flagCol}">${flag}</span>
+        </div>
+        ${note}
+        <div class="svc-rows">${rows}</div>
+      </article>`;
+  }).join('');
+}
+
+/* ── Network traces ──────────────────────────────────────────────────────────── */
+const HIST = 60;
+const flow = { rx: [], tx: [] };
+const push = (a, v) => { a.push(v); if (a.length > HIST) a.shift(); };
+
+function rate(bps) {
+  if (bps >= 1024 ** 2) return [(bps / 1024 ** 2).toFixed(2), 'MB/s'];
+  if (bps >= 1024) return [(bps / 1024).toFixed(1), 'KB/s'];
+  return [bps.toFixed(0), 'B/s'];
+}
+
+// Shared trace renderer. `max` fixed (load: 0-100%) or auto (throughput).
+function drawTrace(el, data, max, hue, gradId) {
+  if (!el || !data.length) return;
+  const pts = data.map((v, i) => {
+    const x = data.length > 1 ? i / (data.length - 1) * 100 : 0;
+    return `${x.toFixed(2)},${(100 - Math.min(v, max) / max * 100).toFixed(2)}`;
+  }).join(' ');
+  el.innerHTML = `
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${hue}" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="${hue}" stop-opacity="0.02"/>
+    </linearGradient></defs>
+    <polygon points="0,100 ${pts} 100,100" fill="url(#${gradId})"/>
+    <polyline points="${pts}" fill="none" stroke="${hue}" stroke-width="1.5" vector-effect="non-scaling-stroke"/>`;
+}
+const traceFixed = (el, data, max, hue, key) => drawTrace(el, data, max, hue, 'g-' + key);
+// Throughput scales to its own 60 s peak (floor 32 KB/s), so an idle direction
+// stays readable while the other saturates.
+const trace = (el, data, hue) =>
+  drawTrace(el, data, Math.max(32 * 1024, ...data) * 1.15, hue, 'grad-' + el.id);
+
+const cs = getComputedStyle(document.documentElement);
+const MARK = {
+  cpu:  cs.getPropertyValue('--ch-cpu').trim(),
+  gpu0: cs.getPropertyValue('--ch-gpu0').trim(),
+  gpu1: cs.getPropertyValue('--ch-gpu1').trim(),
+  igpu: cs.getPropertyValue('--ch-igpu').trim(),
+  elev: cs.getPropertyValue('--st-elev').trim(),
+  crit: cs.getPropertyValue('--st-crit').trim(),
+};
+
+function renderNet(net) {
+  const rx = net.rx_bps ?? 0, tx = net.tx_bps ?? 0;
+  push(flow.rx, rx); push(flow.tx, tx);
+  const [rv, ru] = rate(rx), [tv, tu] = rate(tx);
+  document.getElementById('rx').textContent = rv;
+  document.getElementById('rx-u').textContent = ru;
+  document.getElementById('tx').textContent = tv;
+  document.getElementById('tx-u').textContent = tu;
+  const [pr, pru] = rate(Math.max(0, ...flow.rx)), [pt, ptu] = rate(Math.max(0, ...flow.tx));
+  document.getElementById('rx-peak').textContent = `peak ${pr} ${pru} · 60 s`;
+  document.getElementById('tx-peak').textContent = `peak ${pt} ${ptu} · 60 s`;
+  document.getElementById('net-if').textContent = net.iface || 'n/a';
+  document.getElementById('net-link').textContent =
+    net.link_speed_mbps > 0 ? `${net.link_speed_mbps} Mbit/s` : (net.link_up ? 'link up' : 'link down');
+  trace(document.getElementById('tr-rx'), flow.rx, MARK.gpu0);
+  trace(document.getElementById('tr-tx'), flow.tx, MARK.gpu1);
+}
+
+/* ── Meters ──────────────────────────────────────────────────────────────────── */
+function meterHue(pct, base) {
+  if (pct >= 90) return 'var(--st-crit)';
+  if (pct >= 75) return 'var(--st-elev)';
+  return base;
+}
+
+function render(d) {
+  const t = new Date(d.timestamp);
+  document.getElementById('clock').textContent =
+    t.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  document.getElementById('machine').textContent =
+    `${d.hostname} · ${d.os_name} · ${d.kernel} · ${d.ip}`;
+  document.getElementById('uptime').textContent =
+    `up ${d.uptime_str} · load ${d.load.map(l => l.toFixed(2)).join(' ')}`;
+  document.getElementById('cpu-hw').textContent = `${d.cpu_name} · ${d.cpu_freq_ghz} GHz`;
+
+  renderChannels(d);
+  renderServices(d.services);
+  renderNet(d.network || {});
 
   document.getElementById('ram-used').textContent = d.ram_used_gib.toFixed(1);
-  document.getElementById('ram-total').textContent = '/ ' + d.ram_total_gib.toFixed(1) + ' GiB';
-  document.getElementById('ram-pct').textContent = d.ram_percent.toFixed(0) + '%';
-  document.getElementById('ram-bar').style.width = d.ram_percent + '%';
-  const swPct = d.swap_total_gib > 0 ? (d.swap_used_gib / d.swap_total_gib * 100) : 0;
-  document.getElementById('swap-info').textContent = d.swap_used_gib.toFixed(2) + ' / ' + d.swap_total_gib.toFixed(2) + ' GiB';
-  document.getElementById('swap-bar').style.width = swPct.toFixed(1) + '%';
+  document.getElementById('ram-total').textContent = `/ ${d.ram_total_gib.toFixed(0)} GiB`;
+  document.getElementById('ram-pct').textContent = `${d.ram_percent.toFixed(0)}%`;
+  const rb = document.getElementById('ram-bar');
+  rb.style.width = d.ram_percent + '%';
+  rb.style.background = meterHue(d.ram_percent, 'var(--ch-gpu1)');
+  const sw = d.swap_total_gib > 0 ? d.swap_used_gib / d.swap_total_gib * 100 : 0;
+  document.getElementById('swap-val').textContent =
+    `${d.swap_used_gib.toFixed(2)} / ${d.swap_total_gib.toFixed(2)} GiB`;
+  const sb = document.getElementById('swap-bar');
+  sb.style.width = sw.toFixed(1) + '%';
+  sb.style.background = meterHue(sw, 'var(--ink-muted)');
 
-  // RAM modules
-  const ramModEl = document.getElementById('ram-modules');
-  if (d.ram_modules && d.ram_modules.length > 0) {
-    const seen = {};
-    const unique = [];
-    d.ram_modules.forEach(m => {
-      const key = m.part_number || m.manufacturer || '';
-      if (!seen[key]) { seen[key] = 0; }
-      seen[key]++;
-      if (seen[key] === 1) unique.push(m);
-    });
-    ramModEl.innerHTML = unique.map(m => {
-      const count = seen[m.part_number || m.manufacturer || ''];
-      const prefix = count > 1 ? `${count}× ` : '';
-      const mfg = m.manufacturer || '';
-      const pn = m.part_number || '';
-      const spd = m.speed || '';
-      const tp = m.type || '';
-      const sz = m.size || '';
-      return `<div style="color:var(--text-dim)">🔸 ${prefix}<span style="color:var(--text);font-family:var(--mono)">${mfg} ${pn}</span><br>&nbsp;&nbsp;&nbsp;&nbsp;${sz} ${tp} @ ${spd}</div>`;
-    }).join('');
+  const mods = d.ram_modules || [];
+  if (mods.length) {
+    const m = mods[0];
+    document.getElementById('ram-hw').textContent =
+      `${mods.length}× ${m.size || ''} ${m.type || ''} ${m.speed || ''}`.replace(/\s+/g, ' ').trim();
   }
 
-  // Disk partitions
-  const dpEl = document.getElementById('disk-partitions');
-  if (d.disk_partitions && d.disk_partitions.length > 0) {
-    dpEl.innerHTML = d.disk_partitions.map(p => {
-      const totalTiB = p.total_gib / 1024;
-      const usedLabel = p.total_gib >= 1024 ? (p.used_gib / 1024).toFixed(2) + ' TiB' : p.used_gib.toFixed(0) + ' GiB';
-      const totalLabel = totalTiB >= 1 ? totalTiB.toFixed(2) + ' TiB' : p.total_gib.toFixed(0) + ' GiB';
-      const freeGib = p.total_gib - p.used_gib;
-      const freeLabel = freeGib >= 1024 ? (freeGib / 1024).toFixed(2) + ' TiB' : freeGib.toFixed(0) + ' GiB';
-      return `
-        <div style="margin-bottom:8px">
-          <div class="gauge-labels"><span class="k">${p.mount} (${p.fs})</span><span class="v">${usedLabel} / ${totalLabel}</span></div>
-          <div class="gauge"><div class="gauge-fill" style="background:var(--green);width:${p.percent}%"></div></div>
-          <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Free: <span style="color:var(--text);font-family:var(--mono)">${freeLabel}</span> · ${p.percent.toFixed(1)}% used</div>
-        </div>`;
-    }).join('');
-  } else {
-    // fallback to single disk
-    const dTiB = (d.disk_total_gib / 1024).toFixed(2);
-    dpEl.innerHTML = `
-      <div class="gauge-row">
-        <div class="gauge-labels"><span class="k">${d.disk_mount} (${d.disk_fs || 'ext4'})</span><span class="v">${d.disk_used_gib.toFixed(0)} GiB / ${dTiB} TiB</span></div>
-        <div class="gauge"><div class="gauge-fill" style="background:var(--green);width:${d.disk_percent}%"></div></div>
-      </div>
-      <div class="detail" style="margin-top:8px">Free: <span style="font-family:var(--mono)">${((d.disk_total_gib - d.disk_used_gib) / 1024).toFixed(2)} TiB</span></div>`;
-  }
+  const gib = g => g >= 1024 ? `${(g / 1024).toFixed(2)} TiB` : `${g.toFixed(0)} GiB`;
+  document.getElementById('disks').innerHTML = (d.disk_partitions || []).slice(0, 3).map(p => `
+      <div class="meter" style="--hue:var(--ch-igpu)">
+        <div class="cap"><span class="k">${esc(p.mount)}</span><span class="v">${gib(p.used_gib)} / ${gib(p.total_gib)}</span></div>
+        <div class="bar"><i style="width:${p.percent}%;background:${meterHue(p.percent, 'var(--ch-igpu)')}"></i></div>
+      </div>`).join('') || '<div class="quiet">—</div>';
 
-  // Disk hardware models
-  const diskModEl = document.getElementById('disk-models');
-  if (d.disks && d.disks.length > 0) {
-    diskModEl.innerHTML = d.disks.map(dk => {
-      const tran = dk.tran ? dk.tran.toUpperCase() : '';
-      const badge = tran ? `<span style="color:var(--green);font-weight:600">${tran}</span> ` : '';
-      return `<div>💿 ${badge}<span style="color:var(--text);font-family:var(--mono)">${dk.model || dk.name}</span> <span style="color:var(--text-dim)">${dk.size}</span></div>`;
-    }).join('');
-  }
-
-  buildGpuCards(d.gpus || []);
-
-  const pb = document.getElementById('proc-body');
-  pb.innerHTML = (d.processes || []).map(p => {
-    const cpuCol = p.cpu > 50 ? 'var(--red)' : p.cpu > 10 ? 'var(--amber)' : 'var(--text-dim)';
-    return `<tr><td class="pid">${p.pid}</td><td class="pname">${p.name}</td><td class="r" style="color:${cpuCol}">${p.cpu.toFixed(1)}</td><td class="r" style="color:var(--text-dim)">${p.mem_mib.toFixed(0)} MiB</td></tr>`;
+  document.getElementById('procs').innerHTML = (d.processes || []).slice(0, 9).map(p => {
+    const col = p.cpu > 90 ? 'var(--st-crit-ink)' : p.cpu > 50 ? 'var(--st-elev-ink)' : 'var(--ink-dim)';
+    return `<tr><td>${p.pid}</td><td class="nm">${esc(p.name)}</td>
+      <td class="r" style="color:${col}">${p.cpu.toFixed(1)}</td>
+      <td class="r">${p.mem_mib.toFixed(0)} MiB</td></tr>`;
   }).join('');
 
-  const ctBig = document.getElementById('cpu-temp-big');
-  ctBig.textContent = ct != null ? ct.toFixed(1) + '°C' : 'n/a';
-  ctBig.style.color = ct != null ? tempColor(ct) : 'var(--text-dim)';
-
-  // Network panel — download line chart + link status
-  const net = d.network || {};
-  const rx = net.rx_mbps ?? 0;
-  const tx = net.tx_mbps ?? 0;
-  document.getElementById('net-rx-big').textContent = rx.toFixed(2);
-  document.getElementById('net-tx-big').textContent = tx.toFixed(2);
-  document.getElementById('net-rx-stat').textContent = rx.toFixed(2);
-  document.getElementById('net-tx-stat').textContent = tx.toFixed(2);
-  document.getElementById('net-tx-inline').textContent = tx.toFixed(2) + ' MB/s';
-  document.getElementById('net-iface').textContent = net.iface || 'n/a';
-  const stEl = document.getElementById('net-state');
-  stEl.textContent = net.link_up ? 'up' : 'down';
-  stEl.style.color = net.link_up ? 'var(--green)' : 'var(--red)';
-  document.getElementById('net-speed').textContent =
-    net.link_speed_mbps > 0 ? net.link_speed_mbps + ' Mbit/s' : 'n/a';
-
-  pushHist(hist.cpu, d.cpu_percent);
-  pushHist(hist.ram, d.ram_percent);
-  if (ct != null) pushHist(hist.temp, ct);
-  pushHist(hist.net, rx);
-  pushHist(hist.netTx, tx);
-
-  // Auto-scale each chart independently: peak of rolling buffer × 1.15, min floor 1 MB/s.
-  // Separate scales keep an idle upload visible even when download is hammering (and vice versa).
-  const netMax = Math.max(1, ...hist.net) * 1.15;
-  const netTxMax = Math.max(1, ...hist.netTx) * 1.15;
-  document.getElementById('net-scale-max').textContent =
-    'peak ' + Math.max(0, ...hist.net).toFixed(2) + ' MB/s';
-  document.getElementById('net-tx-scale-max').textContent =
-    'peak ' + Math.max(0, ...hist.netTx).toFixed(2) + ' MB/s';
-
-  makeSpark(document.getElementById('spark-cpu'), hist.cpu, 100, '#22d3ee');
-  makeSpark(document.getElementById('spark-ram'), hist.ram, 100, '#a78bfa');
-  makeSpark(document.getElementById('spark-temp'), hist.temp, 105, '#f87171');
-  // RX = amber (#f59e0b), TX = cyan (#22d3ee) — complementary colors on the wheel, both
-  // already in --orange / --cyan tokens, so chart pair is unambiguous at a glance.
-  makeSpark(document.getElementById('spark-net'), hist.net, netMax, '#f59e0b');
-  makeSpark(document.getElementById('spark-net-tx'), hist.netTx, netTxMax, '#22d3ee');
-
-  document.getElementById('footer').textContent = `◆ Live from ${d.hostname} · Refresh 1s · ${t.toLocaleDateString('pl-PL')}`;
+  const c = d.services && d.services.checked_at;
+  if (c) document.getElementById('svc-time').textContent = `polled ${c.slice(11)}`;
 }
 
-function connectWS() {
+function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  const wsUrl = `${proto}://${location.hostname}:8000/ws`;
-  const dot = document.getElementById('ws-dot');
-  const status = document.getElementById('ws-status');
-
-  const ws = new WebSocket(wsUrl);
-  ws.onopen = () => { dot.className = 'status-dot ok'; status.textContent = 'live'; };
-  ws.onmessage = (e) => { try { updateDash(JSON.parse(e.data)); } catch {} };
-  ws.onclose = () => { dot.className = 'status-dot err'; status.textContent = 'reconnecting...'; setTimeout(connectWS, 2000); };
+  const ws = new WebSocket(`${proto}://${location.host}/ws`);
+  const pulse = document.getElementById('pulse'), link = document.getElementById('link');
+  ws.onopen = () => { pulse.className = 'pulse'; link.textContent = 'live'; };
+  ws.onmessage = e => { try { render(JSON.parse(e.data)); } catch {} };
+  ws.onclose = () => { pulse.className = 'pulse off'; link.textContent = 'reconnecting'; setTimeout(connect, 2000); };
   ws.onerror = () => ws.close();
 }
-
-connectWS();
+connect();
 </script>
 </body>
 </html>
