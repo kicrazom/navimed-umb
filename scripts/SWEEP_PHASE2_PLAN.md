@@ -6,6 +6,21 @@ created: 2026-05-17
 related_projects:
   - "[[navimed-umb]]"
   - "[[ego-architecture-ai]]"
+related:
+  - "[[90_Meta/wiki/llm/Models/bielik-11b-v23|bielik-11b-v23]]"
+  - "[[90_Meta/wiki/llm/Models/bielik-11b-v23-awq|bielik-11b-v23-awq]]"
+  - "[[90_Meta/wiki/llm/Models/bielik-11b-v30-instruct-awq|bielik-11b-v30-instruct-awq]]"
+  - "[[90_Meta/wiki/llm/Models/bielik-pl-11b-v30-instruct|bielik-pl-11b-v30-instruct]]"
+  - "[[90_Meta/wiki/llm/Models/kimi-dev-72b|kimi-dev-72b]]"
+  - "[[90_Meta/wiki/llm/Models/kimi-linear-48b-a3b-instruct|kimi-linear-48b-a3b-instruct]]"
+  - "[[90_Meta/wiki/llm/Models/llama-pllum-70b-base|llama-pllum-70b-base]]"
+  - "[[90_Meta/wiki/llm/Models/llama-pllum-70b-base-250801|llama-pllum-70b-base-250801]]"
+  - "[[90_Meta/wiki/llm/Models/llama-pllum-70b-chat|llama-pllum-70b-chat]]"
+  - "[[90_Meta/wiki/llm/Models/llama-pllum-70b-chat-250801|llama-pllum-70b-chat-250801]]"
+  - "[[90_Meta/wiki/llm/Models/qwen25-72b-awq|qwen25-72b-awq]]"
+  - "[[90_Meta/wiki/llm/Models/qwen25-7b-instruct|qwen25-7b-instruct]]"
+  - "[[90_Meta/wiki/llm/Models/qwen3.5-9b|qwen3.5-9b]]"
+  - "[[90_Meta/wiki/llm/Models/qwen3.6-35b-a3b-fp8|qwen3.6-35b-a3b-fp8]]"
 ---
 
 # Sweep Phase 2 v0.3 — Plan

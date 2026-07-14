@@ -6,6 +6,8 @@ event: run-3-consumer-gpu-pllum-awq-ship
 date: 2026-05-26
 related_post: https://www.linkedin.com/posts/lukasz-minarowski-73b3233b_navimed-umb-hardware-envelope-studies-for-activity-7464059097575907328
 tags: [project/navimed-umb, channel/linkedin, status/draft]
+related:
+  - "[[90_Meta/wiki/llm/Methods/clinical-pl-smpc-awq-calibration|clinical-pl-smpc-awq-calibration]]"
 ---
 
 # LinkedIn drafts — Run-3 consumer-GPU PLLuM AWQ ship (2026-05-26)

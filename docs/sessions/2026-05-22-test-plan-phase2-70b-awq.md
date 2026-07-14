@@ -1,3 +1,8 @@
+---
+related:
+  - "[[10_Projekty/0001-navimed-umb/docs/sessions/2026-05-21-pllum-70b-awq-amd-mi300x|2026-05-21-pllum-70b-awq-amd-mi300x]]"
+---
+
 # Test Plan — Phase 2 closure (70B AWQ tier) and forward roadmap
 
 **Date:** 2026-05-22
