@@ -30,6 +30,7 @@ The `bom/` directory contains the hardware bill of materials, power infrastructu
 | `power_ups_cables.md`            | Power topology, UPS specs, cable map          |
 | `nut-ups_armac-integration.md`   | NUT driver config for ARMAC PF1 (serial/CH340)|
 | `pci-topology.md`                | Full PCIe device map from `lspci`             |
+| `cooling-test/`                  | CPU cooling A/B: NH-D15 G2 vs LC1-42 (script + report) |
 
 ---
 
