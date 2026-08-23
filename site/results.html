@@ -5,23 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Results · NaviMed-UMB</title>
 <meta name="description" content="The public engineering envelope: weight footprint, KV-cache budget, and max-concurrency for the released AWQ variants, plus the gfx1201 findings behind them.">
+<link rel="canonical" href="https://kicrazom.github.io/navimed-umb/results.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NaviMed-UMB">
+<meta property="og:title" content="Results · NaviMed-UMB">
+<meta property="og:description" content="The public engineering envelope: weight footprint, KV-cache budget, and max-concurrency for the released AWQ variants, plus the gfx1201 findings behind them.">
+<meta property="og:url" content="https://kicrazom.github.io/navimed-umb/results.html">
+<meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<style>
-  /* Family column — subtle accent; default sort is by family, so equal
-     families cluster. A hairline marks each family change in that view. */
-  #env td.fam { color: var(--accent-deep, #084a70); font-weight: 600; white-space: nowrap; }
-  #env tbody tr.fam-start td { border-top: 2px solid var(--accent-line, #cfe3ee); }
-</style>
-<script src="assets/motion.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<header class="site">
-  <div class="wrap">
+<div class="shell">
+<aside class="sidebar">
+  <div>
     <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
-    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
-    <nav class="site" aria-label="Primary">
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs.</p>
+  </div>
+
+  <nav class="side-nav" aria-label="Primary">
       <a href="index.html">Overview</a>
       <a href="models.html">Models</a>
       <a href="hardware.html">Hardware</a>
@@ -31,11 +34,21 @@
       <a href="reproduce.html">Reproduce</a>
       <a href="limitations.html">Limitations</a>
       <a href="cite.html">Cite</a>
-    </nav>
-  </div>
-</header>
+  </nav>
 
-<main id="main">
+  <div class="side-spacer"></div>
+
+  <div class="side-meta">
+    <p class="rel"><span class="v">v0.5.1</span> · 2026-08-23</p>
+    <div class="links">
+      <a href="https://doi.org/10.5281/zenodo.19851346">Zenodo DOI</a>
+      <a href="https://github.com/kicrazom/navimed-umb">GitHub repository</a>
+      <a href="https://huggingface.co/mozarcik">HuggingFace · mozarcik</a>
+    </div>
+  </div>
+</aside>
+
+<main id="main" class="wide">
 <div class="wrap">
 
   <h1>Results</h1>
@@ -72,16 +85,16 @@
         <th class="sortable" data-key="kv">KV budget (GiB) <span class="arrow"></span></th>
         <th class="sortable" data-key="conc">Max conc.× <span class="arrow"></span></th>
         <th class="sortable" data-key="gate">Gate-1 <span class="arrow"></span></th>
-        <th class="locked" title="Embargoed until publication">tok/s 🔒</th>
-        <th class="locked" title="Embargoed until publication">p99 lat 🔒</th>
-        <th class="locked" title="Embargoed until publication">mWh/tok 🔒</th>
+        <th class="locked" title="Embargoed until publication">tok/s <span class="tag">embargo</span></th>
+        <th class="locked" title="Embargoed until publication">p99 lat <span class="tag">embargo</span></th>
+        <th class="locked" title="Embargoed until publication">mWh/tok <span class="tag">embargo</span></th>
       </tr>
     </thead>
     <tbody id="envBody"></tbody>
   </table>
   </div>
-  <p class="table-note">
-    <span class="lock">🔒</span> The locked columns hold back throughput, latency, and energy per token until the papers are published. They fill in by a data swap. The layout stays the same.
+  <p class="results-note">
+    The three columns tagged <strong>embargo</strong> hold back throughput, latency, and energy per token until the papers are published. They fill in by a data swap. The layout stays the same.
     The single-card rows are measured at <code>max_seq_len 2048</code>. The 70B row is from its model card at TP=2 and <code>max_seq_len 8192</code>. Its weight is the total across two cards. Its KV budget is reported in tokens there, so the GiB column shows <span class="na">n/a</span>. Its max-concurrency is not directly comparable to the 2048 rows. Bielik-11B is still running its sweep.
   </p>
   </div><!-- /.results-wide -->
@@ -92,20 +105,19 @@
   <p>Each single-card variant passed 5/5 on a Polish-clinical prompt grid. The grid has one factual prompt and four clinical ones: definitional, syndrome, instructional, procedural. Prompts go through <code>/v1/completions</code> with the chat template bypassed. This checks that the model runs and stays coherent. It does not score quality. Raw outputs sit under <code>environment/sanity-tests/</code> in the repo.</p>
 
   <h2>What we found</h2>
-  <p>The gfx1201 engineering findings behind these figures — <code>enforce_eager</code> being mandatory, AWQ running slower than BF16 here, and the sanity chat-template bypass — are written up on the <a href="conclusions.html">Conclusions</a> page. No performance numbers; those stay embargoed.</p>
+  <p>The gfx1201 engineering findings behind these figures (<code>enforce_eager</code> being mandatory, AWQ running slower than BF16 here, and the sanity chat-template bypass) are written up on the <a href="conclusions.html">Conclusions</a> page. No performance numbers; those stay embargoed.</p>
 
   <h2>Why no plots</h2>
   <p>The scaling plots put concrete per-N values on their axes. That makes them paper-bound, so they wait for acceptance. Anything not shown above as public is held back too. The <a href="methodology.html">method</a> page covers the plot design.</p>
 
 </div>
-</main>
 
 <footer class="site">
-  <div class="wrap">
-    <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
-    <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the <a href="cite.html#ai">AI-usage disclosure</a>.</p>
-  </div>
+  <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+  <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the <a href="cite.html#ai">AI-usage disclosure</a>.</p>
 </footer>
+</main>
+</div>
 
 <script>
 // Public envelope rows only. Throughput, latency, and energy are not here.
@@ -122,7 +134,7 @@
 //   - weight/KV in GiB are public only for the two Run-3 models; elsewhere the public
 //     envelope reports KV in tokens with no separate weights figure → rendered n/a.
 const ROWS = [
-  // ── PLLuM — deployed AWQ ──────────────────────────────────────────────────
+  // ── PLLuM: deployed AWQ ──────────────────────────────────────────────────
   { model: "Llama-PLLuM-8B-chat-2512", hf: "mozarcik/Llama-PLLuM-8B-chat-2512-awq",
     family: "PLLuM", quant: "AWQ", tp: 1, ctx: 2048, weight: 5.53, kv: 22.22,
     conc: 88.89, gate: "5/5", note: "conc @ ctx 2048 (Run-3)" },
@@ -132,7 +144,7 @@ const ROWS = [
   { model: "Llama-PLLuM-70B-chat-2512", hf: "mozarcik/Llama-PLLuM-70B-chat-2512-awq",
     family: "PLLuM", quant: "AWQ", tp: 2, ctx: 8192, weight: 37.56, kv: 17.2,
     conc: 6.88, gate: null, note: "weight/kv/conc @ ctx 8192 TP2 (measured, scaling)" },
-  // ── PLLuM — 70B AWQ pending (Run-2 MI300X, sweep deferred) ────────────────
+  // ── PLLuM: 70B AWQ pending (Run-2 MI300X, sweep deferred) ────────────────
   { model: "Llama-PLLuM-70B-chat-2412", hf: "mozarcik/Llama-PLLuM-70B-chat-2412-awq",
     family: "PLLuM", quant: "AWQ", tp: 2, ctx: 8192, weight: 37.56, kv: 17.24, conc: 6.89, gate: null, note: "weight/kv/conc @ ctx 8192 TP2 (measured, scaling)" },
   { model: "Llama-PLLuM-70B-chat-2508", hf: "mozarcik/Llama-PLLuM-70B-chat-2508-awq",
@@ -147,22 +159,22 @@ const ROWS = [
     family: "PLLuM", quant: "AWQ", tp: 2, ctx: 8192, weight: 37.56, kv: 17.24, conc: 6.90, gate: null, note: "weight/kv/conc @ ctx 8192 TP2 (measured, scaling)" },
   { model: "Llama-PLLuM-70B-base-2508", hf: "mozarcik/Llama-PLLuM-70B-base-2508-awq",
     family: "PLLuM", quant: "AWQ", tp: 2, ctx: 8192, weight: 37.56, kv: 17.24, conc: 6.90, gate: null, note: "weight/kv/conc @ ctx 8192 TP2 (measured, scaling)" },
-  // ── PLLuM — BF16 parent models (maxctx probe @ 24576) ────────────────────
+  // ── PLLuM: BF16 parent models (maxctx probe @ 24576) ────────────────────
   { model: "Llama-PLLuM-8B-instruct", hf: "CYFRAGOVPL/Llama-PLLuM-8B-instruct",
     family: "PLLuM", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 4.12, gate: null },
   { model: "PLLuM-12B-chat", hf: "CYFRAGOVPL/PLLuM-12B-chat",
     family: "PLLuM", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.19, gate: null },
-  // ── PLLuM — 70B BF16 (not deployable on 2× R9700) ────────────────────────
+  // ── PLLuM: 70B BF16 (not deployable on 2× R9700) ────────────────────────
   { model: "Llama-PLLuM-70B-base", hf: "CYFRAGOVPL/Llama-PLLuM-70B-base",
-    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM, not deployable" },
   { model: "Llama-PLLuM-70B-instruct", hf: "CYFRAGOVPL/Llama-PLLuM-70B-instruct", // pragma: allowlist secret
-    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM, not deployable" },
   { model: "Llama-PLLuM-70B-chat", hf: "CYFRAGOVPL/Llama-PLLuM-70B-chat",
-    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM, not deployable" },
   { model: "Llama-PLLuM-70B-base-250801", hf: "CYFRAGOVPL/Llama-PLLuM-70B-base-250801", // pragma: allowlist secret
-    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM, not deployable" },
   { model: "Llama-PLLuM-70B-chat-250801", hf: "CYFRAGOVPL/Llama-PLLuM-70B-chat-250801", // pragma: allowlist secret
-    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM — not deployable" },
+    family: "PLLuM", quant: "BF16", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "BF16 ~132 GB > 64 GB VRAM, not deployable" },
   // ── Bielik ────────────────────────────────────────────────────────────────
   { model: "Bielik-4.5B-v3.0-Instruct", hf: "speakleash/Bielik-4.5B-v3.0-Instruct",
     family: "Bielik", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 13.21, gate: null },
@@ -191,9 +203,9 @@ const ROWS = [
   { model: "Mistral-Nemo-Instruct-2407", hf: "mistralai/Mistral-Nemo-Instruct-2407",
     family: "Mistral", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.19, gate: null },
   { model: "Mixtral-8x7B-Instruct-v0.1", hf: "TheBloke/Mixtral-8x7B-Instruct-v0.1-AWQ",
-    family: "Mixtral", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "inference broken — MoE kernel unsupported on gfx1201" },
+    family: "Mixtral", quant: "AWQ", tp: 2, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "inference broken: MoE kernel unsupported on gfx1201" },
   { model: "Kimi-Dev-72B", hf: "abhishekchohan/Kimi-Dev-72B-AWQ",
-    family: "Kimi", quant: "AWQ", tp: null, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "not deployable on 2× R9700 — TP alignment failure" },
+    family: "Kimi", quant: "AWQ", tp: null, ctx: null, weight: null, kv: null, conc: null, gate: null, note: "not deployable on 2× R9700: TP alignment failure" },
 ];
 
 const $ = (s) => document.querySelector(s);
@@ -203,7 +215,7 @@ let sortKey = "family", sortDir = 1; // default view: sort by family (clusters f
 
 // Family display order used when sorting by the Family column: Polish families
 // first (Bielik, PLLuM, Qwen baseline), then international/roster models. This
-// is a normal sort key — any other header re-sorts and breaks the clusters.
+// is a normal sort key; any other header re-sorts and breaks the clusters.
 const FAM_ORDER = ["Bielik", "PLLuM", "Qwen", "Mistral", "Mixtral", "Kimi"];
 const famRank = (f) => { const i = FAM_ORDER.indexOf(f); return i < 0 ? FAM_ORDER.length : i; };
 
@@ -219,9 +231,9 @@ const intCell = (v, r) => v == null ? miss(r) : `<span class="num">${v}</span>`;
 const concCell = (v, r) => v == null ? miss(r) : `<span class="num">${v.toFixed(2)}×</span>`;
 const gateCell = (v, r) => v == null ? miss(r) : `<span class="gate-ok">${v} ✓</span>`;
 const modelCell = (r) => r.hf
-  ? `<code><a href="https://huggingface.co/${r.hf}">${r.model}</a></code>${r.note ? ` <span class="pend-pill">${r.note}</span>` : ""}`
-  : `${r.model}${r.note ? ` <span class="pend-pill">${r.note}</span>` : ""}`;
-const L = "<td class='locked'><span class='lock'>🔒</span></td>";
+  ? `<code><a href="https://huggingface.co/${r.hf}">${r.model}</a></code>${r.note ? `<span class="rownote">${r.note}</span>` : ""}`
+  : `${r.model}${r.note ? `<span class="rownote">${r.note}</span>` : ""}`;
+const L = "<td class='locked'>\u2014</td>";
 
 function rowHTML(r, famStart) {
   return `<tr class="${r.pending ? "pending" : ""}${famStart ? " fam-start" : ""}">
@@ -267,7 +279,7 @@ function render() {
     const start = byFam && r.family !== prev; prev = r.family;
     return rowHTML(r, start);
   }).join("") ||
-    `<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:1rem">No models match the current filter.</td></tr>`;
+    `<tr><td colspan="12" class="results-empty">No models match the current filter.</td></tr>`;
   $("#count").textContent = `${rows.length} / ${ROWS.length} models`;
   document.querySelectorAll("th.sortable").forEach(th => {
     const on = th.dataset.key === sortKey;
