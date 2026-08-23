@@ -4,7 +4,7 @@ Source: `lspci` on Kubuntu 24.04
 
 ## Discrete GPUs
 
-| BDF     | Device          | Link (negotiated)    | IOMMU group | Path (root port → switch → endpoint)     |
+| BDF     | Device          | Endpoint link (card-internal) | IOMMU group | Path (root port → switch → endpoint)     |
 |---------|-----------------|----------------------|-------------|-------------------------------------------|
 | 03:00.0 | AMD/ATI 7551    | PCIe 5.0 x16 (32 GT/s) | 17       | 00:01.1 → 01:00.0 → 02:00.0 → **03:00.0** |
 | 07:00.0 | AMD/ATI 7551    | PCIe 5.0 x16 (32 GT/s) | 22       | 00:01.3 → 05:00.0 → 06:00.0 → **07:00.0** |
@@ -69,5 +69,6 @@ lanes to a chipset slot; before that, two CPU-lane NVMe drives had cut GPU1 to x
 ## Verification checklist
 
 - [x] Both discrete GPUs on separate root ports (00:01.1, 00:01.3)
-- [x] Both GPUs at PCIe 5.0 x16 (32 GT/s) — full bandwidth confirmed
+- [x] CPU↔GPU link width verified on the **root ports**: symmetric x8/x8 (Gen4, 16 GT/s)
+      — the x16 @ 32 GT/s shown for the endpoints above is the card-internal link
 - [x] IOMMU groups confirmed separate (group 17, group 22)

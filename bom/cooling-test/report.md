@@ -218,5 +218,7 @@ nie optymalizacja:
 - Przebieg C (`lc142-fanC`, 2026-08-23 08:33, ambient 24.0 °C, kernel 7.0.0-30): `lc142-fanC_20260823-0833.csv` + `stressng_lc142-fanC_20260823-0833.log` — bogo ops 62 230 800 / 2400 s
 - Ambient i głośność przebiegu C: `.ambient_lc142-fanC`, `.noise_lc142-fanC`
 - Poprzednia wersja raportu (z obalonym wnioskiem) — w historii gita, commit poprzedzający przebieg C
-- Wykres porównawczy (PL/EN): `plot_cooling_ab.py` → `~/Pulpit/chlodzenie-cpu-AB/` — **nieaktualny, rysuje 2 warianty**
+- Wykres porównawczy (PL/EN): `plot_cooling_polars.py` → `~/Pulpit/chlodzenie-cpu-AB/`
+  — obróbka w Polars, trzy przebiegi, asercje na remis A↔C i na odstawanie B.
+  Poprzednik `plot_cooling_ab.py` rysuje tylko 2 warianty i jest zachowany dla historii przebiegu A.
 - Instrukcja NL-LC1 (cytaty o PWM wentylatorów i trybach pompy): `NOCTUA NL-LC1 Manual EN`, 2 s.
