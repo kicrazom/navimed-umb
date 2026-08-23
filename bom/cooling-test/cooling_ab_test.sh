@@ -20,7 +20,7 @@ snap() {
   tctl=$(awk '/^Tctl/ {gsub(/[+°C]/,"",$2); print $2}' <<<"$s")
   t1=$(awk  '/^Tccd1/{gsub(/[+°C]/,"",$2); print $2}' <<<"$s")
   t2=$(awk  '/^Tccd2/{gsub(/[+°C]/,"",$2); print $2}' <<<"$s")
-  fan=$(awk '/^CPU_Opt/{print $2}' <<<"$s")   # ponytail: fan chłodzenia wpięty w CPU_OPT; po swapie pompa może zgłosić się pod inną etykietą — sprawdź `sensors` i popraw wzorzec
+  fan=$(awk '/^CPU_Opt/{print $2+0}' <<<"$s"); [[ ${fan:-0} -gt 0 ]] || fan=NA   # ponytail: po swapie na AIO (LC1-42) pompa siedzi na AIO_PUMP, a asus-ec-sensors eksponuje tylko CPU_Opt → RPM niedostępne; NA zamiast fałszywego 0
   vrm=$(awk '/^VRM/{gsub(/[+°C]/,"",$2); print $2}' <<<"$s")
   mhz=$(awk '/MHz/{sum+=$4; n++} END{printf "%.0f", sum/n}' /proc/cpuinfo)
   echo "$(date +%s),$1,$tctl,$t1,$t2,$fan,$vrm,$mhz" >>"$csv"
@@ -51,11 +51,12 @@ awk -F, -v amb="$ambient" '
   $2=="cooldown" && !ct && $3<50 {ct=$1}
   END{
     s=ni-59;  if(s<1)s=1; for(k=s;k<=ni;k++){si+=i[k]; ci++}
-    s=nl-119; if(s<1)s=1; for(k=s;k<=nl;k++){sl+=l[k]; sm+=m[k]; sf+=f[k]; cl++}
+    s=nl-119; if(s<1)s=1; for(k=s;k<=nl;k++){sl+=l[k]; sm+=m[k]; cl++; if(f[k]+0>0){sf+=f[k]; cf++}}
     printf "idle  Tctl (śr. ost. 5 min):  %.1f °C\n", si/ci
     printf "load  Tctl (śr. ost. 10 min): %.1f °C  (ΔT nad otoczeniem: %.1f K)\n", sl/cl, sl/cl-amb
     printf "load  Tctl max:               %.1f °C\n", max
-    printf "load  zegar śr.: %.0f MHz, fan śr.: %.0f RPM\n", sm/cl, sf/cl
+    if(cf) printf "load  zegar śr.: %.0f MHz, fan śr.: %.0f RPM\n", sm/cl, sf/cf
+    else   printf "load  zegar śr.: %.0f MHz, fan: NA (pompa AIO nie raportuje w sensors)\n", sm/cl
     if(ct) printf "cooldown do <50 °C:          %d s\n", ct-le; else print "cooldown: nie osiągnięto <50 °C w 10 min"
   }' "$csv"
 grep -h "bogo ops" "$slog" | tail -2 || true

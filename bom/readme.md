@@ -16,7 +16,7 @@ The `bom/` directory contains the hardware bill of materials, power infrastructu
 | RAM         | Corsair 96 GB (2×48 GB) DDR5 6000 CL30            |
 | Storage     | GOODRAM PX700 4 TB NVMe (primary) + 1 TB (secondary) |
 | PSU         | FSP PTM PRO 1650 W 80+ Platinum ATX 3.1 (IEC C20) |
-| Cooling     | Noctua NH-D15 G2 (dual-tower, 2× 140 mm)          |
+| Cooling     | Noctua NL-LC1-42 (AIO 420 mm, 3× NF-A14x25 G2, pompa Asetek Emma V2) — swap 2026-08-23, wcześniej NH-D15 G2 |
 | Case fans   | 2× Noctua NF-A14 140 mm (stacked)                 |
 | Case        | ASUS ProArt PA602                                  |
 | OS          | Kubuntu 24.04, kernel 6.17                         |

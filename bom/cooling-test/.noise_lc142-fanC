@@ -1,0 +1,18 @@
+# pomiar głośności — wariant C (LC1-42, wentylatory chłodnicy na CPU_OPT pracują)
+# 2026-08-23 ~08:57, faza LOAD (stress-ng matrixprod, 32 wątki)
+# fan CPU_Opt w chwili pomiaru: ~2157 RPM
+dBA_min=51.2
+dBA_max=53.0
+faza=load
+odleglosc=50cm
+tlo_dBA=NIEZMIERZONE
+przyrzad="SPL Meter (KTW Apps), telefon — mikrofon nieskalibrowany"
+
+# --- porownanie: NH-D15 G2 (przebieg A) ---
+# podane przez Lukasza 2026-08-23, POZA logowanym przebiegiem A (31.07 nie mierzyl dBA)
+# proweniencja: ten sam przyrzad i ta sama odleglosc (50 cm) w obu pomiarach
+D15_dBA_min=53.0
+D15_dBA_max=55.0
+D15_fan_RPM=1402
+D15_odleglosc=50cm
+D15_proweniencja=DOBRA_dla_porownania_wzglednego: ten sam przyrzad+odleglosc 50cm; tlo niezmierzone; wartosci BEZWZGLEDNE nieskalibrowane
