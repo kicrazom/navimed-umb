@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hardware · NaviMed-UMB</title>
+<meta name="description" content="The consumer dual-R9700 workstation behind NaviMed-UMB: bill of materials, PCIe topology, power and UPS infrastructure, and the CPU cooling study.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<script src="assets/motion.js"></script>
+<style>
+  html[lang="en"] [data-l="pl"], html[lang="pl"] [data-l="en"] { display: none; }
+  .langbar { display:flex; gap:.5rem; align-items:center; margin:0 0 1.25rem; flex-wrap:wrap; }
+  .langbar button {
+    font: inherit; cursor: pointer; padding:.3rem .8rem; border-radius:999px;
+    border:1px solid currentColor; background:transparent; color:inherit; opacity:.55;
+  }
+  .langbar button[aria-pressed="true"] { opacity:1; font-weight:600; }
+  table.envelope td.num { text-align:right; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
+    <nav class="site" aria-label="Primary">
+      <a href="index.html">Overview</a>
+      <a href="models.html">Models</a>
+      <a href="hardware.html" class="active">Hardware</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="conclusions.html">Conclusions</a>
+      <a href="reproduce.html">Reproduce</a>
+      <a href="limitations.html">Limitations</a>
+      <a href="cite.html">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+  <div class="langbar" role="group" aria-label="Language / Język">
+    <button type="button" data-set="pl" aria-pressed="false">Polski</button>
+    <button type="button" data-set="en" aria-pressed="true">English</button>
+  </div>
+
+  <h1>Hardware</h1>
+
+  <p class="lead" data-l="en">Everything in NaviMed-UMB runs on one workstation built from parts anyone can buy. No datacentre accelerators, no cloud. This page documents what it is, how it is wired, and what was measured on it.</p>
+  <p class="lead" data-l="pl">Wszystko w NaviMed-UMB działa na jednej stacji roboczej złożonej z podzespołów dostępnych w sklepie. Bez akceleratorów serwerowych, bez chmury. Ta strona dokumentuje, co to jest, jak jest połączone i co na tym zmierzono.</p>
+
+  <h2 data-l="en">Bill of materials</h2>
+  <h2 data-l="pl">Zestawienie podzespołów</h2>
+
+  <div class="table-scroll">
+  <table class="envelope">
+    <thead>
+      <tr>
+        <th data-l="en">Component</th><th data-l="pl">Podzespół</th>
+        <th data-l="en">Model</th><th data-l="pl">Model</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td data-l="en">CPU</td><td data-l="pl">Procesor</td><td>AMD Ryzen 9 9950X3D <span data-l="en">(16C/32T, 3D V-Cache)</span><span data-l="pl">(16 rdzeni / 32 wątki, 3D V-Cache)</span></td></tr>
+      <tr><td data-l="en">GPU</td><td data-l="pl">Karty graficzne</td><td>2× GIGABYTE Radeon AI PRO R9700 AI TOP 32G (gfx1201, RDNA 4)</td></tr>
+      <tr><td data-l="en">Motherboard</td><td data-l="pl">Płyta główna</td><td>ASUS ProArt X870E-Creator WiFi</td></tr>
+      <tr><td data-l="en">RAM</td><td data-l="pl">Pamięć</td><td>Corsair 96 GB (2×48 GB) DDR5-6000 CL30, EXPO II</td></tr>
+      <tr><td data-l="en">Storage</td><td data-l="pl">Dyski</td><td>GOODRAM PX700 4 TB NVMe <span data-l="en">(primary)</span><span data-l="pl">(główny)</span> + 1 TB</td></tr>
+      <tr><td data-l="en">PSU</td><td data-l="pl">Zasilacz</td><td>FSP PTM PRO 1650 W 80+ Platinum, ATX 3.1 (IEC C20)</td></tr>
+      <tr><td data-l="en">CPU cooling</td><td data-l="pl">Chłodzenie CPU</td><td>Noctua NL-LC1-42 <span data-l="en">(420 mm AIO, 3× NF-A14x25 G2, Asetek Emma V2 pump)</span><span data-l="pl">(AIO 420 mm, 3× NF-A14x25 G2, pompa Asetek Emma V2)</span></td></tr>
+      <tr><td data-l="en">Case fans</td><td data-l="pl">Wentylatory obudowy</td><td>2× Noctua NF-A14 140 mm</td></tr>
+      <tr><td data-l="en">Case</td><td data-l="pl">Obudowa</td><td>ASUS ProArt PA602</td></tr>
+      <tr><td data-l="en">UPS</td><td data-l="pl">UPS</td><td>ARMAC OFFICE ON-LINE PF1 2000VA <span data-l="en">(VFI double conversion)</span><span data-l="pl">(VFI, podwójna konwersja)</span></td></tr>
+      <tr><td data-l="en">OS / kernel</td><td data-l="pl">System / jądro</td><td>Kubuntu 24.04 LTS · 7.0.0-30-generic</td></tr>
+      <tr><td data-l="en">Compute stack</td><td data-l="pl">Stos obliczeniowy</td><td>ROCm <code>7.2.0</code> · vLLM <code>0.19.0+rocm721</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 data-l="en">PCIe topology</h2>
+  <h2 data-l="pl">Topologia PCIe</h2>
+
+  <p data-l="en">Two graphics cards on a consumer platform share the CPU's sixteen graphics lanes. The allocation that actually results is the single most consequential number on this page, because it sets the ceiling on tensor-parallel inference.</p>
+  <p data-l="pl">Dwie karty graficzne na platformie konsumenckiej dzielą szesnaście linii graficznych procesora. To, jak ten podział wypadnie w praktyce, jest najważniejszą liczbą na tej stronie — wyznacza sufit dla inferencji tensor-parallel.</p>
+
+  <div class="table-scroll">
+  <table class="envelope">
+    <thead>
+      <tr>
+        <th data-l="en">Root port</th><th data-l="pl">Root port</th>
+        <th data-l="en">Feeds</th><th data-l="pl">Obsługuje</th>
+        <th class="num" data-l="en">Link width</th><th class="num" data-l="pl">Szerokość</th>
+        <th data-l="en">Speed</th><th data-l="pl">Prędkość</th>
+        <th class="num">IOMMU</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><code>00:01.1</code></td><td>GPU0</td><td class="num"><strong>x8</strong></td><td>Gen4, 16 GT/s</td><td class="num">17</td></tr>
+      <tr><td><code>00:01.3</code></td><td>GPU1</td><td class="num"><strong>x8</strong></td><td>Gen4, 16 GT/s</td><td class="num">22</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p data-l="en">Both GPUs sit on separate root ports, in separate IOMMU groups, at a symmetric <strong>x8/x8</strong>. That symmetry was restored on 14 June 2026 by moving one NVMe drive from an M.2 slot on CPU lanes to a chipset slot; before that, two CPU-lane NVMe drives had starved GPU1 down to x4.</p>
+  <p data-l="pl">Obie karty siedzą na osobnych root portach, w osobnych grupach IOMMU, symetrycznie <strong>x8/x8</strong>. Symetrię przywrócono 14 czerwca 2026, przekładając jeden dysk NVMe z gniazda M.2 na liniach procesora do gniazda chipsetowego — wcześniej dwa dyski na liniach CPU ścinały GPU1 do x4.</p>
+
+  <div class="callout warning">
+    <p data-l="en"><strong>Measurement gotcha.</strong> The GPU endpoints (<code>03:00.0</code>, <code>07:00.0</code>) always report x16 at 32 GT/s. That is the card-internal GPU-to-switch link, not the CPU-to-GPU link, and reading it as system bandwidth is simply wrong. Read <code>max_link_width</code> on the <em>root port</em> instead. <code>current_link_width</code> also under-reports at idle, because ASPM collapses both width and speed — measure under load or use <code>max_link_width</code>.</p>
+    <p data-l="pl"><strong>Pułapka pomiarowa.</strong> Endpointy kart (<code>03:00.0</code>, <code>07:00.0</code>) zawsze pokazują x16 przy 32 GT/s. To link wewnętrzny karty, między GPU a jej switchem — nie link CPU↔GPU — i czytanie go jako pasma systemowego jest po prostu błędem. Odczytuj <code>max_link_width</code> na <em>root porcie</em>. <code>current_link_width</code> dodatkowo zaniża w bezczynności, bo ASPM zwija i szerokość, i prędkość — mierz pod obciążeniem albo patrz na <code>max_link_width</code>.</p>
+  </div>
+
+  <h2 data-l="en">Power and UPS</h2>
+  <h2 data-l="pl">Zasilanie i UPS</h2>
+
+  <p data-l="en">The workstation PSU is connected directly to the UPS with a single IEC C13-to-C20 16 A cable, with no intermediate adapters. Monitors, router and peripherals hang off a second UPS output. Power-failure detection is monitored with NUT via the <code>nutdrv_qx</code> driver and has been tested against a real cut.</p>
+  <p data-l="pl">Zasilacz stacji jest podłączony wprost do UPS-a jednym kablem IEC C13→C20 16 A, bez przejściówek. Monitory, router i peryferia wiszą na drugim wyjściu UPS-a. Wykrywanie zaniku zasilania obsługuje NUT przez sterownik <code>nutdrv_qx</code> i zostało sprawdzone na realnym zaniku.</p>
+
+  <p class="muted" data-l="en">ARMAC OFFICE ON-LINE PF1 2000VA: 2000 VA / 2000 W at PF 1.0, online double conversion with 0 ms transfer, 72 V battery pack, eight IEC C13 outputs.</p>
+  <p class="muted" data-l="pl">ARMAC OFFICE ON-LINE PF1 2000VA: 2000 VA / 2000 W przy PF 1,0, podwójna konwersja online z czasem przełączenia 0 ms, akumulatory 72 V, osiem gniazd IEC C13.</p>
+
+  <h2 data-l="en">CPU cooling</h2>
+  <h2 data-l="pl">Chłodzenie procesora</h2>
+
+  <p data-l="en">The air tower was swapped for a 420 mm liquid cooler in August 2026, and both were measured under a 40-minute all-core load. The headline result is that they are indistinguishable: the same 81.2 °C peak, the same clocks, a 0.7 K difference in temperature rise that sits below the resolution of the test.</p>
+  <p data-l="pl">W sierpniu 2026 wieżę powietrzną zastąpiło chłodzenie cieczą 420 mm; oba zmierzono pod 40-minutowym obciążeniem wszystkich rdzeni. Wynik główny: są nieodróżnialne — ten sam szczyt 81,2 °C, te same zegary, a różnica 0,7 K w przyroście temperatury leży poniżej rozdzielczości testu.</p>
+
+  <p data-l="en">The study is worth reading less for the verdict than for what went wrong on the way to it — one run produced a clear, wrong answer because the radiator fans were not turning, and the sensor reporting <code>0</code> was misread as a missing sensor rather than a stopped fan.</p>
+  <p data-l="pl">Badanie warto przeczytać nie tyle dla werdyktu, ile dla tego, co poszło po drodze nie tak — jeden przebieg dał jasną i nieprawdziwą odpowiedź, bo wentylatory chłodnicy się nie kręciły, a czujnik pokazujący <code>0</code> odczytano jako brak czujnika zamiast jako zatrzymany wentylator.</p>
+
+  <div class="badges">
+    <a class="badge" href="cooling-per-rpm.html" data-l="en">Cooling study: fans per revolution</a>
+    <a class="badge" href="cooling-per-rpm.html" data-l="pl">Badanie chłodzenia: wentylatory na obrót</a>
+  </div>
+
+  <h2 data-l="en">Validation status</h2>
+  <h2 data-l="pl">Stan walidacji</h2>
+
+  <ul>
+    <li data-l="en">Hardware assembled and validated</li>
+    <li data-l="pl">Sprzęt złożony i zwalidowany</li>
+    <li data-l="en">UPS monitoring operational (NUT + <code>nutdrv_qx</code>), power-failure detection tested</li>
+    <li data-l="pl">Monitoring UPS działa (NUT + <code>nutdrv_qx</code>), wykrywanie zaniku sprawdzone</li>
+    <li data-l="en">PCIe link width verified at the root ports</li>
+    <li data-l="pl">Szerokość linku PCIe zweryfikowana na root portach</li>
+    <li data-l="en">IOMMU group separation confirmed for both GPUs</li>
+    <li data-l="pl">Rozdzielenie grup IOMMU potwierdzone dla obu kart</li>
+    <li data-l="en">CPU cooling characterised under sustained all-core load</li>
+    <li data-l="pl">Chłodzenie CPU scharakteryzowane pod ciągłym obciążeniem wszystkich rdzeni</li>
+  </ul>
+
+  <p class="muted" data-l="en">Raw bills of materials, the PCIe map, power topology and the cooling test scripts and CSVs live in <code>bom/</code> in the repository.</p>
+  <p class="muted" data-l="pl">Surowe zestawienia, mapa PCIe, topologia zasilania oraz skrypty i pliki CSV testu chłodzenia leżą w katalogu <code>bom/</code> w repozytorium.</p>
+
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p class="muted" data-l="en">Part of the NaviMed-UMB documentation. Engineering measurement, no clinical claim.</p>
+    <p class="muted" data-l="pl">Część dokumentacji NaviMed-UMB. Pomiar inżynierski, bez twierdzeń klinicznych.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btns = document.querySelectorAll('.langbar button');
+  function set(lang) {
+    root.setAttribute('lang', lang);
+    btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.set === lang)); });
+  }
+  btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.set); }); });
+  // ponytail: bez localStorage — strona zawsze otwiera się po angielsku
+})();
+</script>
+</body>
+</html>

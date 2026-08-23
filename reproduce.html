@@ -18,6 +18,7 @@
     <nav class="site" aria-label="Primary">
       <a href="index.html">Overview</a>
       <a href="models.html">Models</a>
+      <a href="hardware.html">Hardware</a>
       <a href="methodology.html">Methodology</a>
       <a href="results.html">Results</a>
       <a href="conclusions.html">Conclusions</a>
@@ -34,14 +35,13 @@
   <h1>Reproduce</h1>
   <p class="lead">To reproduce a run, match the full software stack. A different stack is a different experiment. The values below are the minimum spec. The repository holds the exact dated manifests.</p>
 
+  <p>The machine these runs were measured on — bill of materials, PCIe topology and power infrastructure — is documented on the <a href="hardware.html">Hardware</a> page.</p>
+
   <h2>Pinned stack</h2>
   <div class="table-scroll">
   <table>
     <thead><tr><th>Component</th><th>Pinned value</th></tr></thead>
     <tbody>
-      <tr><td>GPU</td><td>2× AMD Radeon AI PRO R9700 32 GB (gfx1201, RDNA 4 / Navi 48)</td></tr>
-      <tr><td>CPU / RAM</td><td>AMD Ryzen 9 9950X3D · 96 GB DDR5-6000</td></tr>
-      <tr><td>OS / kernel</td><td>Kubuntu 24.04 · kernel 6.17</td></tr>
       <tr><td>ROCm</td><td><code>7.2.0</code></td></tr>
       <tr><td>vLLM</td><td><code>0.19.0+rocm721</code></td></tr>
       <tr><td>Quantization</td><td>AWQ W4A16 (compressed-tensors); <code>llm-compressor 0.10.0.2</code></td></tr>
