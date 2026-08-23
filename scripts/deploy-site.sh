@@ -47,6 +47,8 @@ if [ "$DRY" = "--dry-run" ]; then
 fi
 
 echo "[4/4] commit + push"
-git -C "$WT" commit -q -m "deploy: site @ $(git rev-parse --short HEAD)"
+# ponytail: --no-verify, bo gh-pages to gałąź wygenerowana — pre-commit nie ma tam
+# configu i przy set -e wywracał cały deploy (cichy brak pushu, 2026-08-23)
+git -C "$WT" commit -q --no-verify -m "deploy: site @ $(git rev-parse --short HEAD)"
 git -C "$WT" push -q origin "$BRANCH"
 echo "OK -> https://kicrazom.github.io/navimed-umb/  (Pages przebuduje się w ~1 min)"
