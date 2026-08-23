@@ -249,9 +249,8 @@
     try { localStorage.setItem('navimed-lang', lang); } catch (e) {}
   }
   btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.set); }); });
-  var saved = null;
-  try { saved = localStorage.getItem('navimed-lang'); } catch (e) {}
-  if (saved === 'pl' || saved === 'en') set(saved);
+  // ponytail: bez przywracania z localStorage — strona zawsze otwiera się po angielsku,
+  // przełącznik działa w obrębie wizyty
 })();
 </script>
 </body>
