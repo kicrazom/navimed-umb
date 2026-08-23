@@ -5,17 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cite · NaviMed-UMB</title>
 <meta name="description" content="How to cite NaviMed-UMB: Zenodo concept and version DOIs, CITATION.cff metadata, BibTeX, and the project's generative-AI usage disclosure.">
+<link rel="canonical" href="https://kicrazom.github.io/navimed-umb/cite.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NaviMed-UMB">
+<meta property="og:title" content="Cite · NaviMed-UMB">
+<meta property="og:description" content="How to cite NaviMed-UMB: Zenodo concept and version DOIs, CITATION.cff metadata, BibTeX, and the project's generative-AI usage disclosure.">
+<meta property="og:url" content="https://kicrazom.github.io/navimed-umb/cite.html">
+<meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<script src="assets/motion.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<header class="site">
-  <div class="wrap">
+<div class="shell">
+<aside class="sidebar">
+  <div>
     <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
-    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
-    <nav class="site" aria-label="Primary">
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs.</p>
+  </div>
+
+  <nav class="side-nav" aria-label="Primary">
       <a href="index.html">Overview</a>
       <a href="models.html">Models</a>
       <a href="hardware.html">Hardware</a>
@@ -25,9 +34,19 @@
       <a href="reproduce.html">Reproduce</a>
       <a href="limitations.html">Limitations</a>
       <a href="cite.html" class="active">Cite</a>
-    </nav>
+  </nav>
+
+  <div class="side-spacer"></div>
+
+  <div class="side-meta">
+    <p class="rel"><span class="v">v0.5.1</span> · 2026-08-23</p>
+    <div class="links">
+      <a href="https://doi.org/10.5281/zenodo.19851346">Zenodo DOI</a>
+      <a href="https://github.com/kicrazom/navimed-umb">GitHub repository</a>
+      <a href="https://huggingface.co/mozarcik">HuggingFace · mozarcik</a>
+    </div>
   </div>
-</header>
+</aside>
 
 <main id="main">
 <div class="wrap">
@@ -41,6 +60,7 @@
     <thead><tr><th>Scope</th><th>DOI</th></tr></thead>
     <tbody>
       <tr><td><strong>Concept</strong> (always resolves to latest version)</td><td><a href="https://doi.org/10.5281/zenodo.19851346">10.5281/zenodo.19851346</a></td></tr>
+      <tr><td>Version v0.5.1</td><td><a href="https://doi.org/10.5281/zenodo.22070559">10.5281/zenodo.22070559</a></td></tr>
       <tr><td>Version v0.5.0</td><td><a href="https://doi.org/10.5281/zenodo.21207763">10.5281/zenodo.21207763</a></td></tr>
       <tr><td>Version v0.4.0</td><td><a href="https://doi.org/10.5281/zenodo.20364953">10.5281/zenodo.20364953</a></td></tr>
       <tr><td>Version v0.3.0</td><td><a href="https://doi.org/10.5281/zenodo.20317011">10.5281/zenodo.20317011</a></td></tr>
@@ -84,7 +104,7 @@
   <p class="muted">Released model checkpoints carry the license of their base family. <span class="pill lic-llama">llama3.1</span> for the Llama-PLLuM derivatives, <span class="pill lic-apache">apache-2.0</span> for the Mistral-Nemo-derived 12B. See <a href="models.html">Models</a>.</p>
 
   <h2 id="ai">AI-usage disclosure</h2>
-  <p>Transparency about AI assistance is a default policy for this project. Documentation prose, debugging dialogue, and sounding-board discussion used generative-AI tools: Claude (Anthropic — Opus 4.7 &amp; 4.8, and Fable 5 for Claude Code subagents; web + Claude Code CLI), GPT (OpenAI, web), and Gemini (Google, web review). A <strong>locally-served Bielik-11B-v3.0-instruct-AWQ</strong> (vLLM on one R9700) handled Polish-language editorial work.</p>
+  <p>Transparency about AI assistance is a default policy for this project. Documentation prose, debugging dialogue, and sounding-board discussion used generative-AI tools: Claude (Anthropic; Opus 4.7 &amp; 4.8, and Fable 5 for Claude Code subagents; web + Claude Code CLI), GPT (OpenAI, web), and Gemini (Google, web review). A <strong>locally-served Bielik-11B-v3.0-instruct-AWQ</strong> (vLLM on one R9700) handled Polish-language editorial work.</p>
   <p><strong>All experimental design, hardware configuration, empirical measurements, and scientific claims are the sole responsibility of the author.</strong> AI tools did not execute experiments, did not access the workstation, did not generate quantized weights, and did not validate any benchmark measurement. The work has a single author. Consistent with COPE and ICMJE guidance, AI tools are documented as research aids, not co-authors. Full table and per-role detail: <a href="https://github.com/kicrazom/navimed-umb/blob/main/AI_USAGE_DISCLOSURE.md"><code>AI_USAGE_DISCLOSURE.md</code></a>.</p>
 
   <div class="callout">
@@ -95,13 +115,12 @@
   <p>Quantization compute for the 70B family ran on an AMD Instinct MI300X through the AMD Developer Cloud, powered by DigitalOcean, provided as a promotional credit under the AMD Developer Program. The base models come from the PLLuM consortium (SpeakLeash, OPI-PIB, NASK, Wrocław University of Science and Technology) and the Polish Ministry of Digital Affairs, published via CYFRAGOVPL. The calibration corpus derives from SmPC text published by the European Medicines Agency.</p>
 
 </div>
-</main>
 
 <footer class="site">
-  <div class="wrap">
-    <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
-    <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the AI-usage disclosure above.</p>
-  </div>
+  <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+  <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the AI-usage disclosure above.</p>
 </footer>
+</main>
+</div>
 </body>
 </html>

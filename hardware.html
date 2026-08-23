@@ -5,27 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hardware · NaviMed-UMB</title>
 <meta name="description" content="The consumer dual-R9700 workstation behind NaviMed-UMB: bill of materials, PCIe topology, power and UPS infrastructure, and the CPU cooling study.">
+<link rel="canonical" href="https://kicrazom.github.io/navimed-umb/hardware.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NaviMed-UMB">
+<meta property="og:title" content="Hardware · NaviMed-UMB">
+<meta property="og:description" content="The consumer dual-R9700 workstation behind NaviMed-UMB: bill of materials, PCIe topology, power and UPS infrastructure, and the CPU cooling study.">
+<meta property="og:url" content="https://kicrazom.github.io/navimed-umb/hardware.html">
+<meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<script src="assets/motion.js"></script>
-<style>
-  html[lang="en"] [data-l="pl"], html[lang="pl"] [data-l="en"] { display: none; }
-  .langbar { display:flex; gap:.5rem; align-items:center; margin:0 0 1.25rem; flex-wrap:wrap; }
-  .langbar button {
-    font: inherit; cursor: pointer; padding:.3rem .8rem; border-radius:999px;
-    border:1px solid currentColor; background:transparent; color:inherit; opacity:.55;
-  }
-  .langbar button[aria-pressed="true"] { opacity:1; font-weight:600; }
-  table.envelope td.num { text-align:right; font-variant-numeric: tabular-nums; }
-</style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<header class="site">
-  <div class="wrap">
+<div class="shell">
+<aside class="sidebar">
+  <div>
     <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
-    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
-    <nav class="site" aria-label="Primary">
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs.</p>
+  </div>
+
+  <nav class="side-nav" aria-label="Primary">
       <a href="index.html">Overview</a>
       <a href="models.html">Models</a>
       <a href="hardware.html" class="active">Hardware</a>
@@ -35,17 +34,26 @@
       <a href="reproduce.html">Reproduce</a>
       <a href="limitations.html">Limitations</a>
       <a href="cite.html">Cite</a>
-    </nav>
+  </nav>
+
+  <div class="side-spacer"></div>
+
+  <div class="side-meta">
+    <p class="rel"><span class="v">v0.5.1</span> · 2026-08-23</p>
+    <div class="links">
+      <a href="https://doi.org/10.5281/zenodo.19851346">Zenodo DOI</a>
+      <a href="https://github.com/kicrazom/navimed-umb">GitHub repository</a>
+      <a href="https://huggingface.co/mozarcik">HuggingFace · mozarcik</a>
+    </div>
+    <div class="langbar" role="group" aria-label="Language / Język">
+      <button type="button" data-set="en" aria-pressed="true">EN</button>
+      <button type="button" data-set="pl" aria-pressed="false">PL</button>
+    </div>
   </div>
-</header>
+</aside>
 
 <main id="main">
 <div class="wrap">
-
-  <div class="langbar" role="group" aria-label="Language / Język">
-    <button type="button" data-set="pl" aria-pressed="false">Polski</button>
-    <button type="button" data-set="en" aria-pressed="true">English</button>
-  </div>
 
   <h1>Hardware</h1>
 
@@ -56,7 +64,7 @@
   <h2 data-l="pl">Zestawienie podzespołów</h2>
 
   <div class="table-scroll">
-  <table class="envelope">
+  <table>
     <thead>
       <tr>
         <th data-l="en">Component</th><th data-l="pl">Podzespół</th>
@@ -84,10 +92,10 @@
   <h2 data-l="pl">Topologia PCIe</h2>
 
   <p data-l="en">Two graphics cards on a consumer platform share the CPU's sixteen graphics lanes. The allocation that actually results is the single most consequential number on this page, because it sets the ceiling on tensor-parallel inference.</p>
-  <p data-l="pl">Dwie karty graficzne na platformie konsumenckiej dzielą szesnaście linii graficznych procesora. To, jak ten podział wypadnie w praktyce, jest najważniejszą liczbą na tej stronie — wyznacza sufit dla inferencji tensor-parallel.</p>
+  <p data-l="pl">Dwie karty graficzne na platformie konsumenckiej dzielą szesnaście linii graficznych procesora. To, jak ten podział wypadnie w praktyce, jest najważniejszą liczbą na tej stronie. Wyznacza sufit dla inferencji tensor-parallel.</p>
 
   <div class="table-scroll">
-  <table class="envelope">
+  <table>
     <thead>
       <tr>
         <th data-l="en">Root port</th><th data-l="pl">Root port</th>
@@ -105,11 +113,11 @@
   </div>
 
   <p data-l="en">Both GPUs sit on separate root ports, in separate IOMMU groups, at a symmetric <strong>x8/x8</strong>. That symmetry was restored on 14 June 2026 by moving one NVMe drive from an M.2 slot on CPU lanes to a chipset slot; before that, two CPU-lane NVMe drives had starved GPU1 down to x4.</p>
-  <p data-l="pl">Obie karty siedzą na osobnych root portach, w osobnych grupach IOMMU, symetrycznie <strong>x8/x8</strong>. Symetrię przywrócono 14 czerwca 2026, przekładając jeden dysk NVMe z gniazda M.2 na liniach procesora do gniazda chipsetowego — wcześniej dwa dyski na liniach CPU ścinały GPU1 do x4.</p>
+  <p data-l="pl">Obie karty siedzą na osobnych root portach, w osobnych grupach IOMMU, symetrycznie <strong>x8/x8</strong>. Symetrię przywrócono 14 czerwca 2026, przekładając jeden dysk NVMe z gniazda M.2 na liniach procesora do gniazda chipsetowego. Wcześniej dwa dyski na liniach CPU ścinały GPU1 do x4.</p>
 
   <div class="callout warning">
-    <p data-l="en"><strong>Measurement gotcha.</strong> The GPU endpoints (<code>03:00.0</code>, <code>07:00.0</code>) always report x16 at 32 GT/s. That is the card-internal GPU-to-switch link, not the CPU-to-GPU link, and reading it as system bandwidth is simply wrong. Read <code>max_link_width</code> on the <em>root port</em> instead. <code>current_link_width</code> also under-reports at idle, because ASPM collapses both width and speed — measure under load or use <code>max_link_width</code>.</p>
-    <p data-l="pl"><strong>Pułapka pomiarowa.</strong> Endpointy kart (<code>03:00.0</code>, <code>07:00.0</code>) zawsze pokazują x16 przy 32 GT/s. To link wewnętrzny karty, między GPU a jej switchem — nie link CPU↔GPU — i czytanie go jako pasma systemowego jest po prostu błędem. Odczytuj <code>max_link_width</code> na <em>root porcie</em>. <code>current_link_width</code> dodatkowo zaniża w bezczynności, bo ASPM zwija i szerokość, i prędkość — mierz pod obciążeniem albo patrz na <code>max_link_width</code>.</p>
+    <p data-l="en"><strong>Measurement gotcha.</strong> The GPU endpoints (<code>03:00.0</code>, <code>07:00.0</code>) always report x16 at 32 GT/s. That is the card-internal GPU-to-switch link, not the CPU-to-GPU link, and reading it as system bandwidth is simply wrong. Read <code>max_link_width</code> on the <em>root port</em> instead. <code>current_link_width</code> also under-reports at idle, because ASPM collapses both width and speed. Measure under load or use <code>max_link_width</code>.</p>
+    <p data-l="pl"><strong>Pułapka pomiarowa.</strong> Endpointy kart (<code>03:00.0</code>, <code>07:00.0</code>) zawsze pokazują x16 przy 32 GT/s. To link wewnętrzny karty, między GPU a jej switchem (nie link CPU↔GPU), i czytanie go jako pasma systemowego jest po prostu błędem. Odczytuj <code>max_link_width</code> na <em>root porcie</em>. <code>current_link_width</code> dodatkowo zaniża w bezczynności, bo ASPM zwija i szerokość, i prędkość. Mierz pod obciążeniem albo patrz na <code>max_link_width</code>.</p>
   </div>
 
   <h2 data-l="en">Power and UPS</h2>
@@ -125,10 +133,10 @@
   <h2 data-l="pl">Chłodzenie procesora</h2>
 
   <p data-l="en">The air tower was swapped for a 420 mm liquid cooler in August 2026, and both were measured under a 40-minute all-core load. The headline result is that they are indistinguishable: the same 81.2 °C peak, the same clocks, a 0.7 K difference in temperature rise that sits below the resolution of the test.</p>
-  <p data-l="pl">W sierpniu 2026 wieżę powietrzną zastąpiło chłodzenie cieczą 420 mm; oba zmierzono pod 40-minutowym obciążeniem wszystkich rdzeni. Wynik główny: są nieodróżnialne — ten sam szczyt 81,2 °C, te same zegary, a różnica 0,7 K w przyroście temperatury leży poniżej rozdzielczości testu.</p>
+  <p data-l="pl">W sierpniu 2026 wieżę powietrzną zastąpiło chłodzenie cieczą 420 mm; oba zmierzono pod 40-minutowym obciążeniem wszystkich rdzeni. Wynik główny: są nieodróżnialne, ten sam szczyt 81,2 °C, te same zegary, a różnica 0,7 K w przyroście temperatury leży poniżej rozdzielczości testu.</p>
 
-  <p data-l="en">The study is worth reading less for the verdict than for what went wrong on the way to it — one run produced a clear, wrong answer because the radiator fans were not turning, and the sensor reporting <code>0</code> was misread as a missing sensor rather than a stopped fan.</p>
-  <p data-l="pl">Badanie warto przeczytać nie tyle dla werdyktu, ile dla tego, co poszło po drodze nie tak — jeden przebieg dał jasną i nieprawdziwą odpowiedź, bo wentylatory chłodnicy się nie kręciły, a czujnik pokazujący <code>0</code> odczytano jako brak czujnika zamiast jako zatrzymany wentylator.</p>
+  <p data-l="en">The study is worth reading less for the verdict than for what went wrong on the way to it. One run produced a clear, wrong answer because the radiator fans were not turning, and the sensor reporting <code>0</code> was misread as a missing sensor rather than a stopped fan.</p>
+  <p data-l="pl">Badanie warto przeczytać nie tyle dla werdyktu, ile dla tego, co poszło po drodze nie tak. Jeden przebieg dał jasną i nieprawdziwą odpowiedź, bo wentylatory chłodnicy się nie kręciły, a czujnik pokazujący <code>0</code> odczytano jako brak czujnika zamiast jako zatrzymany wentylator.</p>
 
   <div class="badges">
     <a class="badge" href="cooling-per-rpm.html" data-l="en">Cooling study: fans per revolution</a>
@@ -155,14 +163,13 @@
   <p class="muted" data-l="pl">Surowe zestawienia, mapa PCIe, topologia zasilania oraz skrypty i pliki CSV testu chłodzenia leżą w katalogu <code>bom/</code> w repozytorium.</p>
 
 </div>
-</main>
 
 <footer class="site">
-  <div class="wrap">
-    <p class="muted" data-l="en">Part of the NaviMed-UMB documentation. Engineering measurement, no clinical claim.</p>
-    <p class="muted" data-l="pl">Część dokumentacji NaviMed-UMB. Pomiar inżynierski, bez twierdzeń klinicznych.</p>
-  </div>
+  <p class="muted" data-l="en">Part of the NaviMed-UMB documentation. Engineering measurement, no clinical claim.</p>
+  <p class="muted" data-l="pl">Część dokumentacji NaviMed-UMB. Pomiar inżynierski, bez twierdzeń klinicznych.</p>
 </footer>
+</main>
+</div>
 
 <script>
 (function () {
@@ -173,7 +180,7 @@
     btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.set === lang)); });
   }
   btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.set); }); });
-  // ponytail: bez localStorage — strona zawsze otwiera się po angielsku
+  // ponytail: bez localStorage, strona zawsze otwiera się po angielsku
 })();
 </script>
 </body>

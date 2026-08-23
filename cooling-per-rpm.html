@@ -5,22 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fan efficiency per RPM · NaviMed-UMB</title>
 <meta name="description" content="Two CPU cooler fan sets on the same 9950X3D workstation, normalized per revolution: thermal cost and acoustic intensity per unit of fan rotation.">
+<link rel="canonical" href="https://kicrazom.github.io/navimed-umb/cooling-per-rpm.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NaviMed-UMB">
+<meta property="og:title" content="Fan efficiency per RPM · NaviMed-UMB">
+<meta property="og:description" content="Two CPU cooler fan sets on the same 9950X3D workstation, normalized per revolution: thermal cost and acoustic intensity per unit of fan rotation.">
+<meta property="og:url" content="https://kicrazom.github.io/navimed-umb/cooling-per-rpm.html">
+<meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-<script src="assets/motion.js"></script>
 <style>
-  /* bilingual toggle — no deps, CSS-only switching */
-  html[lang="en"] [data-l="pl"], html[lang="pl"] [data-l="en"] { display: none; }
-  .langbar { display:flex; gap:.5rem; align-items:center; margin:0 0 1.25rem; flex-wrap:wrap; }
-  .langbar button {
-    font: inherit; cursor: pointer; padding:.3rem .8rem; border-radius:999px;
-    border:1px solid currentColor; background:transparent; color:inherit; opacity:.55;
-  }
-  .langbar button[aria-pressed="true"] { opacity:1; font-weight:600; }
   .verdict { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(15rem,1fr)); margin:1.25rem 0; }
   .verdict .card p { margin:.35rem 0 0; }
   .verdict .big { font-size:1.6rem; font-weight:700; line-height:1.1; }
-  table.envelope td.num { text-align:right; font-variant-numeric: tabular-nums; }
   .ba { display:grid; gap:1.25rem; grid-template-columns:repeat(auto-fit,minmax(18rem,1fr)); margin:1.5rem 0; }
   .ba figure { margin:0; }
   .ba img { width:100%; height:auto; display:block; border-radius:6px; }
@@ -29,17 +26,20 @@
   .chartfig { margin:1.5rem 0; }
   .chartfig img { width:100%; height:auto; display:block; background:#fff; border-radius:6px; padding:.5rem; }
   .chartfig figcaption { font-size:.9rem; opacity:.75; margin-top:.6rem; line-height:1.45; }
-  .win-a { border-left:3px solid #c2703d; padding-left:.75rem; }
-  .win-c { border-left:3px solid #3d84c2; padding-left:.75rem; }
+  .win-a { border-left:3px solid var(--accent-2); padding-left:.75rem; }
+  .win-c { border-left:3px solid var(--accent); padding-left:.75rem; }
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
-<header class="site">
-  <div class="wrap">
+<div class="shell">
+<aside class="sidebar">
+  <div>
     <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
-    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
-    <nav class="site" aria-label="Primary">
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs.</p>
+  </div>
+
+  <nav class="side-nav" aria-label="Primary">
       <a href="index.html">Overview</a>
       <a href="models.html">Models</a>
       <a href="hardware.html" class="active">Hardware</a>
@@ -49,17 +49,26 @@
       <a href="reproduce.html">Reproduce</a>
       <a href="limitations.html">Limitations</a>
       <a href="cite.html">Cite</a>
-    </nav>
+  </nav>
+
+  <div class="side-spacer"></div>
+
+  <div class="side-meta">
+    <p class="rel"><span class="v">v0.5.1</span> · 2026-08-23</p>
+    <div class="links">
+      <a href="https://doi.org/10.5281/zenodo.19851346">Zenodo DOI</a>
+      <a href="https://github.com/kicrazom/navimed-umb">GitHub repository</a>
+      <a href="https://huggingface.co/mozarcik">HuggingFace · mozarcik</a>
+    </div>
+    <div class="langbar" role="group" aria-label="Language / Język">
+      <button type="button" data-set="en" aria-pressed="true">EN</button>
+      <button type="button" data-set="pl" aria-pressed="false">PL</button>
+    </div>
   </div>
-</header>
+</aside>
 
 <main id="main">
 <div class="wrap">
-
-  <div class="langbar" role="group" aria-label="Language / Język">
-    <button type="button" data-set="pl" aria-pressed="false">Polski</button>
-    <button type="button" data-set="en" aria-pressed="true">English</button>
-  </div>
 
   <h1 data-l="en">Fans normalized per revolution</h1>
   <h1 data-l="pl">Wentylatory w przeliczeniu na obrót</h1>
@@ -68,8 +77,8 @@
   <p class="lead" data-l="pl">Dwa zestawy wentylatorów CPU, ta sama stacja, to samo 40-minutowe obciążenie all-core. Skoro wynik termiczny to remis, ciekawe staje się pytanie, ile każdy zestaw musiał się nakręcić, żeby go osiągnąć.</p>
 
   <div class="callout warning">
-    <p data-l="en"><strong>RPM is not work.</strong> The physical quantities are airflow (CFM) and static pressure. Revolutions per minute is only a proxy, and a weak one across different fan frames, blade geometries, and heat-exchanger types. Everything below is a <em>constructed index</em> for comparing two specific configurations on one machine — not a physical measurement and not a general claim about towers versus AIOs.</p>
-    <p data-l="pl"><strong>RPM to nie praca.</strong> Wielkościami fizycznymi są przepływ powietrza (CFM) i ciśnienie statyczne. Obroty na minutę to jedynie przybliżenie — słabe, gdy porównuje się różne ramki, geometrie łopatek i typy wymienników ciepła. Wszystko poniżej to <em>wskaźnik skonstruowany</em> do porównania dwóch konkretnych konfiguracji na jednej maszynie — nie pomiar fizyczny i nie ogólna teza o wieżach kontra AIO.</p>
+    <p data-l="en"><strong>RPM is not work.</strong> The physical quantities are airflow (CFM) and static pressure. Revolutions per minute is only a proxy, and a weak one across different fan frames, blade geometries, and heat-exchanger types. Everything below is a <em>constructed index</em> for comparing two specific configurations on one machine, not a physical measurement and not a general claim about towers versus AIOs.</p>
+    <p data-l="pl"><strong>RPM to nie praca.</strong> Wielkościami fizycznymi są przepływ powietrza (CFM) i ciśnienie statyczne. Obroty na minutę to jedynie przybliżenie, słabe, gdy porównuje się różne ramki, geometrie łopatek i typy wymienników ciepła. Wszystko poniżej to <em>wskaźnik skonstruowany</em> do porównania dwóch konkretnych konfiguracji na jednej maszynie, nie pomiar fizyczny i nie ogólna teza o wieżach kontra AIO.</p>
   </div>
 
 
@@ -81,16 +90,16 @@
       <img src="assets/cooling-before-nhd15.jpg" loading="lazy"
            alt="Open workstation case showing a Noctua NH-D15 G2 dual-tower air cooler above a Gigabyte Radeon AI TOP graphics card.">
       <figcaption>
-        <span data-l="en"><span class="tag">Before</span>Noctua NH-D15 G2 — dual tower, 2 × 140 mm fans, mounted directly over the socket.</span>
-        <span data-l="pl"><span class="tag">Przed</span>Noctua NH-D15 G2 — dwie wieże, 2 × 140 mm, zamontowane bezpośrednio nad gniazdem.</span>
+        <span data-l="en"><span class="tag">Before</span>Noctua NH-D15 G2: dual tower, 2 × 140 mm fans, mounted directly over the socket.</span>
+        <span data-l="pl"><span class="tag">Przed</span>Noctua NH-D15 G2: dwie wieże, 2 × 140 mm, zamontowane bezpośrednio nad gniazdem.</span>
       </figcaption>
     </figure>
     <figure>
       <img src="assets/cooling-after-lc142.jpg" loading="lazy"
            alt="Same case after the swap, with a Noctua NL-LC1-42 liquid cooler: a 420 mm radiator carrying three Noctua fans mounted on the side panel, tubing running to the CPU block.">
       <figcaption>
-        <span data-l="en"><span class="tag">After</span>Noctua NL-LC1-42 — 420 mm radiator with 3 × NF-A14x25 G2 on the side panel, pump block on the socket.</span>
-        <span data-l="pl"><span class="tag">Po</span>Noctua NL-LC1-42 — chłodnica 420 mm z 3 × NF-A14x25 G2 na panelu bocznym, blok pompy na gnieździe.</span>
+        <span data-l="en"><span class="tag">After</span>Noctua NL-LC1-42: 420 mm radiator with 3 × NF-A14x25 G2 on the side panel, pump block on the socket.</span>
+        <span data-l="pl"><span class="tag">Po</span>Noctua NL-LC1-42: chłodnica 420 mm z 3 × NF-A14x25 G2 na panelu bocznym, blok pompy na gnieździe.</span>
       </figcaption>
     </figure>
   </div>
@@ -100,7 +109,7 @@
   <h2 data-l="pl">Dwie konfiguracje</h2>
 
   <div class="table-scroll">
-  <table class="envelope">
+  <table>
     <thead>
       <tr>
         <th data-l="en">Measured</th><th data-l="pl">Zmierzone</th>
@@ -129,23 +138,23 @@
 
   <figure class="chartfig">
     <img data-l="en" src="assets/cooling-timeseries-en.png" loading="lazy"
-         alt="Two stacked line charts over 60 minutes. Upper: temperature rise above ambient for three runs — the air tower and the working liquid cooler overlap near 56 K under load, while the liquid cooler with stopped fans sits about 4 K higher. Lower: clock speed, identical at roughly 5000 MHz for all runs under load.">
+         alt="Two stacked line charts over 60 minutes. Upper: temperature rise above ambient for three runs. The air tower and the working liquid cooler overlap near 56 K under load, while the liquid cooler with stopped fans sits about 4 K higher. Lower: clock speed, identical at roughly 5000 MHz for all runs under load.">
     <img data-l="pl" src="assets/cooling-timeseries-pl.png" loading="lazy"
-         alt="Dwa wykresy liniowe w zakresie 60 minut. Górny: przyrost temperatury nad otoczeniem dla trzech przebiegów — wieża powietrzna i chłodzenie cieczą z pracującymi wentylatorami pokrywają się przy 56 K pod obciążeniem, a chłodzenie cieczą ze stojącymi wentylatorami leży około 4 K wyżej. Dolny: zegar, praktycznie identyczny około 5000 MHz we wszystkich przebiegach.">
+         alt="Dwa wykresy liniowe w zakresie 60 minut. Górny: przyrost temperatury nad otoczeniem dla trzech przebiegów. Wieża powietrzna i chłodzenie cieczą z pracującymi wentylatorami pokrywają się przy 56 K pod obciążeniem, a chłodzenie cieczą ze stojącymi wentylatorami leży około 4 K wyżej. Dolny: zegar, praktycznie identyczny około 5000 MHz we wszystkich przebiegach.">
     <figcaption>
-      <span data-l="en">Both valid runs sit on top of each other for the full 40-minute load phase, and the clocks are indistinguishable. The dashed grey line is the invalid run — the same cooler with its radiator fans stopped — kept only as a negative control. Data processed with Polars; the script and raw CSVs are in <code>bom/cooling-test/</code>.</span>
-      <span data-l="pl">Oba ważne przebiegi leżą na sobie przez całe 40 minut obciążenia, a zegary są nieodróżnialne. Szara linia przerywana to przebieg nieważny — to samo chłodzenie z zatrzymanymi wentylatorami chłodnicy — zachowany wyłącznie jako kontrola negatywna. Dane przetworzone w Polars; skrypt i surowe CSV leżą w <code>bom/cooling-test/</code>.</span>
+      <span data-l="en">Both valid runs sit on top of each other for the full 40-minute load phase, and the clocks are indistinguishable. The dashed grey line is the invalid run (the same cooler with its radiator fans stopped), kept only as a negative control. Data processed with Polars; the script and raw CSVs are in <code>bom/cooling-test/</code>.</span>
+      <span data-l="pl">Oba ważne przebiegi leżą na sobie przez całe 40 minut obciążenia, a zegary są nieodróżnialne. Szara linia przerywana to przebieg nieważny (to samo chłodzenie z zatrzymanymi wentylatorami chłodnicy), zachowany wyłącznie jako kontrola negatywna. Dane przetworzone w Polars; skrypt i surowe CSV leżą w <code>bom/cooling-test/</code>.</span>
     </figcaption>
   </figure>
 
   <h2 data-l="en">Normalized per revolution</h2>
   <h2 data-l="pl">W przeliczeniu na obrót</h2>
 
-  <p data-l="en">Two indices. <strong>Thermal cost</strong> multiplies temperature rise by rotation — lower is better, because you want both a cold CPU and slow fans. <strong>Acoustic intensity</strong> converts dBA to a linear scale (I ∝ 10<sup>dBA/10</sup>) before dividing, because decibels are logarithmic and must never be divided directly.</p>
-  <p data-l="pl">Dwa wskaźniki. <strong>Koszt termiczny</strong> mnoży przyrost temperatury przez obroty — niżej znaczy lepiej, bo chcesz jednocześnie zimnego procesora i wolnych wentylatorów. <strong>Natężenie akustyczne</strong> przelicza dBA na skalę liniową (I ∝ 10<sup>dBA/10</sup>) przed dzieleniem, bo decybele są logarytmiczne i nigdy nie wolno ich dzielić wprost.</p>
+  <p data-l="en">Two indices. <strong>Thermal cost</strong> multiplies temperature rise by rotation. Lower is better, because you want both a cold CPU and slow fans. <strong>Acoustic intensity</strong> converts dBA to a linear scale (I ∝ 10<sup>dBA/10</sup>) before dividing, because decibels are logarithmic and must never be divided directly.</p>
+  <p data-l="pl">Dwa wskaźniki. <strong>Koszt termiczny</strong> mnoży przyrost temperatury przez obroty. Niżej znaczy lepiej, bo chcesz jednocześnie zimnego procesora i wolnych wentylatorów. <strong>Natężenie akustyczne</strong> przelicza dBA na skalę liniową (I ∝ 10<sup>dBA/10</sup>) przed dzieleniem, bo decybele są logarytmiczne i nigdy nie wolno ich dzielić wprost.</p>
 
   <div class="table-scroll">
-  <table class="envelope">
+  <table>
     <thead>
       <tr>
         <th data-l="en">Index</th><th data-l="pl">Wskaźnik</th>
@@ -188,7 +197,7 @@
     <div class="card win-c">
       <p class="big">−71%</p>
       <p data-l="en"><strong>The AIO fans are far quieter per revolution.</strong> Per unit of rotation they emit 71% less acoustic intensity, which is why 2.26× the spinning still measures quieter.</p>
-      <p data-l="pl"><strong>Wentylatory AIO są dużo cichsze na obrót.</strong> Na jednostkę obrotu emitują o 71% mniej natężenia akustycznego — dlatego 2,26× więcej kręcenia i tak wychodzi ciszej.</p>
+      <p data-l="pl"><strong>Wentylatory AIO są dużo cichsze na obrót.</strong> Na jednostkę obrotu emitują o 71% mniej natężenia akustycznego, dlatego 2,26× więcej kręcenia i tak wychodzi ciszej.</p>
     </div>
   </div>
 
@@ -196,11 +205,11 @@
   <h2 data-l="pl">Co z tego wynika</h2>
 
   <p data-l="en">The two effects point in opposite directions and very nearly cancel. At the operating point the machine lands on the same temperature and a barely-different noise level, so the choice between these coolers is not a thermal decision. The per-revolution view explains <em>why</em> the tie happens rather than changing it.</p>
-  <p data-l="pl">Oba efekty działają w przeciwne strony i niemal się znoszą. W punkcie pracy maszyna ląduje na tej samej temperaturze i ledwie różnym poziomie hałasu, więc wybór między tymi chłodzeniami nie jest decyzją termiczną. Spojrzenie „na obrót" tłumaczy, <em>dlaczego</em> wychodzi remis — nie zmienia go.</p>
+  <p data-l="pl">Oba efekty działają w przeciwne strony i niemal się znoszą. W punkcie pracy maszyna ląduje na tej samej temperaturze i ledwie różnym poziomie hałasu, więc wybór między tymi chłodzeniami nie jest decyzją termiczną. Spojrzenie „na obrót" tłumaczy, <em>dlaczego</em> wychodzi remis. Nie zmienia go.</p>
 
   <div class="callout">
-    <p data-l="en"><strong>Interpretation, not measurement.</strong> A plausible reading is that the liquid cooler inserts an extra transfer stage — die → coldplate → water → radiator → air — where the tower goes die → baseplate → heatpipes → fins → air. More stages means more total thermal resistance, so more airflow is needed for the same result. This test did not measure stage-by-stage resistance and cannot confirm that mechanism.</p>
-    <p data-l="pl"><strong>Interpretacja, nie pomiar.</strong> Prawdopodobne wyjaśnienie: chłodzenie cieczą dokłada dodatkowy etap przekazu ciepła — rdzeń → coldplate → woda → chłodnica → powietrze — tam gdzie wieża idzie rdzeń → podstawa → ciepłowody → żeberka → powietrze. Więcej etapów to większa sumaryczna oporność cieplna, więc ten sam wynik wymaga większego przepływu. Ten test nie mierzył oporności etap po etapie i nie potwierdza tego mechanizmu.</p>
+    <p data-l="en"><strong>Interpretation, not measurement.</strong> A plausible reading is that the liquid cooler inserts an extra transfer stage (die → coldplate → water → radiator → air) where the tower goes die → baseplate → heatpipes → fins → air. More stages means more total thermal resistance, so more airflow is needed for the same result. This test did not measure stage-by-stage resistance and cannot confirm that mechanism.</p>
+    <p data-l="pl"><strong>Interpretacja, nie pomiar.</strong> Prawdopodobne wyjaśnienie: chłodzenie cieczą dokłada dodatkowy etap przekazu ciepła (rdzeń → coldplate → woda → chłodnica → powietrze) tam gdzie wieża idzie rdzeń → podstawa → ciepłowody → żeberka → powietrze. Więcej etapów to większa sumaryczna oporność cieplna, więc ten sam wynik wymaga większego przepływu. Ten test nie mierzył oporności etap po etapie i nie potwierdza tego mechanizmu.</p>
   </div>
 
   <h2 data-l="en">Limits of this comparison</h2>
@@ -229,18 +238,17 @@
   <p data-l="en">AMD Ryzen 9 9950X3D, 16C/32T. Each run: 10 min idle → 40 min <code>stress-ng matrixprod</code> on all 32 threads → 10 min cooldown, sensors sampled every 5 s from <code>k10temp</code> and <code>asus-ec-sensors</code>. Comparison metric is ΔT over ambient, because ambient differed between runs. Fan RPM read from the <code>CPU_Opt</code> channel. Load-phase figures are the mean of the final 10 minutes.</p>
   <p data-l="pl">AMD Ryzen 9 9950X3D, 16C/32T. Każdy przebieg: 10 min bezczynności → 40 min <code>stress-ng matrixprod</code> na wszystkich 32 wątkach → 10 min stygnięcia, próbkowanie sensorów co 5 s z <code>k10temp</code> i <code>asus-ec-sensors</code>. Metryką porównawczą jest ΔT nad otoczeniem, bo ambient różnił się między przebiegami. Obroty odczytane z kanału <code>CPU_Opt</code>. Wartości fazy obciążenia to średnia z ostatnich 10 minut.</p>
 
-  <p class="muted" data-l="en">Source runs: <code>noctua_20260731-2232.csv</code> (ambient 24.5 °C) and <code>lc142-fanC_20260823-0833.csv</code> (ambient 24.0 °C). Script, raw CSVs and the full report live in <code>bom/cooling-test/</code>. A third run exists and is <strong>invalid</strong> — its radiator fans were stopped throughout; it is retained only as a negative control.</p>
-  <p class="muted" data-l="pl">Przebiegi źródłowe: <code>noctua_20260731-2232.csv</code> (otoczenie 24,5 °C) i <code>lc142-fanC_20260823-0833.csv</code> (otoczenie 24,0 °C). Skrypt, surowe CSV i pełny raport leżą w <code>bom/cooling-test/</code>. Istnieje trzeci przebieg i jest <strong>nieważny</strong> — jego wentylatory chłodnicy stały przez cały czas; zachowany wyłącznie jako kontrola negatywna.</p>
+  <p class="muted" data-l="en">Source runs: <code>noctua_20260731-2232.csv</code> (ambient 24.5 °C) and <code>lc142-fanC_20260823-0833.csv</code> (ambient 24.0 °C). Script, raw CSVs and the full report live in <code>bom/cooling-test/</code>. A third run exists and is <strong>invalid</strong>: its radiator fans were stopped throughout; it is retained only as a negative control.</p>
+  <p class="muted" data-l="pl">Przebiegi źródłowe: <code>noctua_20260731-2232.csv</code> (otoczenie 24,5 °C) i <code>lc142-fanC_20260823-0833.csv</code> (otoczenie 24,0 °C). Skrypt, surowe CSV i pełny raport leżą w <code>bom/cooling-test/</code>. Istnieje trzeci przebieg i jest <strong>nieważny</strong>: jego wentylatory chłodnicy stały przez cały czas; zachowany wyłącznie jako kontrola negatywna.</p>
 
 </div>
-</main>
 
 <footer class="site">
-  <div class="wrap">
-    <p class="muted" data-l="en">Part of the NaviMed-UMB hardware documentation. Engineering measurement, no clinical claim.</p>
-    <p class="muted" data-l="pl">Część dokumentacji sprzętowej NaviMed-UMB. Pomiar inżynierski, bez twierdzeń klinicznych.</p>
-  </div>
+  <p class="muted" data-l="en">Part of the NaviMed-UMB hardware documentation. Engineering measurement, no clinical claim.</p>
+  <p class="muted" data-l="pl">Część dokumentacji sprzętowej NaviMed-UMB. Pomiar inżynierski, bez twierdzeń klinicznych.</p>
 </footer>
+</main>
+</div>
 
 <script>
 (function () {
@@ -251,7 +259,7 @@
     btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.set === lang)); });
   }
   btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.set); }); });
-  // ponytail: bez przywracania z localStorage — strona zawsze otwiera się po angielsku,
+  // ponytail: bez przywracania z localStorage, strona zawsze otwiera się po angielsku,
   // przełącznik działa w obrębie wizyty
 })();
 </script>
