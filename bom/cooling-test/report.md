@@ -55,7 +55,8 @@ Kierunek (AIO chłodniej na idle) jest wiarygodny, magnituda zawyżona.
 Głośność: aplikacja **SPL Meter (KTW Apps)**, telefon, **50 cm w obu pomiarach**, faza load.
 Mikrofon nieskalibrowany → **wartości bezwzględne traktuj jako wskazania aplikacji, nie dBA**.
 Różnica względna jest wiarygodna (ten sam przyrząd, ta sama odległość, ten sam typ obciążenia).
-Tło pomieszczenia niezmierzone. Pomiar dla A wykonany 2026-08-23, poza logowanym przebiegiem A.
+Tło pomieszczenia niezmierzone (pokój cichy, ale bez pomiaru odniesienia).
+Oba odczyty wykonano poza logowanymi przebiegami — nie są częścią serii pomiarowej.
 
 ## 🔴 Unieważnienie przebiegu B
 

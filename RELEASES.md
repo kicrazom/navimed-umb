@@ -5,6 +5,59 @@ results for each tagged version. The current release summary lives in
 [`README.md`](README.md); the universal benchmark protocol lives in
 [`METHODOLOGY.md`](METHODOLOGY.md).
 
+## v0.5.1 — 2026-08-23
+
+Documentation-and-platform erratum release. No new benchmark results are published;
+the §11.2/§11.3 embargo is unchanged.
+
+**PCIe topology erratum** ([`bom/pci-topology.md`](bom/pci-topology.md)). The v0.5.0
+record described both R9700 cards at "full x16 bandwidth each", and the v0.5.0 notes
+attributed the restoration of a symmetric link to the BIOS 2202 flash. Both were wrong.
+The x16 reading came from the GPU endpoints (`03:00.0`, `07:00.0`), which report the
+card-internal GPU↔switch link — not the CPU↔GPU link. Measured on the root ports
+(`00:01.1` / `00:01.3`), both GPUs run at a symmetric **x8/x8, Gen4 16 GT/s** — the
+quantity that actually bounds tensor-parallel traffic. The 2202 flash in fact *broke*
+the allocation (GPU1 fell to x4); symmetry was restored the following day, 2026-06-14,
+by moving one NVMe drive off the CPU lanes to a chipset M.2 slot. The file now documents
+the measurement procedure (`max_link_width` on the root port; `current_link_width`
+under-reports at idle because ASPM collapses width and speed). All published envelope
+quantities — load success, VRAM footprint, KV-cache capacity, max-concurrency — are
+unaffected: they do not depend on link width.
+
+**CPU-cooling A/B/C study** ([`bom/cooling-test/`](bom/cooling-test/)). The NH-D15 G2
+air tower was replaced by an NL-LC1-42 420 mm AIO on 2026-08-23. Three instrumented runs
+(10 min idle → 40 min all-core stress-ng → 10 min cooldown, sensors every 5 s): run A
+(tower, valid), run B (AIO — **invalidated**: radiator fans at 0 RPM throughout, retained
+as a negative control), run C (AIO, fans running, valid). Verdict: **thermal parity under
+sustained all-core load** — ΔT above ambient 56.8 vs 56.1 K, identical 81.2 °C Tctl max,
+clocks and stress-ng throughput within noise. The AIO cools down faster and measures
+marginally quieter. The invalidation is documented in full, including the measurement
+lesson that a zero on a channel able to report is a measurement, not missing data. Two
+verification items remain open (BIOS PWM percentage against the manufacturer's ≥80 %
+requirement; whether `CPU_Opt` reports the fans or the pump — every per-revolution figure
+inherits that uncertainty). Run C's ΔT 56.8 K is recorded as the coolant-degradation
+baseline for future re-checks.
+
+**Public-site maintenance.** New bilingual Hardware page (bill of materials, PCIe topology
+including the erratum, power and UPS, cooling study) and a fan-efficiency-per-revolution
+page. Hardware content that was duplicated in Reproduce has been merged into the Hardware
+page; the software pins stay with Reproduce. The architecture and evidence-percolation
+pages were withdrawn from the public site on 2026-07-11 pending publication; the v0.5.0
+release note describing them stands as the historical record.
+[`scripts/deploy-site.sh`](scripts/deploy-site.sh) makes the `gh-pages` deploy reproducible
+— between 2026-07-11 and 2026-08-23 the live site had silently drifted six weeks behind
+the repository.
+
+**Also in this release.** Post-v0.5.0 embargo scrub (internal publication-strategy working
+notes removed from the tree), workstation dashboard v1.2.0, and N=1 energy-measurement
+scripts plus a Qwen3.5 TP2 orchestrator under [`benchmarks/`](benchmarks/) — scripts only,
+no results published.
+
+**Embargo classification.** PUBLIC §11.1 in this release: the PCIe topology erratum, the
+cooling-study procedure and its thermal/acoustic results, the site pages and the deploy
+tooling. EMBARGOED §11.2/§11.3, unchanged and not in this release: all per-N throughput,
+latency, power, and BF16↔AWQ precision-ablation numbers.
+
 ## v0.5.0 — 2026-07-05
 
 This release closes the statistical-rigor and documentation surface opened by
@@ -44,8 +97,10 @@ is reported with an explicit cross-firmware provenance caveat.
 reconciled against the per-run records (referee finding M7): the Phase 1
 envelope and the Phase 2 concurrency ladder were collected under BIOS 1715, the
 N = 1 anchor and the precision-ablation pre-checks under BIOS 2202 (flashed
-2026-06-13). The 2202 update also restored both R9700 cards to a symmetric
-x8 / x8 PCIe link. Envelope quantities (load success, VRAM footprint, KV-cache
+2026-06-13). The 2202 flash initially *broke* the PCIe allocation — GPU1 dropped
+to x4 — and the symmetric x8/x8 link was restored the next day (2026-06-14) by
+moving one NVMe drive off the CPU lanes to a chipset M.2 slot, not by the firmware
+update itself. Corrected in v0.5.1; see `bom/pci-topology.md`. Envelope quantities (load success, VRAM footprint, KV-cache
 capacity, max-concurrency) are firmware-independent; only the
 single-stream-to-plateau ratio crosses the boundary and is flagged as such.
 

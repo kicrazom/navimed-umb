@@ -2,7 +2,7 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19851346.svg)](https://doi.org/10.5281/zenodo.19851346)
-[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.5.0)
+[![Version](https://img.shields.io/badge/version-0.5.1-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.5.1)
 
 **📊 Live dashboard → [NaviMed-UMB](https://kicrazom.github.io/navimed-umb/)** — interactive hardware-envelope table, model cards, and methodology.
 
@@ -50,14 +50,19 @@ shortcut.
 ## Key documents
 
 - [`METHODOLOGY.md`](METHODOLOGY.md) — universal Phase 1 envelope + Phase 2 scaling protocol, the §8 vehicle-integrity boundary, and the §11.1/§11.2/§11.3 embargo classification applied across the 21-model suite.
-- [`RELEASES.md`](RELEASES.md) — per-release notes (v0.1.0 → v0.5.0) and between-version events (the 2026-05-23 public Llama-PLLuM-70B AWQ release and the 2026-05-26 Run-3 consumer-GPU 8B/12B AWQ release live here).
+- [`RELEASES.md`](RELEASES.md) — per-release notes (v0.1.0 → v0.5.1) and between-version events (the 2026-05-23 public Llama-PLLuM-70B AWQ release and the 2026-05-26 Run-3 consumer-GPU 8B/12B AWQ release live here).
 - [`CITATION.cff`](CITATION.cff) — canonical citation (or use GitHub's "Cite this repository").
 - [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md) — disclosure of generative-AI assistance, including the locally-served Bielik-11B that proofread documentation in May 2026.
 
 ## Platform at a glance
 
 AMD Ryzen 9 9950X3D · 2× GIGABYTE Radeon AI PRO R9700 32 GB (gfx1201, RDNA 4) ·
-96 GB DDR5-6000 · Kubuntu 24.04, kernel 6.17, ROCm 7.2.0 · vLLM 0.19.0.
+96 GB DDR5-6000 · Kubuntu 24.04 · ROCm 7.2.0 · vLLM 0.19.0. CPU↔GPU interconnect:
+**PCIe Gen4 x8/x8, measured on the root ports** — see [`bom/pci-topology.md`](bom/pci-topology.md)
+for why the endpoint x16 reading is misleading. Benchmark campaigns were collected under
+kernel 6.17 (manifests in [`environment/`](environment/)); the workstation currently runs
+kernel 7.0.0 with an NL-LC1-42 AIO (cooler swap 2026-08-23, measured thermally neutral under
+sustained all-core load — [`bom/cooling-test/report.md`](bom/cooling-test/report.md)).
 Full BOM and power topology: [`bom/readme.md`](bom/readme.md).
 Exact software manifests: [`environment/`](environment/).
 
@@ -68,23 +73,29 @@ Released as part of (or alongside) this repository:
 - **Ten HuggingFace model cards** — the Llama-PLLuM-70B family (`mozarcik/Llama-PLLuM-70B-{base,instruct,chat}-{2412,2508,2512}-awq`, 8 variants, 2× R9700 / TP=2 deployment target), plus two Run-3 consumer-GPU variants released 2026-05-26 fitting on a single R9700: `mozarcik/Llama-PLLuM-8B-chat-2512-awq` (Llama 3.1 base) and `mozarcik/PLLuM-12B-chat-2512-awq` (Mistral-Nemo base). To the author's knowledge the first public AWQ W4A16 / vLLM-native quantization of each variant. [`huggingface.co/mozarcik`](https://huggingface.co/mozarcik).
 - **One HuggingFace dataset** — [`mozarcik/clinical-pl-smpc-awq-calibration`](https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration), 418 fragments of Polish *Charakterystyka Produktu Leczniczego* (ChPL / SmPC) text from EMA, ~512 tokens each, covering 61 medicines drawn from a curated catalog of 81 INN across 9 NFZ drug programmes (pulmonology + thoracic oncology focus; No PHI). Reusable as a calibration corpus for other Polish-clinical quantization work.
 - **One LinkedIn announcement** — [activity 7464059097575907328](https://www.linkedin.com/posts/lukasz-minarowski-73b3233b_navimed-umb-hardware-envelope-studies-for-activity-7464059097575907328).
-- **One Zenodo deposit** — concept DOI [10.5281/zenodo.19851346](https://doi.org/10.5281/zenodo.19851346) (auto-resolves to latest version; current version v0.5.0 at [10.5281/zenodo.21207763](https://doi.org/10.5281/zenodo.21207763); previous v0.4.0 at [10.5281/zenodo.20364953](https://doi.org/10.5281/zenodo.20364953)).
+- **One Zenodo deposit** — concept DOI [10.5281/zenodo.19851346](https://doi.org/10.5281/zenodo.19851346) (auto-resolves to latest version; current version v0.5.1; v0.5.0 at [10.5281/zenodo.21207763](https://doi.org/10.5281/zenodo.21207763); previous v0.4.0 at [10.5281/zenodo.20364953](https://doi.org/10.5281/zenodo.20364953)).
 
 ## Status
 
-Current release: **v0.5.0** (2026-07-05) — Tier-A n=10 statistical re-runs of the
-Phase 2 suite + precision-ablation sub-study (raw compute complete, aggregation
-in progress) + N=1 single-stream anchor across all families + firmware provenance
-reconciliation + Layer 2 retrieval-architecture site documentation.
+Current release: **v0.5.1** (2026-08-23) — documentation-and-platform erratum:
+a corrected PCIe topology record, the CPU-cooling A/B/C study, and reproducible
+site deployment. No new benchmark results; the §11.2/§11.3 embargo is unchanged.
+Previous: **v0.5.0** (2026-07-05) — Tier-A n=10 statistical re-runs of the Phase 2
+suite + precision-ablation sub-study + N=1 single-stream anchor across all families
++ firmware provenance reconciliation.
 Full release history and per-version highlights: [`RELEASES.md`](RELEASES.md).
 
-Most recent activity (2026-07-05): Tier-A n=10 re-runs on the standard
-METHODOLOGY §6 N grid `{10, 25, 50, 100, 200, 500, 1000}`, an N=1
-single-stream anchor across all model families (incl. the eight 70B AWQ
-variants), and a same-checkpoint BF16↔AWQ precision-ablation sub-study.
-Per-N throughput/latency/power numbers are embargoed §11.2/§11.3 pending
-paper acceptance; engineering envelope, methodology, and site documentation
-are public.
+Most recent activity (2026-08-23): a CPU-cooling A/B/C study
+([`bom/cooling-test/`](bom/cooling-test/)) — air tower vs 420 mm AIO, one run
+invalidated as a no-airflow artifact and retained as a negative control, verdict
+thermal parity under sustained all-core load; a **PCIe topology erratum**
+([`bom/pci-topology.md`](bom/pci-topology.md)) — the CPU↔GPU links are a symmetric
+x8/x8 Gen4 measured on the root ports, not the "full x16 each" previously read off
+the card-internal endpoints; a bilingual Hardware page and a fan-efficiency page on
+the site; and [`scripts/deploy-site.sh`](scripts/deploy-site.sh) for reproducible
+GitHub Pages deploys. Per-N throughput/latency/power numbers remain embargoed
+§11.2/§11.3 pending paper acceptance; engineering envelope, methodology, and site
+documentation are public.
 
 ## AI assistance
 
