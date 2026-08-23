@@ -31,6 +31,7 @@ echo "[2/4] synchronizuję $SRC/ -> $BRANCH"
 # _* to lokalne narzędzia podglądu (skrypty, logi, snapshoty) — nie publikujemy ich
 rsync -a --delete \
   --exclude '_*' \
+  --exclude 'README-PREVIEW.md' \
   --exclude '.git' \
   "$SRC"/ "$WT"/
 touch "$WT/.nojekyll"          # bez tego Pages przepuszcza wszystko przez Jekylla
