@@ -9,7 +9,23 @@ Source: `lspci` on Kubuntu 24.04
 | 03:00.0 | AMD/ATI 7551    | PCIe 5.0 x16 (32 GT/s) | 17       | 00:01.1 → 01:00.0 → 02:00.0 → **03:00.0** |
 | 07:00.0 | AMD/ATI 7551    | PCIe 5.0 x16 (32 GT/s) | 22       | 00:01.3 → 05:00.0 → 06:00.0 → **07:00.0** |
 
-Both GPUs on separate root ports (00:01.1, 00:01.3), separate IOMMU groups, full x16 bandwidth each.
+## CPU↔GPU link width (the number that matters)
+
+| Root port | Feeds   | max_link_width | current_link_width | Speed          |
+|-----------|---------|----------------|--------------------|----------------|
+| 00:01.1   | GPU0    | **x8**         | x8                 | Gen4, 16 GT/s  |
+| 00:01.3   | GPU1    | **x8**         | x8                 | Gen4, 16 GT/s  |
+
+Both GPUs sit on separate root ports and separate IOMMU groups, at a symmetric **x8/x8**.
+
+> **Measurement gotcha.** The GPU endpoints (`03:00.0`, `07:00.0`) always report x16 @ 32 GT/s.
+> That is the card-internal GPU↔switch link, not the CPU↔GPU link, and reading it as system
+> bandwidth is wrong. Read `max_link_width` on the **root port** (`00:01.1` / `00:01.3`) instead.
+> `current_link_width` under-reports at idle because ASPM collapses width and speed — measure
+> under load (H2D DMA) or use `max_link_width`.
+
+The x8/x8 allocation was restored on 2026-06-14 by moving one NVMe from an M.2 slot on CPU
+lanes to a chipset slot; before that, two CPU-lane NVMe drives had cut GPU1 to x4.
 
 ## NVMe Storage
 
