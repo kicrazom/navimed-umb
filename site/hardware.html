@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hardware · NaviMed-UMB</title>
+<meta name="description" content="The consumer dual-R9700 workstation behind NaviMed-UMB: bill of materials, PCIe topology, power and UPS infrastructure, and the CPU cooling study.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<script src="assets/motion.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs. Polish LLM releases and an open benchmark method.</p>
+    <nav class="site" aria-label="Primary">
+      <a href="index.html">Overview</a>
+      <a href="models.html">Models</a>
+      <a href="hardware.html" class="active">Hardware</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="conclusions.html">Conclusions</a>
+      <a href="reproduce.html">Reproduce</a>
+      <a href="limitations.html">Limitations</a>
+      <a href="cite.html">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<div class="wrap">
+
+  <h1>Hardware</h1>
+  <p class="lead">Everything in NaviMed-UMB runs on one workstation built from parts anyone can buy. No datacentre accelerators, no cloud. This page documents what it is, how it is wired, and what was measured on it.</p>
+
+  <h2>Bill of materials</h2>
+
+  <div class="table-scroll">
+  <table class="envelope">
+    <thead><tr><th>Component</th><th>Model</th></tr></thead>
+    <tbody>
+      <tr><td>CPU</td><td>AMD Ryzen 9 9950X3D (16C/32T, 3D V-Cache)</td></tr>
+      <tr><td>GPU</td><td>2× GIGABYTE Radeon AI PRO R9700 AI TOP 32G (gfx1201, RDNA 4)</td></tr>
+      <tr><td>Motherboard</td><td>ASUS ProArt X870E-Creator WiFi</td></tr>
+      <tr><td>RAM</td><td>Corsair 96 GB (2×48 GB) DDR5-6000 CL30, EXPO II</td></tr>
+      <tr><td>Storage</td><td>GOODRAM PX700 4 TB NVMe (primary) + 1 TB (secondary)</td></tr>
+      <tr><td>PSU</td><td>FSP PTM PRO 1650 W 80+ Platinum, ATX 3.1 (IEC C20)</td></tr>
+      <tr><td>CPU cooling</td><td>Noctua NL-LC1-42 (420 mm AIO, 3× NF-A14x25 G2, Asetek Emma V2 pump)</td></tr>
+      <tr><td>Case fans</td><td>2× Noctua NF-A14 140 mm (stacked)</td></tr>
+      <tr><td>Case</td><td>ASUS ProArt PA602</td></tr>
+      <tr><td>UPS</td><td>ARMAC OFFICE ON-LINE PF1 2000VA (VFI double conversion)</td></tr>
+      <tr><td>OS</td><td>Kubuntu 24.04 LTS</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>PCIe topology</h2>
+
+  <p>Two graphics cards on a consumer platform share the CPU's sixteen graphics lanes. The allocation that actually results is the single most consequential number on this page, because it sets the ceiling on tensor-parallel inference.</p>
+
+  <div class="table-scroll">
+  <table class="envelope">
+    <thead><tr><th>Root port</th><th>Feeds</th><th class="num">Link width</th><th>Speed</th><th class="num">IOMMU group</th></tr></thead>
+    <tbody>
+      <tr><td><code>00:01.1</code></td><td>GPU0</td><td class="num"><strong>x8</strong></td><td>Gen4, 16 GT/s</td><td class="num">17</td></tr>
+      <tr><td><code>00:01.3</code></td><td>GPU1</td><td class="num"><strong>x8</strong></td><td>Gen4, 16 GT/s</td><td class="num">22</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Both GPUs sit on separate root ports, in separate IOMMU groups, at a symmetric <strong>x8/x8</strong>. That symmetry was restored on 14 June 2026 by moving one NVMe drive from an M.2 slot on CPU lanes to a chipset slot; before that, two CPU-lane NVMe drives had starved GPU1 down to x4.</p>
+
+  <div class="callout warning">
+    <p><strong>Measurement gotcha.</strong> The GPU endpoints (<code>03:00.0</code>, <code>07:00.0</code>) always report x16 at 32 GT/s. That is the card-internal GPU-to-switch link, not the CPU-to-GPU link, and reading it as system bandwidth is simply wrong. Read <code>max_link_width</code> on the <em>root port</em> instead. <code>current_link_width</code> also under-reports at idle, because ASPM collapses both width and speed — measure under load or use <code>max_link_width</code>.</p>
+  </div>
+
+  <h2>Power and UPS</h2>
+
+  <p>The workstation PSU is connected directly to the UPS with a single IEC C13-to-C20 16 A cable, with no intermediate adapters. Monitors, router and peripherals hang off a second UPS output. Power-failure detection is monitored with NUT via the <code>nutdrv_qx</code> driver and has been tested against a real cut.</p>
+
+  <p class="muted">ARMAC OFFICE ON-LINE PF1 2000VA: 2000 VA / 2000 W at PF 1.0, online double conversion with 0 ms transfer, 72 V battery pack, eight IEC C13 outputs.</p>
+
+  <h2>CPU cooling</h2>
+
+  <p>The stock air cooler was swapped for a 420 mm liquid cooler in August 2026, and both were measured under a 40-minute all-core load. The headline result is that they are indistinguishable: the same 81.2 °C peak, the same clocks, a 0.7 K difference in temperature rise that sits below the resolution of the test.</p>
+
+  <p>The study is worth reading less for the verdict than for what went wrong on the way to it — one run produced a clear, wrong answer because the radiator fans were not turning, and the sensor reporting <code>0</code> was misread as a missing sensor rather than a stopped fan.</p>
+
+  <div class="badges">
+    <a class="badge" href="cooling-per-rpm.html">Cooling study: fans per revolution</a>
+  </div>
+
+  <h2>Validation status</h2>
+
+  <ul>
+    <li>Hardware assembled and validated</li>
+    <li>UPS monitoring operational (NUT + <code>nutdrv_qx</code>), power-failure detection tested</li>
+    <li>PCIe link width verified at the root ports</li>
+    <li>IOMMU group separation confirmed for both GPUs</li>
+    <li>CPU cooling characterised under sustained all-core load</li>
+  </ul>
+
+  <p class="muted">Raw bills of materials, the PCIe map, power topology and the cooling test scripts and CSVs live in <code>bom/</code> in the repository.</p>
+
+</div>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p class="muted">Part of the NaviMed-UMB documentation. Engineering measurement, no clinical claim.</p>
+  </div>
+</footer>
+</body>
+</html>
