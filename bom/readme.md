@@ -19,7 +19,7 @@ The `bom/` directory contains the hardware bill of materials, power infrastructu
 | Cooling     | Noctua NL-LC1-42 (AIO 420 mm, 3× NF-A14x25 G2, pompa Asetek Emma V2) — swap 2026-08-23, wcześniej NH-D15 G2 |
 | Case fans   | 2× Noctua NF-A14 140 mm (stacked)                 |
 | Case        | ASUS ProArt PA602                                  |
-| OS          | Kubuntu 24.04, kernel 6.17                         |
+| OS          | Kubuntu 24.04, kernel 7.0.0-30                     |
 
 ---
 
