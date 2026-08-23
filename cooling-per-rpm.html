@@ -216,6 +216,9 @@
     <li data-l="en"><strong>Room background was not measured.</strong> Without it, an unknown share of 51–55 dBA belongs to the room rather than the machine.</li>
     <li data-l="pl"><strong>Nie zmierzono tła pomieszczenia.</strong> Bez tego nieznana część z 51–55 dBA należy do pokoju, a nie do maszyny.</li>
 
+    <li data-l="en"><strong>The RPM figure comes from a channel of unsettled origin.</strong> The 2162 RPM is read from <code>CPU_Opt</code>, and the report leaves open whether that channel reports the radiator fans or the pump. Every per-revolution figure on this page inherits that uncertainty.</li>
+    <li data-l="pl"><strong>Liczba obrotów pochodzi z kanału o nierozstrzygniętym źródle.</strong> 2162 obr/min odczytano z <code>CPU_Opt</code>, a raport pozostawia otwarte, czy ten kanał pokazuje wentylatory chłodnicy, czy pompę. Każdy wskaźnik „na obrót” na tej stronie dziedziczy tę niepewność.</li>
+
     <li data-l="en"><strong>The 0.7 K thermal difference is below the resolution of this test.</strong> Do not read it as either cooler being better under load.</li>
     <li data-l="pl"><strong>Różnica 0,7 K jest poniżej rozdzielczości tego testu.</strong> Nie czytaj jej jako przewagi któregokolwiek chłodzenia pod obciążeniem.</li>
   </ul>
@@ -246,7 +249,6 @@
   function set(lang) {
     root.setAttribute('lang', lang);
     btns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.set === lang)); });
-    try { localStorage.setItem('navimed-lang', lang); } catch (e) {}
   }
   btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.set); }); });
   // ponytail: bez przywracania z localStorage — strona zawsze otwiera się po angielsku,
