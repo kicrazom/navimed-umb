@@ -38,7 +38,10 @@ from scipy.stats import mannwhitneyu
 REPO = Path(__file__).resolve().parents[3]
 RESULTS = REPO / "benchmarks" / "results"
 FIG = REPO / "paper" / "figures"
-CANON_N = [10, 25, 50, 100, 200, 500, 1000]
+# 2026-08-29: N=1 wlaczone do drabiny — jeden ciag pomiarowy, nie osobna kotwica.
+# Decyzja LM. Dane N=1 leza poza phase2_sweep_raw.csv (scaling-n1/ i n1-anchor/),
+# dlatego load_raw ma dla nich osobna sciezke ponizej.
+CANON_N = [1, 10, 25, 50, 100, 200, 500, 1000]
 ALPHA = 0.05
 
 
@@ -63,6 +66,7 @@ def load_raw(result_dir: str):
             except (KeyError, ValueError, TypeError):
                 continue
             out.setdefault((tp, n), []).append(v)
+        _load_n1(d, out)
         return out
     for rep in sorted(d.glob("scaling/rep*")):
         tbl = rep / "results_table.csv"
@@ -78,7 +82,55 @@ def load_raw(result_dir: str):
             except (KeyError, ValueError, TypeError):
                 continue
             out.setdefault((tp, n), []).append(v)
+    _load_n1(d, out)
     return out
+
+
+# Katalogi z pomiarami N=1 nie zawsze nazywaja sie tak samo jak katalogi drabiny.
+N1_ALIAS = {
+    "bielik-11b-v23": "bielik-11b",
+    "Llama-PLLuM-8B-chat-2512-awq": "pllum-8b-awq",
+    "PLLuM-12B-chat-2512-awq": "pllum-12b-awq",
+}
+
+
+def _load_n1(d, out):
+    """Dociaga per-replikowe pomiary N=1, ktorych nie ma w phase2_sweep_raw.csv.
+
+    Dwa formaty: 70B ma scaling-n1/rep*/results_table.csv, small/mid ma
+    n1-anchor/<quant>-tp<N>-n1-r<NN>-bench.log z linia 'Output throughput:'.
+    """
+    import re as _re
+
+    alias = N1_ALIAS.get(d.name)
+    if alias and not (d / "n1-anchor").exists() and not (d / "scaling-n1").exists():
+        alt = d.parent / alias
+        if alt.exists():
+            d = alt
+    for rep_dir in sorted(d.glob("scaling-n1/rep*")):
+        tbl = rep_dir / "results_table.csv"
+        if not tbl.exists():
+            continue
+        for r in csv.DictReader(_noncomment(tbl)):
+            try:
+                if str(r.get("ok", "")).strip().lower() not in ("true", "1", "ok"):
+                    continue
+                if int(r["N"]) != 1:
+                    continue
+                out.setdefault((int(r["TP"]), 1), []).append(float(r["tok_s_out"]))
+            except (KeyError, ValueError, TypeError):
+                continue
+    for lg in sorted(d.glob("n1-anchor/*-n1-r*-bench.log")):
+        m = _re.search(r"-tp(\d)-n1-r\d+-", lg.name)
+        if not m:
+            continue
+        try:
+            txt = lg.read_text(errors="ignore")
+        except OSError:
+            continue
+        v = _re.search(r"Output throughput:\s*([\d.]+)", txt)
+        if v:
+            out.setdefault((int(m.group(1)), 1), []).append(float(v.group(1)))
 
 
 def hodges_lehmann(a, b):

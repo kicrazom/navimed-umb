@@ -25,7 +25,7 @@ EMBARGOED §11.2 (§11.3 dla modeli polskich — Bielik/PLLuM).
 |---|---|---|---|---|---|---|
 | 1 | Qwen2.5-7B-Instruct | Qwen | 7B | ✅ `qwen25-7b-instruct` | **do kwant.** | quant only |
 | 2 | Bielik-4.5B-v3.0-Instruct | Mistral-PL | 4.5B | ✅ `bielik-4.5b-v30` | **do kwant.** | quant only |
-| 3 | Bielik-11B-v3.0-Instruct | Mistral-PL | 11B | ⏳ pobrać BF16-instruct (~22GB) | ✅ `bielik-11b-v30-instruct-awq` | **download BF16, 0 quant** |
+| 3 | Bielik-11B-v3.0-Instruct | Mistral-PL | 11B | ✅ `bielik-11b-v30-instruct` | ✅ `bielik-11b-v30-instruct-awq` | **para gotowa** |
 | 4 | Mistral-Nemo-Instruct-2407 | Mistral | 12B | ✅ `mistral-nemo-instruct-2407` | **do kwant.** | quant only |
 | 5 | Llama-PLLuM-8B-chat-2512 | Llama | 8B | ✅ | ✅ Run-3 (`mozarcik/...-awq`) | **para gotowa** |
 | 6 | PLLuM-12B-chat-2512 | Mistral | 12B | ✅ | ✅ Run-3 | **para gotowa** |
@@ -40,7 +40,8 @@ Mixtral-AWQ (broken na gfx1201, §4.4).
 ---
 
 ## Faza 0 — Prep / acquisition (~0.5–2 h, zależnie od pobrań)
-- [x] **Inwentarz zweryfikowany 2026-06-30:** Qwen2.5-7B (`qwen25-7b-instruct`)✅, Bielik-4.5B✅, Mistral-Nemo✅ BF16 obecne; PLLuM-8B/12B pary BF16+AWQ✅; Bielik-11B-v3.0-Instruct-AWQ✅. **Jedyny brak: Bielik-11B-v3.0-Instruct BF16** → pobrać (`hf-download-watchdog`, ~22GB). Alt bez pobrania: kwant `bielik-11b-v30` (base) → para base.
+- [x] **Inwentarz zweryfikowany 2026-06-30:** Qwen2.5-7B (`qwen25-7b-instruct`)✅, Bielik-4.5B✅, Mistral-Nemo✅ BF16 obecne; PLLuM-8B/12B pary BF16+AWQ✅; Bielik-11B-v3.0-Instruct-AWQ✅.
+- [x] **Korekta 2026-08-25 — pobranie zbędne, para #3 kompletna.** `~/models/bielik-11b-v30-instruct` jest na dysku od 1.07 (21 GB, 5 shardów, `torch_dtype: bfloat16`, `quantization_config: null`, `chat_template` obecny, 50 warstw / hidden 4096). To BF16-Instruct, **nie** base — ścieżka awaryjna „kwantyzuj `bielik-11b-v30` (base) → para base" jest bezprzedmiotowa, bo `bielik-11b-v30` to dziś symlink na ten sam katalog (naprawa duplikatu 25.08).
 - [ ] Potwierdź pary Run-3 (PLLuM-8B/12B BF16 + AWQ) obecne; sprawdź czy mają już sweepy (Run-3 sweep był scoped v0.5.0 — może NIE zrobiony → wtedy też lecą w Faza 3).
 - [ ] Korpus kalibracyjny `clinical-pl-smpc-awq-calibration` (418 SmPC) lokalnie — **ten sam dla wszystkich** (kalibracja domenowa CDSS-PL; dla Qwen/Mistral to świadomy wybór, spójny i domain-relevant — udokumentować).
 - [ ] Pin wersji do provenance: llm-compressor 0.10.0.2, vLLM/ROCm stack, BIOS 2202/AGESA 1.3.0.1, VBIOS R9700AT-F40.
