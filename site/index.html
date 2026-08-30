@@ -64,8 +64,12 @@
 
   <div class="callout warning">
     <p><strong>Clinical safety boundary.</strong> NaviMed-UMB is a research and engineering platform for local inference and benchmarking. It is not validated for diagnosis, treatment, triage, or any patient-care decision. Model quality and clinical accuracy are out of scope here. They are evaluated separately in Layer 3. See <a href="limitations.html">Limitations</a>.</p>
-    <p>NaviMed-UMB should be understood as an exploratory research infrastructure. Its purpose is to investigate whether local, reproducible, sovereign LLM workflows can support future scientific work on medical-language processing, retrieval, benchmarking, and domain-specific evaluation.</p>
   </div>
+
+  <h2 id="why">Why this exists</h2>
+  <p>Clinical text cannot be sent to a third-party API. In most European healthcare settings that is a data-protection problem before it is an engineering one. The usual answer — run the model where the data lives — is assumed to require datacentre hardware. NaviMed-UMB tests that assumption on two consumer AMD GPUs in a single workstation, with open-weight models that work in Polish.</p>
+  <p>The narrow question is whether a hospital department can own and operate its own LLM inference reproducibly, and what that hardware envelope actually looks like. NaviMed-UMB should be understood as exploratory research infrastructure. Its purpose is to investigate whether local, reproducible, sovereign LLM workflows can support future scientific work on medical-language processing, retrieval, benchmarking, and domain-specific evaluation.</p>
+  <p class="muted">It is built and run by a single clinician-researcher at the Medical University of Białystok. What you can do here: pull the released checkpoints (<a href="models.html">Models</a>), rebuild the stack (<a href="reproduce.html">Reproduce</a>), or cite the archived record (<a href="cite.html">Cite</a>).</p>
 
   <p>The platform is Layer 1 of a three-layer design for on-premise medical AI. It is the layer that runs today.</p>
 
