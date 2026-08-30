@@ -77,6 +77,15 @@ export AMD_SERIALIZE_KERNEL=1            # NOT 3, rejected by current PyTorch
 export HIP_LAUNCH_BLOCKING=1
 export ROCR_VISIBLE_DEVICES=0,1          # exclude the iGPU (RAPHAEL)</code></pre>
 
+  <h2>Kernel parameters</h2>
+  <p>The campaign ran on a stock kernel command line. No IOMMU tuning, no CPU isolation, no hugepage reservation:</p>
+  <pre><code>GRUB_CMDLINE_LINUX_DEFAULT='quiet splash'
+GRUB_CMDLINE_LINUX=""
+
+# effective: BOOT_IMAGE=... root=UUID=... ro quiet splash vt.handoff=7</code></pre>
+  <p>Two consequences worth stating. The IOMMU ran in its default translating mode, <strong>not</strong> <code>iommu=pt</code> — passthrough changes host-to-device DMA and is a precondition for GPU peer-to-peer transfer at tensor-parallel degree above one, so any cross-platform comparison must match on it. And no CPU cores were isolated, so the measured throughput includes ordinary host scheduling.</p>
+  <p>These parameters were constant for the whole campaign: <code>/etc/default/grub</code> was last modified 2026-02-28, before the first run on 2026-04-17 — established the same way as firmware state, from file provenance rather than assumption. From this release onward the effective command line is captured per run as <code>kernel_cmdline</code> in every benchmark record, with <code>root=UUID=</code> and <code>BOOT_IMAGE=</code> redacted as machine identifiers that carry no reproduction value.</p>
+
   <h2>Mandatory model-construction flag</h2>
   <p>For every model with hybrid attention, <code>enforce_eager=True</code> is mandatory. The default CUDA-graph capture crashes with <code>HSA_STATUS_ERROR_INVALID_PACKET_FORMAT</code> on gfx1201. This is a runtime constraint, not a model defect.</p>
 
