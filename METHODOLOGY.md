@@ -76,6 +76,31 @@ export HIP_LAUNCH_BLOCKING=1
 export ROCR_VISIBLE_DEVICES=0,1          # exclude iGPU RAPHAEL
 ```
 
+### 3.1a Kernel parameters (platform state)
+
+The campaign ran on a stock kernel command line — no IOMMU tuning, no CPU isolation,
+no hugepage reservation:
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT='quiet splash'
+GRUB_CMDLINE_LINUX=""
+```
+
+The IOMMU therefore operated in its default translating mode, **not** `iommu=pt`.
+This matters for two reasons: passthrough mode alters host-to-device DMA, and it is
+a precondition for GPU peer-to-peer transfer at TP > 1 on this platform. A benchmark
+collected under a different IOMMU mode is not directly comparable.
+
+These parameters were constant across the campaign. `/etc/default/grub` was last
+modified 2026-02-28, before the first run (2026-04-17) — established from file
+provenance, the same evidentiary standard applied to firmware state (§ host-firmware
+non-uniformity).
+
+Kernel parameters are part of the measurement vehicle, exactly like the environment
+variables in §3.1 and `bios_version`. From this release the effective command line is
+recorded per run as `kernel_cmdline`; `root=UUID=` and `BOOT_IMAGE=` are redacted as
+machine identifiers with no reproduction value.
+
 ### 3.2 Mandatory model-construction flags
 
 For every model with hybrid attention (Qwen 3.5 family, Qwen 3.6 family, including 27B variants), `enforce_eager=True` is mandatory. Default CUDA graph capture crashes with `HSA_STATUS_ERROR_INVALID_PACKET_FORMAT` on gfx1201. This is a known runtime envelope constraint, not a model defect.

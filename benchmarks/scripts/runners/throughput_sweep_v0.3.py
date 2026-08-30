@@ -81,6 +81,29 @@ MAX_LEN = 8192  # sweep at suite-standard context (matches sanity envelope)
 COOLDOWN_S = 15  # METHODOLOGY §5.2
 
 
+def _read_kernel_cmdline() -> str:
+    """Parametry jadra z /proc/cmdline — czesc pojazdu pomiarowego, tak samo jak
+    zmienne srodowiskowe i wersja BIOS-u.
+
+    Powod, dla ktorego to tu jest: `iommu=pt` przelacza tlumaczenie adresow DMA
+    na mapowanie tozsamosciowe. Nie dotyka sciezki obliczeniowej (KV cache i wagi
+    zyja w VRAM), ale zmienia transfery host<->karta i jest warunkiem P2P przy
+    tensor parallelism. Bez zapisu tej linii przebiegi sprzed i po zmianie
+    parametrow jadra sa nierozroznialne w danych — dokladnie ta pulapka, ktora
+    przy granicy firmware'u (BIOS 1715/2202) zostala zlapana i udokumentowana.
+
+    `root=UUID=` i `BOOT_IMAGE=` sa maskowane: identyfikuja maszyne, a nie wnosza
+    nic do odtworzenia pomiaru.
+    """
+    try:
+        raw = Path("/proc/cmdline").read_text().strip()
+    except Exception:
+        return "unknown"
+    raw = re.sub(r"root=UUID=\S+", "root=UUID=<redacted>", raw)
+    raw = re.sub(r"BOOT_IMAGE=\S+", "BOOT_IMAGE=<redacted>", raw)
+    return raw or "unknown"
+
+
 def _read_bios_version() -> str:
     """Motherboard BIOS version from DMI (e.g. '2202'). 'unknown' on failure."""
     try:
@@ -126,6 +149,7 @@ def _read_agesa_version() -> str:
 # Lerchner (2026) "complete vehicle specification" principle (METHODOLOGY §3),
 # BIOS/AGESA complete the provenance that the software version triple omits.
 BIOS_VERSION = _read_bios_version()
+KERNEL_CMDLINE = _read_kernel_cmdline()
 BIOS_DATE = _read_bios_date()
 AGESA_VERSION = _read_agesa_version()
 IDLE_BEFORE_S = 5.0
@@ -400,6 +424,7 @@ def run_n(
         "bios_version": BIOS_VERSION,
         "bios_date": BIOS_DATE,
         "agesa_version": AGESA_VERSION,
+        "kernel_cmdline": KERNEL_CMDLINE,
     }
     # W/tok energy efficiency (§7.1)
     if (
@@ -448,6 +473,7 @@ CSV_COLS = [
     "bios_version",
     "bios_date",
     "agesa_version",
+    "kernel_cmdline",
     "error",
 ]
 
