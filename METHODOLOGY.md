@@ -1,6 +1,6 @@
 # NaviMed-UMB Benchmark Methodology
 
-**Document version:** 1.7 (2026-07-05)
+**Document version:** 1.8 (2026-08-31)
 **Maintainer:** Łukasz Minarowski, UMB Białystok (ORCID 0000-0002-2536-3508)
 **Repository:** https://github.com/kicrazom/navimed-umb
 **License:** CC-BY-4.0 (text), MIT (code)
@@ -183,9 +183,16 @@ Three follow-up contenders (Phase B from `scripts/sweep_phase2_v0.3.sh`) are dow
 
 A multimodal probe suite (Phase C — Kimi-VL-A3B-Thinking-2506, Llama-4-Scout-17B-16E-Instruct) is scoped for future domain-specific work and tagged `VL` in the benchmark dataset.
 
-### 4.7 Lemonade Server reference (planned v0.4)
+### 4.7 Cross-stack reference (planned v0.7)
 
-A future v0.4 phase will repeat the suite under Lemonade Server (AMD-sponsored, GGUF native, OpenAI-compatible API at `localhost:13305`) for stack-level comparison: vLLM as server-grade (high-N AWQ throughput) vs Lemonade as desktop-grade (low-N GGUF latency).
+A future v0.7 phase will repeat the suite under a second serving stack for stack-level comparison: vLLM as server-grade (high-N AWQ throughput) vs a desktop-grade GGUF stack (low-N latency). The reference implementation named in earlier drafts of this section was Lemonade Server (AMD-sponsored, GGUF native, OpenAI-compatible API at `localhost:13305`).
+
+This phase was scoped v0.4 in versions 1.0–1.2 of this document and **deferred on 2026-05-22** (`docs/sessions/2026-05-22-test-plan-phase2-70b-awq.md`): a different inference stack is not core to the envelope/scaling question of §1. It re-enters the schedule only if (a) it becomes a comparability requirement against the Capitelli (kyuz0) reference — **open decision, not yet verified** — or (b) a concrete desktop-latency research question is defined. §13 has carried it as v0.7.0 since version 1.3; this section is corrected to match.
+
+Two constraints on any such phase, both established outside this series and recorded here because they bound its design:
+
+1. **Lemonade Server and Ollama are wrappers, not engines.** Both serve via llama.cpp. Measuring either alongside llama.cpp yields a server-overhead axis, not an engine axis. The distinct engines available on this platform are vLLM, SGLang, and llama.cpp.
+2. **The engines share no quantization format.** vLLM serves AWQ / FP8 / BF16; SGLang cannot load `compressed-tensors` on gfx1201 (the loader routes to a GPTQ/Marlin path absent on this architecture); llama.cpp serves GGUF only. The sole common plane is **F16/BF16** — and llama.cpp serves F16, not BF16 (same width, different exponent range). Any cross-stack cell outside that plane compares an engine *together with* its quantization and violates Limitation 9.
 
 ### 4.8 Out-of-scope artifacts in `~/models/`
 
@@ -389,7 +396,7 @@ The following limitations apply to every result produced under this methodology.
 
 2. **Single hardware platform.** All measurements come from one specific dual-R9700 system with one specific ROCm/vLLM/PyTorch triple. Generalization to other gfx1201 systems is plausible but unverified; generalization to CDNA (MI250/MI300), other RDNA generations, or NVIDIA hardware requires re-running Phase 1 envelope from scratch.
 
-3. **Inference backend.** v0.1–v0.3 measure vLLM only. v0.4 will add Lemonade Server (AMD-sponsored, GGUF). llama.cpp, TGI, and SGLang are explicitly out of scope.
+3. **Inference backend.** v0.1–v0.6 measure vLLM only; the cross-stack phase is v0.7 (§4.7, deferred). llama.cpp, Lemonade, Ollama, TGI, and SGLang are out of scope **for this series**. This is a scope statement, not a claim that they are unmeasured: SGLang BF16 has been measured on the same hardware in a separate project under a different harness (time-to-first-token and prefix-cache behaviour, not the Phase-2 throughput ladder), and those numbers are not comparable to anything in this document. Cross-stack results enter this series only if collected on this harness, at fixed model identity and fixed weight precision.
 
 4. **No model-quality dimension.** As stated in §1 and §8, this benchmark does not evaluate semantic correctness. Pairing throughput with quality belongs to the separate NaviMed Arena methodology and to domain-specific studies.
 
@@ -465,12 +472,13 @@ Every benchmark session, every result-generating step is explicitly labeled at t
 | v0.6.0 | Undervolted (-75 mV / +15 W) re-run of the suite | Planned |
 | v0.7.0 | Lemonade Server cross-stack comparison (vLLM vs GGUF / desktop) | Planned |
 
-This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.7) and are recorded in the changelog at the bottom of this file.
+This methodology document itself is versioned independently; methodological revisions bump its version (currently 1.8) and are recorded in the changelog at the bottom of this file.
 
 ---
 
 ## Changelog
 
+- **1.8 (2026-08-31):** Cross-stack section reconciled with the version table. **§4.7** retitled from "Lemonade Server reference (planned v0.4)" to "Cross-stack reference (planned v0.7)" — §13 has carried this phase as v0.7.0 since version 1.3, while §4.7 still read v0.4, and the 2026-05-22 deferral note explicitly promised this update. §4.7 now records the deferral, its two re-entry conditions (the Capitelli/kyuz0 comparability question remains an **open, unverified decision**), and two design bounds established outside this series: Lemonade and Ollama are llama.cpp wrappers rather than distinct engines, and the available engines share no quantization format, leaving **F16/BF16 as the only common plane** for any cross-stack cell (outside it, Limitation 9 is violated). **§10.3** rewritten: the backend limitation now spans v0.1–v0.6, names the wrappers, and states that "out of scope" is a scope statement rather than a claim of no measurement — SGLang BF16 has been measured on the same hardware in a separate project under a different harness (TTFT / prefix-cache, not the Phase-2 ladder) and those numbers are not comparable to anything here. No new measurements, no change to any reported result; embargo (§11) unchanged.
 - **1.7 (2026-07-05):** v0.5.0 release alignment. §13 version table: v0.5.0 row moved from "In progress" to "Released 2026-07-05" and its scope expanded to name the N=1 single-stream anchor (§5.2), the precision-ablation sub-study (§5.3, raw compute complete / aggregation in progress), and the firmware reconciliation (§2.1); version DOI backfilled post-mint. Document self-citation (header) corrected from the v0.1.0 version DOI `10.5281/zenodo.19851347` to the concept DOI `10.5281/zenodo.19851346` (the …347 in the §13 v0.1.0 row is the genuine v0.1.0 version DOI and is unchanged). No methodological change; embargo (§11) unchanged.
 - **1.6 (2026-07-03):** Firmware reconciliation (referee finding M7) + precision-ablation documentation. **§2.1 rewritten** to state the true firmware per data regime, established from the per-run records: the Phase-1 envelope and the Phase-2 concurrency ladder (Paper #1 dataset) were collected under **BIOS 1715** (late-April to early-June 2026 campaign, pre the 2026-06-13 flash; no `bios_version` field in those records — pre/post-update split is per file, since `hardware_envelope/` also holds later 2202 AWQ probes), and the **N = 1 single-stream anchor** under **BIOS 2202** (small/mid 2026-06-22; 70B family 2026-06-24…26, `bios_version = 2202` live in 80 `scaling-n1` records). This reverses the previous §2.1 claim ("BIOS updated 2026-06-13 in a clean window before Phase 2; Phase 2 collected under 2202"), which contradicted the records and the Paper #1 methods draft (M7). The study straddles two firmware states; the single-stream-to-plateau envelope ratio is flagged as comparing across the boundary. **§3.3 corrected** — host-firmware capture was added with the N = 1 anchor runner (late 2026-06), not "from the Phase-2 v0.3 runner onward"; pre-anchor records infer firmware from collection date. **New §5.3** — precision-ablation sub-study (same-checkpoint BF16↔AWQ pairs: bielik-4.5b-v30, pllum-8b, pllum-12b) satisfying the fixed-model-identity condition of Limitation 9; Tier-A `CANON_N` ladder both TP, gated by an envelope + Gate-1 pre-check; firmware-consistency noted per pair (pllum pairs both on 2202; bielik-4.5b reuses a 1715 BF16 member → cross-firmware caveat). **§7.4** N=1-anchor exclusion now names `CANON_N` explicitly. Method/design only; no embargoed per-N performance numbers added (§11.2/§11.3 unchanged).
 - **1.5 (2026-06-01):** §7.5 default visualization set to the **scaling line + min–max band** (`plot_scaling_band.py`) after visual validation — at the observed run-to-run CV ≈ 1 % a box-and-whisker collapses below marker size and the reps overlap; the connected median line per TP + thin band reads clearly. Box-and-whisker retained as the larger-spread alternative.
