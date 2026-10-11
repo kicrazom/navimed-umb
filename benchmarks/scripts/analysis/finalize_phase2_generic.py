@@ -254,6 +254,10 @@ def parse_thermals_window(jsonl_path: Path, events_path: Path) -> dict:
     if not win:
         return {}
 
+    # Jednostka VRAM: GiB (2^30 B), nie GB (10^9 B). Liczba byla GiB od poczatku,
+    # mylila sie nazwa kolumny — stad zmiana `VRAM_peak_GB*` -> `VRAM_peak_GiB*`
+    # (2026-10-08, finding 12 audytu). Kontrola: 30 828 343 296 B = 28.7111 GiB
+    # = 30.8283 GB; rekordy zapisywaly 28.71, czyli GiB.
     vram_max = 0.0
     t_max = 0.0
     w_samples_total = []
@@ -426,7 +430,7 @@ CELL_CSV_COLUMNS = [
     "per_req_latency_median",
     "per_req_latency_p95",
     "per_req_latency_p99",
-    "VRAM_peak_GB_median",
+    "VRAM_peak_GiB_median",
     "T_peak_C_median",
     "T_peak_C_max",
     "W_mean_median",
@@ -523,7 +527,7 @@ def emit_csvs(cells: list[CellAggregate], reps: list[RepRecord], cfg: Config) ->
                 "total_out_tokens",
                 "total_in_tokens",
                 "mean_output_len",
-                "VRAM_peak_GB",
+                "VRAM_peak_GiB",
                 "T_peak_C",
                 "W_mean",
                 "W_peak",
@@ -868,7 +872,7 @@ def emit_summary(
             "| N | n_ok | tok/s out (median) | min | max | "
             "total_s (median) | p95 | p99 | "
             "req/s | per_req_s p99 | "
-            "VRAM_GB | T_peak | W_mean | W_peak | mWh/tok |"
+            "VRAM_GiB | T_peak | W_mean | W_peak | mWh/tok |"
         )
         sep = "|" + "|".join(["---"] * 15) + "|"
         rows = []

@@ -29,6 +29,17 @@ Output per model (METHODOLOGY §7.3):
   benchmarks/results/<model>/results_table.csv      (flat §7.1 schema)
   benchmarks/results/<model>/SUMMARY.md             (narrative + table)
 
+Zmiana schematu 2026-10-08 (decyzje D3 + findings 4/8/12/20 audytu spojnosci).
+Dotyczy TYLKO przyszlych przebiegow — istniejace artefakty przelicza
+`benchmarks/scripts/analysis/recompute_power_efficiency.py`:
+  * `power_mean_w` / `power_peak_w` — najpierw suma kart w probce, potem
+    srednia / maksimum po probkach (bylo: usrednienie po kartach -> zanizenie 2x);
+  * okno mocy i energii = okno GENERACJI (`gen start`/`gen end` w events.json),
+    nie caly cykl z ladowaniem wag i warmupem;
+  * `vram_peak_gb` -> `vram_peak_gib` (kolumna zawierala GiB pod nazwa GB);
+  * dolozone `vs_baseline_%` (wymagane przez §7.1), `power_window`,
+    `power_window_s`.
+
 Embargo: Phase 2 scaling numbers EMBARGOED §11.2 (Polish models §11.3).
 benchmarks/results/ is fully gitignored — outputs stay local.
 
@@ -238,7 +249,8 @@ def run_child(model_path: str, tp: int, n: int, extra: str) -> int:
 
         tb0 = time.time()
         outs = llm.generate(prompts, sp)
-        t_gen = time.time() - tb0
+        tb1 = time.time()
+        t_gen = tb1 - tb0
 
         out_lens = [len(o.outputs[0].token_ids) for o in outs]
         in_lens = [len(o.prompt_token_ids) for o in outs]
@@ -250,6 +262,13 @@ def run_child(model_path: str, tp: int, n: int, extra: str) -> int:
             kv_cache_tokens=kv_tokens,
             max_concurrency=max_conc,
             n=n,
+            # Wall-clock brzegi okna GENERACJI (epoch). Rodzic przelicza je na os
+            # czasu samplera i tylko z tego okna liczy moc i energie (METHODOLOGY
+            # §7.1: "W_mean = sampler mean during benchmark window"). Bez tych dwoch
+            # liczb okno mocy obejmowalo start procesu, ladowanie wag i warmup —
+            # moc z ~178 s mnozona przez ~55 s generacji.
+            gen_start_epoch=tb0,
+            gen_end_epoch=tb1,
             total_time_s=round(t_gen, 3),
             total_output_tokens=total_out,
             total_input_tokens=total_in,
@@ -265,40 +284,79 @@ def run_child(model_path: str, tp: int, n: int, extra: str) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Thermal aggregation from a sampler JSONL over [t_bench_start, t_bench_end].
+# Thermal aggregation from a sampler JSONL.
+#
+# Dwie rozlaczne definicje okna (decyzja D3, 2026-10-08):
+#   * VRAM / temperatura — cale okno przebiegu [bench start, bench end]; szczyt
+#     obciazenia pamieci wypada przy ladowaniu wag, a koperta termiczna opisuje
+#     caly cykl (METHODOLOGY §7.1: "max over both GPUs and over the run window");
+#   * moc i energia      — WYLACZNIE okno generacji [gen start, gen end]; "energia
+#     na token" ma opisywac generacje, nie start procesu i warmup.
+#
+# Moc jest agregowana jako: najpierw SUMA kart w danej probce czasowej, potem
+# statystyka po probkach. Wczesniejsza wersja usredniala po kartach *i* probkach
+# naraz (`pw_sum / pw_n` po splaszczonej liscie), co przy TP=2 zanizalo sumaryczny
+# pobor dokladnie dwukrotnie (przyklad liczbowy: lokalny raport audytu, embargo §11.3). `W_mean` pozostaje SREDNIA po probkach (tak definiuje je §7.1);
+# mediana wchodzi dopiero na poziomie komorki, po n=10 powtorzeniach (§7.4).
+#
+# `W_peak` = maksimum SUMY kart w probce (nie maksimum pojedynczej karty) — ta
+# sama jednostka co `W_mean`, inaczej dwie kolumny obok siebie opisywalyby rozne
+# obiekty (finding 20 audytu).
+#
+# VRAM w GiB (2^30), nie GB (10^9): wartosci pochodza z `vram_used_b` ROCm-SMI,
+# a vLLM raportuje swoj budzet pamieci w GiB. Kolumna nazywa sie `vram_peak_gib`
+# zgodnie z jednostka, ktora faktycznie zawiera (30 828 343 296 B = 28.7111 GiB
+# = 30.8283 GB — finding 12 audytu).
 # ---------------------------------------------------------------------------
-def aggregate_thermals(jsonl: Path, t0: float, t1: float) -> dict:
-    """Peak VRAM (max over both GPUs), peak temp, mean/peak power in window."""
-    vram_peak = temp_peak = pw_peak = 0.0
-    pw_sum = 0.0
-    pw_n = 0
+def aggregate_thermals(
+    jsonl: Path,
+    t0: float,
+    t1: float,
+    pw_t0: float | None = None,
+    pw_t1: float | None = None,
+) -> dict:
+    """Peak VRAM (GiB, max over both GPUs), peak temp, mean/peak TOTAL power.
+
+    `t0`/`t1` wyznaczaja okno VRAM/temperatury, `pw_t0`/`pw_t1` okno mocy.
+    Gdy okno mocy nie zostalo podane (stary slad bez znacznikow generacji),
+    spada do okna przebiegu — z utrata rozdzielczosci, nie z bledem.
+    """
+    if pw_t0 is None or pw_t1 is None:
+        pw_t0, pw_t1 = t0, t1
+    vram_peak = temp_peak = 0.0
+    pw_totals: list[float] = []
     try:
         for line in jsonl.read_text().splitlines():
+            if not line.strip():
+                continue
             s = json.loads(line)
             t = s.get("t", -1)
-            in_window = t0 <= t <= t1
+            in_run = t0 <= t <= t1
+            in_gen = pw_t0 <= t <= pw_t1
+            sample_total = 0.0
             for g in s.get("gpus", []):
                 if g.get("is_igpu"):
                     continue
                 vb = g.get("vram_used_b")
                 if vb:
-                    vram_peak = max(vram_peak, vb / 1e9)
+                    vram_peak = max(vram_peak, vb / (1024**3))
                 tp_ = g.get("temp")
                 pw = g.get("power_w")
-                if in_window:
-                    if tp_:
-                        temp_peak = max(temp_peak, tp_)
-                    if pw:
-                        pw_peak = max(pw_peak, pw)
-                        pw_sum += pw
-                        pw_n += 1
+                if in_run and tp_:
+                    temp_peak = max(temp_peak, tp_)
+                if in_gen and pw:
+                    sample_total += pw
+            if in_gen and sample_total > 0:
+                pw_totals.append(sample_total)
     except Exception:
         pass
     return {
-        "vram_peak_gb": round(vram_peak, 3) if vram_peak else None,
+        "vram_peak_gib": round(vram_peak, 3) if vram_peak else None,
         "temp_peak_c": round(temp_peak, 1) if temp_peak else None,
-        "power_mean_w": round(pw_sum / pw_n, 1) if pw_n else None,
-        "power_peak_w": round(pw_peak, 1) if pw_peak else None,
+        "power_mean_w": round(sum(pw_totals) / len(pw_totals), 1)
+        if pw_totals
+        else None,
+        "power_peak_w": round(max(pw_totals), 1) if pw_totals else None,
     }
 
 
@@ -389,12 +447,27 @@ def run_n(
         except subprocess.TimeoutExpired:
             sampler.kill()
 
+    # Okno generacji na osi samplera (ta sama os, co `bench start`/`bench end`:
+    # przesuniecie wzgledem t_wall0). Zapisywane jako zdarzenia, zeby okno mocy
+    # bylo odtwarzalne z samych artefaktow, bez ponownego uruchomienia przebiegu.
+    gen_t0 = gen_t1 = None
+    if metrics.get("gen_start_epoch") and metrics.get("gen_end_epoch"):
+        gen_t0 = metrics["gen_start_epoch"] - t_wall0
+        gen_t1 = metrics["gen_end_epoch"] - t_wall0
+        events.append({"t": round(gen_t0, 3), "label": "gen start", "color": "#1f77b4"})
+        events.append({"t": round(gen_t1, 3), "label": "gen end", "color": "#9467bd"})
+
     events_json.write_text(json.dumps(events, indent=2))
 
-    # thermal window = [bench start, bench end]
+    # VRAM/temperatura z okna przebiegu, moc/energia z okna generacji (D3).
     therm = {}
-    if len(events) == 2:
-        therm = aggregate_thermals(jsonl, events[0]["t"], events[1]["t"])
+    bench_evs = [
+        e for e in events if e["label"].startswith(("bench start", "bench end"))
+    ]
+    if len(bench_evs) == 2:
+        therm = aggregate_thermals(
+            jsonl, bench_evs[0]["t"], bench_evs[1]["t"], gen_t0, gen_t1
+        )
 
     row = {
         "model": model_dir,
@@ -416,17 +489,28 @@ def run_n(
         "req_s": metrics.get("req_s"),
         "total_output_tokens": metrics.get("total_output_tokens"),
         "mean_output_len": metrics.get("mean_output_len"),
-        "vram_peak_gb": therm.get("vram_peak_gb"),
+        "vram_peak_gib": therm.get("vram_peak_gib"),
         "temp_peak_c": therm.get("temp_peak_c"),
         "power_mean_w": therm.get("power_mean_w"),
         "power_peak_w": therm.get("power_peak_w"),
+        # Okno, z ktorego policzono moc — czesc proweniencji, nie ozdoba:
+        # "gen" = okno generacji (D3), "bench" = awaryjny powrot do calego cyklu.
+        "power_window": "gen" if gen_t0 is not None else "bench",
+        "power_window_s": round(gen_t1 - gen_t0, 3) if gen_t0 is not None else None,
+        # §7.1 wymaga tej kolumny; dla modeli polskich odniesieniem jest wlasny
+        # przebieg stock, wiec w przebiegu stock jest ona z definicji pusta.
+        # Wypelnia ja agregator porownawczy, nie runner.
+        "vs_baseline_%": None,
         "tuning": "stock",
         "bios_version": BIOS_VERSION,
         "bios_date": BIOS_DATE,
         "agesa_version": AGESA_VERSION,
         "kernel_cmdline": KERNEL_CMDLINE,
     }
-    # W/tok energy efficiency (§7.1)
+    # W/tok energy efficiency (§7.1). Jednostka to dzul na token (W x s / token);
+    # nazwa kolumny jest historyczna. Oba czynniki pochodza teraz z TEGO SAMEGO
+    # okna generacji: `power_mean_w` z [gen start, gen end], `total_time_s` = t_gen.
+    # Wczesniej moc szla z calego cyklu (~178 s), a czas z generacji (~55 s).
     if (
         therm.get("power_mean_w")
         and metrics.get("total_time_s")
@@ -464,11 +548,14 @@ CSV_COLS = [
     "req_s",
     "total_output_tokens",
     "mean_output_len",
-    "vram_peak_gb",
+    "vram_peak_gib",
     "temp_peak_c",
     "power_mean_w",
     "power_peak_w",
+    "power_window",
+    "power_window_s",
     "w_per_tok",
+    "vs_baseline_%",
     "tuning",
     "bios_version",
     "bios_date",
@@ -519,14 +606,14 @@ def write_summary(
         "",
         "## Results table (§7.1 schema)",
         "",
-        "| N | tok/s_out | tok/s_tot | req/s | total_s | VRAM_GB | T_peak_C |"
+        "| N | tok/s_out | tok/s_tot | req/s | total_s | VRAM_GiB | T_peak_C |"
         " W_mean | W_peak | W/tok | load_s | ok |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for r in rows:
         lines.append(
             f"| {r['N']} | {r['tok_s_out']} | {r['tok_s_tot']} | {r['req_s']}"
-            f" | {r['total_time_s']} | {r['vram_peak_gb']} | {r['temp_peak_c']}"
+            f" | {r['total_time_s']} | {r['vram_peak_gib']} | {r['temp_peak_c']}"
             f" | {r['power_mean_w']} | {r['power_peak_w']} | {r['w_per_tok']}"
             f" | {r['load_time_s']} | {'OK' if r['ok'] else 'FAIL'} |"
         )
@@ -608,7 +695,7 @@ def main() -> int:
         if row["ok"]:
             print(
                 f"[sweep]   N={n} -> {row['tok_s_out']} tok/s_out, "
-                f"{row['req_s']} req/s, VRAM {row['vram_peak_gb']}GB, "
+                f"{row['req_s']} req/s, VRAM {row['vram_peak_gib']}GiB, "
                 f"T {row['temp_peak_c']}C ({dt:.0f}s)"
             )
         else:

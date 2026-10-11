@@ -17,19 +17,19 @@ and clinical-AI papers. It is the L1 pillar
 of a three-layer architecture (workstation → retrieval → arena) targeted at
 sovereign, on-premise medical-AI deployment.
 
-**Operating principle: scientific rigor over time and cost.** Benchmarks use the
-full Tier-A statistical protocol (n = 10 per `(quant, TP, N)` cell, results
-reported as descriptive statistics — see [`METHODOLOGY.md`](METHODOLOGY.md)
-§7.4). Where methodological faithfulness and wall-clock / GPU-hours conflict,
-rigor wins: e.g. the Llama-PLLuM-70B family is re-run at full n = 10 rather than
-shortcut.
+**Operating principle: scientific rigor over time and cost.** Tier-A campaigns use
+n = 10 fresh-process repetitions per `(quant, TP, N)` cell, with cooldowns and
+median-based descriptive statistics; earlier Tier-0 runs are exploratory
+single shots (see [`METHODOLOGY.md`](METHODOLOGY.md) §7.4–7.5). Comparisons use
+two-sided Mann–Whitney U tests, Holm–Bonferroni correction, and effect sizes.
+The Holm family is the eight-point ladder including N = 1
+(`METHODOLOGY.md` 1.9, §7.4).
 
 > **Security note.** This repository documents a workstation build, public
-> benchmarks, and external release pipelines. Operational details — hostnames,
-> domains, network addresses, secrets, patient data — are deliberately
-> omitted; every artifact in this repo passes through pre-commit
-> `detect-secrets` and a per-artifact embargo classification
-> (`METHODOLOGY.md` §11).
+> benchmarks, and external release pipelines. Secrets and patient data must be
+> omitted. The repository configures pre-commit `detect-secrets` and requires
+> per-artifact embargo classification (`METHODOLOGY.md` §11); these controls
+> do not establish that every historical artifact was checked.
 
 ## What's inside
 
@@ -39,17 +39,18 @@ shortcut.
 | [`environment/`](environment/) | Dated software/system manifests (pip freeze, ROCm, kernel) for reproducibility, plus sanity-test JSONs and coherence-probe outputs per release campaign |
 | [`benchmarks/`](benchmarks/) | vLLM / ROCm benchmark harness (Phase 1 envelope + Phase 2 scaling sweep), methodology, plotting scripts, and per-model results (`benchmarks/results/` is gitignored — embargo-protected per §11) |
 | [`scripts/`](scripts/) | Orchestration scripts: `sanity_sweep_pllum70b_awq.sh` (three-stage Gate 1/2/3 runner), `kill_port.sh` (process-isolated cleanup), `_env.sh` (gfx1201 env vars) |
-| [`calibration/`](calibration/) | Polish clinical SmPC corpus for AWQ quantization (separately licensed; published on HuggingFace as a reusable artifact) + quantization scripts |
+| [`calibration/`](calibration/) | Polish clinical SmPC corpus (published on HuggingFace), its English counterpart, and quantization scripts — separately licensed |
 | [`ai-workstation-dashboard/`](ai-workstation-dashboard/) | Real-time CPU/GPU monitoring (FastAPI + psutil + rocm-smi) |
 | [`docs/sessions/`](docs/sessions/) | Long-form engineering session reports and debugging logs (one per substantive session) |
 | [`logbook/`](logbook/) | Short chronological build-diary entries (one per day of substantive activity) |
-| [`history/`](history/) | Layer 1 raw session logs imported from external assistants (Claude, GPT) — append-only |
-| [`literature/`](literature/) | Source-of-truth references for papers and tools cited in the project |
-| [`logs/`](logs/) | Per-run sweep logs (gitignored; embargo-protected) |
+| `history/` (local only) | Layer 1 raw session logs imported from external assistants (Claude, GPT) — append-only, gitignored |
+| `literature/` (local only) | Source-of-truth references for papers and tools cited in the project — gitignored |
+| `logs/` (local only) | Per-run sweep logs (gitignored; embargo-protected) |
 
 ## Key documents
 
-- [`METHODOLOGY.md`](METHODOLOGY.md) — universal Phase 1 envelope + Phase 2 scaling protocol, the §8 vehicle-integrity boundary, and the §11.1/§11.2/§11.3 embargo classification applied across the 21-model suite.
+- [`METHODOLOGY.md`](METHODOLOGY.md) — version 1.9 (2026-10-08): universal Phase 1 envelope + Phase 2 scaling protocol, the §8 vehicle-integrity boundary, and the §11.1/§11.2/§11.3 embargo classification applied across the 21-model suite. Cross-stack work remains deferred to v0.7 (§4.7).
+- [Reproduce](site/reproduce.html) — software pins, required environment variables, and kernel parameters.
 - [`RELEASES.md`](RELEASES.md) — per-release notes (v0.1.0 → v0.5.1) and between-version events (the 2026-05-23 public Llama-PLLuM-70B AWQ release and the 2026-05-26 Run-3 consumer-GPU 8B/12B AWQ release live here).
 - [`CITATION.cff`](CITATION.cff) — canonical citation (or use GitHub's "Cite this repository").
 - [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md) — disclosure of generative-AI assistance, including the locally-served Bielik-11B that proofread documentation in May 2026.
@@ -57,20 +58,31 @@ shortcut.
 ## Platform at a glance
 
 AMD Ryzen 9 9950X3D · 2× GIGABYTE Radeon AI PRO R9700 32 GB (gfx1201, RDNA 4) ·
-96 GB DDR5-6000 · Kubuntu 24.04 · ROCm 7.2.0 · vLLM 0.19.0. CPU↔GPU interconnect:
+96 GB DDR5-6000 · Kubuntu 24.04 · ROCm 7.2.0 · vLLM 0.19.0+rocm721 ·
+PyTorch 2.10.0+git8514f05 · transformers 5.8.1 (v0.3+ protocol).
+CPU↔GPU interconnect:
 **PCIe Gen4 x8/x8, measured on the root ports** — see [`bom/pci-topology.md`](bom/pci-topology.md)
 for why the endpoint x16 reading is misleading. Benchmark campaigns were collected under
-kernel 6.17 (manifests in [`environment/`](environment/)); the workstation currently runs
-kernel 7.0.0 with an NL-LC1-42 AIO (cooler swap 2026-08-23, measured thermally neutral under
+kernel 6.17 (the April manifest records 6.17.0-22-generic); the 2026-08-23
+cooling record uses kernel 7.0.0-30 with an NL-LC1-42 AIO (cooler swap
+2026-08-23, measured thermally neutral under
 sustained all-core load — [`bom/cooling-test/report.md`](bom/cooling-test/report.md)).
 Full BOM and power topology: [`bom/readme.md`](bom/readme.md).
-Exact software manifests: [`environment/`](environment/).
+Dated software manifests: [`environment/`](environment/) (the full pip freeze is
+from 2026-04-26, before the transformers 5.8.1 update).
+The documented campaign kernel parameters are `quiet splash`, with
+`GRUB_CMDLINE_LINUX` empty (§3.1a). Since 2026-08-30,
+`throughput_sweep_v0.3.py` records `kernel_cmdline` per run, redacting
+`root=UUID=` and `BOOT_IMAGE=`; this does not backfill earlier records.
+See [Reproduce](site/reproduce.html) and [`METHODOLOGY.md`](METHODOLOGY.md) §2.1
+for the BIOS 1715 concurrency-ladder / BIOS 2202 single-stream-anchor boundary.
 
 ## Public artifacts
 
 Released as part of (or alongside) this repository:
 
 - **Ten HuggingFace model cards** — the Llama-PLLuM-70B family (`mozarcik/Llama-PLLuM-70B-{base,instruct,chat}-{2412,2508,2512}-awq`, 8 variants, 2× R9700 / TP=2 deployment target), plus two Run-3 consumer-GPU variants released 2026-05-26 fitting on a single R9700: `mozarcik/Llama-PLLuM-8B-chat-2512-awq` (Llama 3.1 base) and `mozarcik/PLLuM-12B-chat-2512-awq` (Mistral-Nemo base). To the author's knowledge the first public AWQ W4A16 / vLLM-native quantization of each variant. [`huggingface.co/mozarcik`](https://huggingface.co/mozarcik).
+  The corrected [Bielik-11B-v3.0-Instruct-AWQ entry](site/results.html) attributes the checkpoint to the vendor-released SpeakLeash AWQ (revision `0de6dd1`); it was not quantised here.
 - **One HuggingFace dataset** — [`mozarcik/clinical-pl-smpc-awq-calibration`](https://huggingface.co/datasets/mozarcik/clinical-pl-smpc-awq-calibration), 418 fragments of Polish *Charakterystyka Produktu Leczniczego* (ChPL / SmPC) text from EMA, ~512 tokens each, covering 61 medicines drawn from a curated catalog of 81 INN across 9 NFZ drug programmes (pulmonology + thoracic oncology focus; No PHI). Reusable as a calibration corpus for other Polish-clinical quantization work.
 - **One LinkedIn announcement** — [activity 7464059097575907328](https://www.linkedin.com/posts/lukasz-minarowski-73b3233b_navimed-umb-hardware-envelope-studies-for-activity-7464059097575907328).
 - **One Zenodo deposit** — concept DOI [10.5281/zenodo.19851346](https://doi.org/10.5281/zenodo.19851346) (auto-resolves to latest version; current version v0.5.1 at [10.5281/zenodo.22070559](https://doi.org/10.5281/zenodo.22070559); v0.5.0 at [10.5281/zenodo.21207763](https://doi.org/10.5281/zenodo.21207763); previous v0.4.0 at [10.5281/zenodo.20364953](https://doi.org/10.5281/zenodo.20364953)).
@@ -85,7 +97,15 @@ suite + precision-ablation sub-study + N=1 single-stream anchor across all famil
 + firmware provenance reconciliation.
 Full release history and per-version highlights: [`RELEASES.md`](RELEASES.md).
 
-Most recent activity (2026-08-23): a CPU-cooling A/B/C study
+Most recent activity (2026-08-29–31): the Holm contrast script was extended to
+include N = 1; the site corrected the Bielik AWQ checkpoint attribution;
+kernel parameters were documented and added to the generic runner's per-run
+record; and METHODOLOGY 1.8 reconciled the cross-stack plan with v0.7.
+METHODOLOGY 1.9 (2026-10-08) then fixed the power definition (card sum over the
+generation window) and the eight-point Holm family. These changes follow v0.5.1;
+the latest Git release tag remains v0.5.1.
+
+The 2026-08-23 release added a CPU-cooling A/B/C study
 ([`bom/cooling-test/`](bom/cooling-test/)) — air tower vs 420 mm AIO, one run
 invalidated as a no-airflow artifact and retained as a negative control, verdict
 thermal parity under sustained all-core load; a **PCIe topology erratum**
@@ -99,14 +119,15 @@ documentation are public.
 
 ## AI assistance
 
-Developed with generative AI tools — Claude Opus 4.7 and 4.8 (web and Claude
+Developed with generative AI tools — Claude Opus 4.7, 4.8, and 5 (web and Claude
 Code CLI, orchestration and analysis), Claude Fable 5 (Claude Code subagents —
 site design, drafting, and review), GPT-5.5 Deep Thinking (web), Gemini (web
 review), and a locally-served Bielik-11B-v3.0-instruct-AWQ (via vLLM on one
 R9700, used for Polish-language proofreading of documentation in May 2026).
 All experimental design,
 hardware configuration, empirical measurements, and scientific claims are
-the sole responsibility of the author. Full table: [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md).
+the sole responsibility of the author. Disclosure: [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md);
+later Opus 5 assistance is recorded in the August 2026 Git commit trailers.
 
 ## License
 

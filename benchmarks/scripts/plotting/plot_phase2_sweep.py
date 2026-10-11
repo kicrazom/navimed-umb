@@ -58,17 +58,22 @@ class SweepRow:
         # (total_time_s, vram_peak_gb, ...); legacy plotter used PascalCase
         # (total_s, VRAM_peak_GB, ...). Accept both via row.get(snake) or row[legacy]
         # per column. Backwards-compatible with v0.1/v0.2 sweep CSVs.
-        def col(snake: str, legacy: str) -> str:
-            v = row.get(snake)
-            if v is not None and v != "":
-                return v
-            return row[legacy]
+        def col(*names: str) -> str:
+            for nm in names:
+                v = row.get(nm)
+                if v is not None and v != "":
+                    return v
+            raise KeyError(names)
 
         return cls(
             n=int(row["N"]),
             tok_s_out=float(row["tok_s_out"]),
             total_s=float(col("total_time_s", "total_s")),
-            vram_peak_gb=float(col("vram_peak_gb", "VRAM_peak_GB")),
+            # 2026-10-08: kolumna przemianowana na *_gib/GiB zgodnie z jednostka,
+            # ktora zawsze zawierala. Stare zapisy nadal czytane.
+            vram_peak_gb=float(
+                col("vram_peak_gib", "VRAM_peak_GiB", "vram_peak_gb", "VRAM_peak_GB")
+            ),
             t_peak_c=float(col("temp_peak_c", "T_peak_C")),
             w_mean=float(col("power_mean_w", "W_mean")),
             w_peak=float(col("power_peak_w", "W_peak")),

@@ -19,11 +19,17 @@ Raw per-rep sources:
   small/mid : benchmarks/results/<dir>/phase2_sweep_raw.csv (cols TP,N,rep,ok,tok_s_out)
   70B       : benchmarks/results/<dir>/scaling/rep*/results_table.csv (1 tok_s_out/rep)
 
+Rodzina testow: OSIEM punktow drabiny kanonicznej {1,10,25,50,100,200,500,1000}.
+N=1 wchodzi w rodzine na rownych prawach (§7.4) — ma pelna probe n=10 po sweepie
+29/30.08. m = 8 testow na kontrast; 11 kontrastow x 8 punktow = 88 wierszy T1.
+
 SCRIPT public (§11.1); OUTPUT embargoed (§11.3) → paper/figures/ (local-only).
 Output: paper/figures/T1_holm_bonferroni.csv  (+ stderr qualitative summary)
 
 Usage:
     python benchmarks/scripts/analysis/stats_holm_bonferroni.py
+    python benchmarks/scripts/analysis/stats_holm_bonferroni.py --out NAZWA.csv
+    python benchmarks/scripts/analysis/stats_holm_bonferroni.py --self-check
 """
 
 from __future__ import annotations
@@ -39,8 +45,11 @@ REPO = Path(__file__).resolve().parents[3]
 RESULTS = REPO / "benchmarks" / "results"
 FIG = REPO / "paper" / "figures"
 # 2026-08-29: N=1 wlaczone do drabiny — jeden ciag pomiarowy, nie osobna kotwica.
-# Decyzja LM. Dane N=1 leza poza phase2_sweep_raw.csv (scaling-n1/ i n1-anchor/),
-# dlatego load_raw ma dla nich osobna sciezke ponizej.
+# Decyzja LM. Nocny sweep 29/30.08 (60/60 runow) dolozyl brakujace polowki par,
+# wiec N=1 ma pelna probe n=10 i wchodzi w rodzine Holma na rownych prawach:
+# drabina ma OSIEM punktow, rodzina liczy m = 8 testow na kontrast (§7.4).
+# Dane N=1 leza poza phase2_sweep_raw.csv (scaling-n1/ i n1-anchor/), dlatego
+# load_raw ma dla nich osobna sciezke ponizej.
 CANON_N = [1, 10, 25, 50, 100, 200, 500, 1000]
 ALPHA = 0.05
 
@@ -179,7 +188,26 @@ CONTRASTS += [
 ]
 
 
-def main():
+def self_check():
+    """Najmniejszy test, ktory lapie regresje rodziny Holma i samej korekty.
+
+    1. CANON_N musi byc osmiopunktowa drabina Z N=1 (§7.4).
+    2. Liczba wierszy T1 = 11 kontrastow x 8 punktow = 88.
+    3. Holm na rodzinie osmiu identycznych p mnozy najmniejsze przez 8
+       i narasta monotonicznie po rangach.
+    """
+    assert CANON_N == [1, 10, 25, 50, 100, 200, 500, 1000], CANON_N
+    assert 1 in CANON_N, "N=1 nalezy do rodziny Holma (§7.4, drabina osmiopunktowa)"
+    assert len(CONTRASTS) * len(CANON_N) == 88, len(CONTRASTS) * len(CANON_N)
+    adj8 = holm([0.000183] * 8)
+    assert abs(adj8[0] - 8 * 0.000183) < 1e-12, adj8
+    assert adj8 == sorted(adj8), "Holm musi byc monotoniczny po rangach"
+    # Mnoznik rangi musi zalezec od rozmiaru rodziny — inaczej korekta nic nie robi.
+    assert abs(holm([0.000183] * 7)[0] - 7 * 0.000183) < 1e-12
+    print("self-check OK — rodzina 8-punktowa, 88 wierszy, mnoznik Holma 8")
+
+
+def main(out_name: str = "T1_holm_bonferroni.csv"):
     FIG.mkdir(parents=True, exist_ok=True)
     cache = {}
 
@@ -258,7 +286,7 @@ def main():
                 break
         summary.append((label, nsig, ntot, direction))
 
-    out = FIG / "T1_holm_bonferroni.csv"
+    out = FIG / out_name
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(
             f,
@@ -293,4 +321,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if "--self-check" in sys.argv:
+        self_check()
+    else:
+        name = "T1_holm_bonferroni.csv"
+        if "--out" in sys.argv:
+            name = sys.argv[sys.argv.index("--out") + 1]
+        main(name)
