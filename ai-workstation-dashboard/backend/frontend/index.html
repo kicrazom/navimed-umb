@@ -587,14 +587,38 @@ function renderServices(services) {
            <span class="r" style="color:var(--ink-muted)">${c.points != null ? c.points.toLocaleString('pl-PL') : '—'} pts</span></div>`
       ).join('');
     } else if (s.kind === 'vllm' && (up || loading)) {
-      // GPU assignment: rocm-smi first, HIP_VISIBLE_DEVICES as fallback. Unknown → "GPU ?".
-      const ch = s.gpu != null ? gpuChannel[s.gpu] : null;
-      const style = ch
-        ? `--id-mark:${CH[ch].mark};--id-ink:${CH[ch].ink}`
+      // GPU assignment: rocm-smi first (suma po workerach — przy TP>1 kazdy
+      // worker siedzi na swojej karcie), HIP_VISIBLE_DEVICES jako fallback.
+      // Nieznane → "GPU ?". Skalarne s.gpu zostaje jako zapas dla starego API.
+      const karty = (s.gpus && s.gpus.length) ? s.gpus
+                  : (s.gpu != null ? [s.gpu] : []);
+      const chipFor = (g) => {
+        const ch = gpuChannel[g];
+        const style = ch
+          ? `--id-mark:${CH[ch].mark};--id-ink:${CH[ch].ink}`
+          : '--id-mark:var(--rule);--id-ink:var(--ink-muted)';
+        return `<span class="chip" style="${style}">GPU ${g}</span>`;
+      };
+      const chips = karty.length
+        ? karty.map(chipFor).join('')
+        : '<span class="chip" style="--id-mark:var(--rule);--id-ink:var(--ink-muted)">GPU ?</span>';
+      // TP pokazywane ZAWSZE, niezaleznie od modelu: TP=1 tak samo jak TP=2.
+      // tp_declared pochodzi z --tensor-parallel-size (ile kart mialo byc),
+      // karty.length z rocm-smi (ile faktycznie jest). Rozjazd = model nie
+      // wstal na wszystkich kartach — wtedy znacznik na czerwono z "!".
+      const tp = s.tp || karty.length || null;
+      const rozjazd = !!(s.tp_declared && karty.length && s.tp_declared !== karty.length);
+      const tpStyle = rozjazd
+        ? '--id-mark:var(--down);--id-ink:var(--down)'
         : '--id-mark:var(--rule);--id-ink:var(--ink-muted)';
-      const chip = `<span class="chip" style="${style}">${s.gpu != null ? 'GPU ' + s.gpu : 'GPU ?'}</span>`;
+      const tpTitle = rozjazd
+        ? `deklarowane TP=${s.tp_declared}, kart wykrytych: ${karty.length}`
+        : 'tensor parallel';
+      const tpChip = tp
+        ? `<span class="chip" style="${tpStyle}" title="${tpTitle}">TP=${tp}${rozjazd ? ' !' : ''}</span>`
+        : '';
       rows = (s.models || []).map(m =>
-        `<div class="svc-row"><span class="n">${esc(m)}</span><span class="r">${chip}</span></div>`
+        `<div class="svc-row"><span class="n">${esc(m)}</span><span class="r">${tpChip}${chips}</span></div>`
       ).join('');
     } else {
       rows = `<div class="svc-row"><span class="n">${esc(s.detail || 'not reachable')}</span></div>`;
