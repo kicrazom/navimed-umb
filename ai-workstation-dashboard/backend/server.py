@@ -19,9 +19,11 @@ Configuration (environment variables):
 """
 
 import asyncio
+import glob
 import json
 import logging
 import os
+import pathlib
 import re
 import socket
 import subprocess
@@ -103,6 +105,43 @@ class GpuInfo:
     power_frac: Optional[float] = None  # power_w / power_cap_w
     working: Optional[bool] = None  # True = real compute; None = can't tell
     idle_spin: bool = False  # high busy% but the card draws idle power
+    fan_rpm: Optional[int] = None  # z hwmon, dopasowane po PCI (NIE po numerze karty)
+
+
+def fan_rpm_by_pci() -> dict[str, int]:
+    """{adres PCI: RPM} dla kart AMD, prosto z hwmon.
+
+    Dopasowanie po PCI, bo numeracja rocm-smi NIE pokrywa sie z /sys/class/drm:
+    zmierzone na tej maszynie GPU[0] rocm-smi == card1 w sysfs. Indeks klamie.
+    """
+    out: dict[str, int] = {}
+    for dev in glob.glob("/sys/class/drm/card*/device"):
+        try:
+            pci = os.path.basename(os.path.realpath(dev))
+            for f in glob.glob(f"{dev}/hwmon/hwmon*/fan1_input"):
+                out[pci] = int(pathlib.Path(f).read_text().strip())
+        except (OSError, ValueError):
+            continue
+    return out
+
+
+def get_cpu_fan_rpm() -> Optional[int]:
+    """RPM wentylatora CPU z hwmon (na tej plycie: asusec / CPU_Opt).
+
+    ponytail: wentylatory obudowy siedza za Super-I/O (nct6775), ktorego ASUS
+    blokuje przez ACPI — wymagalyby acpi_enforce_resources=lax. Nie ma ich tu.
+    """
+    for h in glob.glob("/sys/class/hwmon/hwmon*"):
+        try:
+            if pathlib.Path(f"{h}/name").read_text().strip() != "asusec":
+                continue
+            for f in sorted(glob.glob(f"{h}/fan*_input")):
+                v = int(pathlib.Path(f).read_text().strip())
+                if v > 0:
+                    return v
+        except (OSError, ValueError):
+            continue
+    return None
 
 
 def run_cmd(cmd: list[str], timeout: int = 3) -> str:
@@ -254,6 +293,7 @@ def parse_gpus_json() -> list[GpuInfo]:
             "--showproductname",
             "--showpower",
             "--showmaxpower",
+            "--showbus",
         ]
     )
     if not raw:
@@ -264,6 +304,7 @@ def parse_gpus_json() -> list[GpuInfo]:
         return []
 
     gpus = []
+    fans = fan_rpm_by_pci()
     for key, val in data.items():
         m = re.search(r"card(\d+)", key, re.IGNORECASE)
         if not m or not isinstance(val, dict):
@@ -329,6 +370,12 @@ def parse_gpus_json() -> list[GpuInfo]:
             gpu.gpu_type = "integrated"
 
         classify_load(gpu)
+        bus = next(
+            (str(val[f]).strip().lower() for f in ("PCI Bus", "pci bus") if f in val),
+            None,
+        )
+        if bus:
+            gpu.fan_rpm = fans.get(bus)
         gpus.append(gpu)
 
     gpus.sort(key=lambda g: g.index)
@@ -524,6 +571,107 @@ def discover_vllm() -> list[dict]:
     return found
 
 
+def discover_by_port() -> list[dict]:
+    """Silniki inferencji znalezione po NASLUCHUJACYM PORCIE, nie po nazwie procesu.
+
+    discover_vllm() dopasowuje `vllm serve` w linii polecen. To gubi wszystko, co
+    nie jest vLLM-em uruchomionym na hoscie — w szczegolnosci SGLang w kontenerze,
+    ktory z perspektywy hosta jest procesem `docker`, a jego `python -m
+    sglang.launch_server` siedzi w innej przestrzeni nazw.
+
+    Kryterium jest zachowanie, nie nazwa: cokolwiek odpowiada na /v1/models jest
+    serwerem inferencji. Silnik rozpoznajemy po koncowce charakterystycznej dla
+    danego projektu, a nie zgadujemy z portu.
+    """
+    found: list[dict] = []
+    pid_gpus = _rocm_pid_to_gpus()
+    try:
+        conns = psutil.net_connections(kind="tcp")
+    except (psutil.AccessDenied, PermissionError):
+        return found
+
+    porty: dict[int, Optional[int]] = {}
+    for c in conns:
+        if c.status != psutil.CONN_LISTEN or not c.laddr:
+            continue
+        port = c.laddr.port
+        if port == PORT or port in porty:
+            continue
+        porty[port] = c.pid
+
+    for port, pid in sorted(porty.items()):
+        data, err = _http_get_json(f"http://{VLLM_HOST}:{port}/v1/models", timeout=0.6)
+        if err or not isinstance(data, dict):
+            continue
+        modele = data.get("data") or []
+        # Musi ZWROCIC model, nie tylko miec koncowke. Zmierzone: port 13305 na
+        # tej maszynie oddaje /v1/models z pusta lista i bez tego warunku
+        # pojawialby sie na dashboardzie jako widmo "unknown".
+        if not modele or not isinstance(modele, list):
+            continue
+
+        # Silnik po jego wlasnej koncowce — SGLang ma /get_model_info,
+        # ktorego vLLM nie wystawia. Brak rozstrzygniecia => "inference".
+        _, e_sg = _http_get_json(
+            f"http://{VLLM_HOST}:{port}/get_model_info", timeout=0.6
+        )
+        silnik = "SGLang" if e_sg is None else "vLLM"
+
+        gpu, source = None, None
+        pids = [pid] if pid else []
+        try:
+            if pid:
+                pids += [c.pid for c in psutil.Process(pid).children(recursive=True)]
+        except Exception:
+            pass
+        for x in pids:
+            g = pid_gpus.get(x) or []
+            if g:
+                gpu, source = g[0], "rocm-smi"
+                break
+
+        # Kontener: port trzyma docker-proxy, wiec lancuch PID-ow nie prowadzi do
+        # procesu liczacego. Ale proces w kontenerze MA hostowy PID i rocm-smi go
+        # widzi — dowiazujemy po sciezce modelu w jego linii polecen.
+        model_id = (modele[0].get("id") if isinstance(modele[0], dict) else "") or ""
+        if gpu is None and model_id:
+            igla = pathlib.PurePath(model_id).name
+            for kandydat, gl in pid_gpus.items():
+                if not gl:
+                    continue
+                # rocm-smi przypisuje karte procesowi POTOMNEMU (u vLLM to
+                # VLLM::EngineCore, u SGLang scheduler), a sciezke modelu ma
+                # w linii polecen RODZIC. Zmierzone: PID 270973 -> GPU 1, ale
+                # `--model-path` siedzi u jego przodka 270733. Stad wspinaczka.
+                proc_i, glebokosc = kandydat, 0
+                while proc_i and glebokosc < 5:
+                    try:
+                        pr = psutil.Process(proc_i)
+                        if igla in " ".join(pr.cmdline()):
+                            gpu, source = gl[0], "rocm-smi+przodek"
+                            break
+                        proc_i = pr.ppid()
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        break
+                    glebokosc += 1
+                if gpu is not None:
+                    break
+
+        found.append(
+            {
+                "pid": pid,
+                "port": port,
+                "silnik": silnik,
+                "model": modele[0].get("id", "?")
+                if isinstance(modele[0], dict)
+                else "?",
+                "gpu": gpu,
+                "gpu_source": source,
+            }
+        )
+    return found
+
+
 # ── AI services health (Qdrant, vLLM) ────────────────────────────────────────
 
 
@@ -584,8 +732,8 @@ def check_qdrant() -> dict:
 def check_vllm(port: int, proc: Optional[dict]) -> dict:
     """Probe one vLLM instance and attach the GPU it was discovered running on."""
     svc = {
-        "name": "vLLM",
-        "kind": "vllm",
+        "name": (proc or {}).get("silnik", "vLLM"),
+        "kind": "vllm",  # frontend filtruje po tym kluczu — nie zmieniac
         "port": port,
         "status": "down",
         "detail": "",
@@ -624,6 +772,11 @@ def get_services() -> dict:
             return _services_cache[1]
         procs = discover_vllm()
         by_port = {p["port"]: p for p in procs}
+        # Odkrycia portowe UZUPELNIAJA, nie nadpisuja: discover_vllm() zna nazwe
+        # modelu z linii polecen, co jest lepsze niz to, co zwraca /v1/models
+        # (SGLang oddaje tam pelna sciezke montowania).
+        for p in discover_by_port():
+            by_port.setdefault(p["port"], p)
         ports = sorted(set(by_port) | set(VLLM_SEED_PORTS))
         items = [check_qdrant()] + [check_vllm(p, by_port.get(p)) for p in ports]
 
@@ -647,6 +800,16 @@ def get_services() -> dict:
 
 
 # ── Metrics snapshot ─────────────────────────────────────────────────────────
+
+
+def get_busy_cores(threshold: float = 50.0) -> Optional[int]:
+    """Ile rdzeni faktycznie pracuje. Srednia obciazenia klamie na tej maszynie:
+    vLLM przypina kilka watkow pod 100%, reszta stoi — 8% ogolem to moga byc
+    2 rdzenie na full albo 32 leniwe. Ta liczba rozroznia te dwa stany."""
+    try:
+        return sum(1 for c in psutil.cpu_percent(percpu=True) if c >= threshold)
+    except Exception:
+        return None
 
 
 def get_cpu_temp() -> Optional[float]:
@@ -828,6 +991,8 @@ def build_snapshot() -> dict:
         "uptime_str": up_str,
         "cpu_percent": round(psutil.cpu_percent(interval=None), 1),
         "cpu_temp": get_cpu_temp(),
+        "cpu_fan_rpm": get_cpu_fan_rpm(),
+        "cpu_busy_cores": get_busy_cores(),
         "load": [round(l1, 2), round(l5, 2), round(l15, 2)],
         "ram_used_gib": round(vm.used / (1024**3), 2),
         "ram_total_gib": round(vm.total / (1024**3), 2),
