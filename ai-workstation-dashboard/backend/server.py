@@ -461,6 +461,36 @@ def get_gpus() -> list[GpuInfo]:
 # the GPU is reported as None and the UI shows "?" — we never guess.
 
 
+def _tp_from_cmdline(pid: Optional[int]) -> Optional[int]:
+    """--tensor-parallel-size z linii polecen procesu lub jego dzieci.
+
+    Zrodlo autorytatywne: mowi, ILE kart serwer MIAL zajac. rocm-smi mowi, ile
+    faktycznie zajal. Rozjazd = nie wstalo na wszystkich.
+    """
+    if not pid:
+        return None
+    try:
+        procs = [psutil.Process(pid)]
+        procs += psutil.Process(pid).children(recursive=True)
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        return None
+    for pr in procs:
+        try:
+            cl = pr.cmdline()
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+        for i, a in enumerate(cl):
+            if a in ("--tensor-parallel-size", "-tp") and i + 1 < len(cl):
+                try:
+                    return int(cl[i + 1])
+                except ValueError:
+                    pass
+            m = re.fullmatch(r"--tensor-parallel-size=(\d+)", a)
+            if m:
+                return int(m.group(1))
+    return None
+
+
 def _rocm_pid_to_gpus() -> dict[int, list[int]]:
     """PID → [physical GPU indices], parsed from `rocm-smi --showpidgpus`."""
     out = run_cmd([ROCM_SMI, "--showpidgpus"])
@@ -543,15 +573,21 @@ def discover_vllm() -> list[dict]:
 
             gpu = None
             source = None
+            # TP>1: kazdy worker na swojej karcie → SUMA, nie pierwszy trafiony.
+            # Break gubil pozostale karty (zmierzone 2026-11-01: TP=2 na dwoch
+            # kartach raportowane jako jedna).
+            karty: list[int] = []
             for pid in pids:
-                gpus = pid_gpus.get(pid) or []
-                if gpus:
-                    gpu = gpus[0]
-                    source = "rocm-smi"
-                    break
+                karty += pid_gpus.get(pid) or []
+            karty = sorted(set(karty))
+            if karty:
+                gpu = karty[0]
+                source = "rocm-smi"
             if gpu is None:
                 gpu = _visible_device_env(proc)
                 source = "env" if gpu is not None else None
+                if gpu is not None:
+                    karty = [gpu]
 
             found.append(
                 {
@@ -559,6 +595,9 @@ def discover_vllm() -> list[dict]:
                     "port": parsed["port"],
                     "model": parsed["model"],
                     "gpu": gpu,  # None → unknown, never guessed
+                    "gpus": karty,  # [] → unknown; >1 element = TP>1
+                    "tp": _tp_from_cmdline(proc.pid) or (len(karty) or None),
+                    "tp_declared": _tp_from_cmdline(proc.pid),
                     "gpu_source": source,
                 }
             )
@@ -624,17 +663,22 @@ def discover_by_port() -> list[dict]:
                 pids += [c.pid for c in psutil.Process(pid).children(recursive=True)]
         except Exception:
             pass
+        # TP>1: kazdy worker vLLM siedzi na SWOJEJ karcie, wiec rocm-smi daje
+        # po jednym indeksie na PID. Break na pierwszym gubil pozostale karty
+        # (zmierzone 2026-11-01: TP=2 raportowane jako jedna karta). Suma, nie
+        # pierwszy trafiony.
+        gpus: list[int] = []
         for x in pids:
-            g = pid_gpus.get(x) or []
-            if g:
-                gpu, source = g[0], "rocm-smi"
-                break
+            gpus += pid_gpus.get(x) or []
+        gpus = sorted(set(gpus))
+        if gpus:
+            gpu, source = gpus[0], "rocm-smi"
 
         # Kontener: port trzyma docker-proxy, wiec lancuch PID-ow nie prowadzi do
         # procesu liczacego. Ale proces w kontenerze MA hostowy PID i rocm-smi go
         # widzi — dowiazujemy po sciezce modelu w jego linii polecen.
         model_id = (modele[0].get("id") if isinstance(modele[0], dict) else "") or ""
-        if gpu is None and model_id:
+        if not gpus and model_id:
             igla = pathlib.PurePath(model_id).name
             for kandydat, gl in pid_gpus.items():
                 if not gl:
@@ -648,15 +692,20 @@ def discover_by_port() -> list[dict]:
                     try:
                         pr = psutil.Process(proc_i)
                         if igla in " ".join(pr.cmdline()):
-                            gpu, source = gl[0], "rocm-smi+przodek"
+                            gpus += gl
+                            source = "rocm-smi+przodek"
                             break
                         proc_i = pr.ppid()
                     except (psutil.NoSuchProcess, psutil.AccessDenied):
                         break
                     glebokosc += 1
-                if gpu is not None:
-                    break
+            # bez break — przy TP>1 kilka workerow pasuje do tego samego
+            # przodka i kazdy wnosi inna karte
+            gpus = sorted(set(gpus))
+            if gpus:
+                gpu = gpus[0]
 
+        tp_flag = _tp_from_cmdline(pid)
         found.append(
             {
                 "pid": pid,
@@ -667,8 +716,11 @@ def discover_by_port() -> list[dict]:
                 else "?",
                 "gpu": gpu,
                 "gpu_source": source,
+                "gpus": gpus,  # [] → nieznane
+                "tp": tp_flag or (len(gpus) or None),  # z cmdline, inaczej z rocm-smi
+                "tp_declared": tp_flag,  # rozjazd tp_declared vs len(gpus)
             }
-        )
+        )  # = nie wstalo na wszystkich kartach
     return found
 
 
@@ -739,6 +791,9 @@ def check_vllm(port: int, proc: Optional[dict]) -> dict:
         "detail": "",
         "models": [],
         "gpu": (proc or {}).get("gpu"),  # None → unknown
+        "gpus": (proc or {}).get("gpus") or [],  # [] → unknown
+        "tp": (proc or {}).get("tp"),
+        "tp_declared": (proc or {}).get("tp_declared"),
         "gpu_source": (proc or {}).get("gpu_source"),
         "pid": (proc or {}).get("pid"),
     }
@@ -784,11 +839,21 @@ def get_services() -> dict:
         # actually host a model get an entry (no empty "none" labels).
         gpu_models: dict[str, list[str]] = {}
         for svc in items:
-            if svc.get("kind") != "vllm" or svc.get("gpu") is None:
+            if svc.get("kind") != "vllm":
                 continue
             if svc["status"] == "down":
                 continue
-            gpu_models.setdefault(str(svc["gpu"]), []).extend(svc.get("models") or [])
+            karty = svc.get("gpus") or (
+                [svc["gpu"]] if svc.get("gpu") is not None else []
+            )
+            if not karty:
+                continue
+            # TP>1 → ten sam model pojawia sie pod kazda karta, ktora go trzyma
+            etykieta = svc.get("models") or []
+            if (svc.get("tp") or 1) > 1:
+                etykieta = [f"{m} (TP={svc['tp']})" for m in etykieta]
+            for k in karty:
+                gpu_models.setdefault(str(k), []).extend(etykieta)
 
         result = {
             "checked_at": datetime.now().isoformat(timespec="seconds"),
