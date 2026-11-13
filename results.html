@@ -178,12 +178,12 @@ const ROWS = [
   // ── Bielik ────────────────────────────────────────────────────────────────
   { model: "Bielik-4.5B-v3.0-Instruct", hf: "speakleash/Bielik-4.5B-v3.0-Instruct",
     family: "Bielik", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 13.21, gate: null },
-  { model: "Bielik-11B-v3.0-Instruct-AWQ", hf: null,
+  { model: "Bielik-11B-v3.0-Instruct-AWQ", hf: "speakleash/Bielik-11B-v3.0-Instruct-awq", // pragma: allowlist secret
     family: "Bielik", quant: "AWQ", tp: 1, ctx: 24576, weight: null, kv: null, conc: 4.58, gate: null,
-    note: "quantised locally; not separately deposited" },
+    note: "vendor AWQ (SpeakLeash), rev 0de6dd1 \u2014 not quantised here; vendor calibration data" },
   { model: "Bielik-11B-v2.3-Instruct-AWQ", hf: "speakleash/Bielik-11B-v2.3-Instruct-AWQ",
     family: "Bielik", quant: "AWQ", tp: 1, ctx: 24576, weight: null, kv: null, conc: 4.37, gate: null },
-  { model: "Bielik-11B-v3.0", hf: "speakleash/Bielik-11B-v3.0",
+  { model: "Bielik-11B-v3.0-Instruct", hf: "speakleash/Bielik-11B-v3.0-Instruct",
     family: "Bielik", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.40, gate: null },
   { model: "Bielik-PL-11B-v3.0-Instruct", hf: "speakleash/Bielik-PL-11B-v3.0-Instruct",
     family: "Bielik", quant: "BF16", tp: 1, ctx: 24576, weight: null, kv: null, conc: 1.40, gate: null },

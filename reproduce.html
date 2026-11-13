@@ -98,6 +98,10 @@ vllm serve mozarcik/Llama-PLLuM-8B-chat-2512-awq \
   --enforce-eager</code></pre>
   <p class="muted">Sanity checks go to the <code>/v1/completions</code> endpoint with the chat template bypassed. See <a href="results.html">Results</a> for why.</p>
 
+  <h2>Local coding agent on the same hardware</h2>
+  <p><a href="https://github.com/kicrazom/leChatonFat4Navi">leChatonFat4Navi</a> is an AMD fork of leChatonFat by Mateusz Choiński: a Docker setup that serves a GGUF model with llama.cpp, adds SearXNG web search and MCP tools, and plugs into the Opencode coding agent. It runs on both R9700 cards through ROCm or Vulkan and keeps the integrated GPU out of the split. Measured on 2026-11-13 with Qwen3.6-35B-A3B-UD-Q4_K_XL: ROCm about 2,650 tok/s prompt and 76.9 tok/s generation, Vulkan about 1,720 tok/s prompt and 88.4 tok/s generation. This is a companion tool, not part of the benchmark envelope.</p>
+  <p class="muted">On ROCm the sampling variable <code>TEMP</code> must not reach the HIP runtime; it reads it as a temp-dir path and <code>llama-server</code> segfaults on load. The fork unsets it.</p>
+
   <h2>What you can reproduce from public artifacts</h2>
   <ul>
     <li><strong>The engineering envelope.</strong> Load behaviour, weight footprint, KV-cache budget, and max-concurrency for each released checkpoint. These figures are on the <a href="results.html">Results</a> page and the model cards.</li>
