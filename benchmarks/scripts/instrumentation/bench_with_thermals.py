@@ -188,6 +188,20 @@ MODELS = {
         "plot_guard": True,
         "print_quant": True,
         "exit_on_rc": True,
+    },  # Bielik 11B v3.1 Instruct, BF16 — same robust policy as bielik-11b-v30.
+    "bielik-11b-v31": {
+        "quants": ["bf16"],
+        "default_quant": "bf16",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
     },
     # Tier-A n=10 sweep — Bielik 4.5B / Bielik-PL 11B v3.0 Instruct (BF16) and
     # Bielik 11B v3.0 Instruct AWQ (compressed-tensors). Same robust overnight

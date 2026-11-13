@@ -317,6 +317,29 @@ MODELS = {
         "verbose_dtype": "bfloat16",
         "results_header": "",
     },
+    # Bielik 11B v3.1 Instruct, BF16 (2026-11-13). Same policy as bielik-11b-v30;
+    # only the checkpoint differs, so the two are directly comparable.
+    "bielik-11b-v31": {
+        "label": "Bielik 11B v3.1",
+        "quants": {
+            "bf16": {
+                "model_path": "/home/mozarcik/models/bielik-11b-v31-instruct",
+                "max_model_len": 8192,
+                "gpu_memory_utilization": 0.90,
+            },
+        },
+        "default_quant": "bf16",
+        "dtype": "bfloat16",
+        "awq_marlin": False,
+        "report": "flat",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": None,
+        "verbose_cfg": True,
+        "verbose_eager": "True (graphs path segfaults on gfx1201)",
+        "verbose_dtype": "bfloat16",
+        "results_header": "",
+    },
     # Tier-A n=10 sweep — Bielik 4.5B v3.0 Instruct, BF16. Llama arch,
     # torch_dtype bfloat16, max_position_embeddings 32768 (config.json). Same
     # bf16 policy as bielik-11b-v30 (golden reference), smaller hidden_size
