@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>leChatonFat4Navi · NaviMed-UMB</title>
+<meta name="description" content="leChatonFat4Navi: an AMD (ROCm and Vulkan) fork of leChatonFat that runs a local Opencode coding agent on llama.cpp with SearXNG web search and MCP tools, on the NaviMed 2x R9700 workstation.">
+<link rel="canonical" href="https://kicrazom.github.io/navimed-umb/lechat.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NaviMed-UMB">
+<meta property="og:title" content="leChatonFat4Navi · NaviMed-UMB">
+<meta property="og:description" content="leChatonFat4Navi: an AMD (ROCm and Vulkan) fork of leChatonFat that runs a local Opencode coding agent on llama.cpp with SearXNG web search and MCP tools, on the NaviMed 2x R9700 workstation.">
+<meta property="og:url" content="https://kicrazom.github.io/navimed-umb/lechat.html">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="shell">
+<aside class="sidebar">
+  <div>
+    <a class="brand" href="index.html">NaviMed<span>-UMB</span></a>
+    <p class="tagline">Local clinical-AI inference on consumer AMD GPUs.</p>
+  </div>
+
+  <nav class="side-nav" aria-label="Primary">
+      <a href="index.html">Overview</a>
+      <a href="models.html">Models</a>
+      <a href="hardware.html">Hardware</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="results.html">Results</a>
+      <a href="conclusions.html">Conclusions</a>
+      <a href="reproduce.html">Reproduce</a>
+      <a href="lechat.html" class="active">leChatonFat4Navi</a>
+      <a href="limitations.html">Limitations</a>
+      <a href="cite.html">Cite</a>
+  </nav>
+
+  <div class="side-spacer"></div>
+
+  <div class="side-meta">
+    <p class="rel"><span class="v">v0.5.1</span> · 2026-08-23</p>
+    <div class="links">
+      <a href="https://doi.org/10.5281/zenodo.19851346">Zenodo DOI</a>
+      <a href="https://github.com/kicrazom/navimed-umb">GitHub repository</a>
+      <a href="https://huggingface.co/mozarcik">HuggingFace · mozarcik</a>
+    </div>
+  </div>
+</aside>
+
+<main id="main">
+<div class="wrap">
+
+  <h1>leChatonFat4Navi</h1>
+  <p class="lead">A local coding agent on the same two R9700 cards that carry the NaviMed benchmarks. No external API, no cloud: model, web search and tools all run on the workstation.</p>
+
+  <p><a href="https://github.com/kicrazom/leChatonFat4Navi">github.com/kicrazom/leChatonFat4Navi</a> is a fork of <a href="https://github.com/grafiszti/leChatonFat">leChatonFat</a> by Mateusz Choiński (MIT licence). The original targets NVIDIA cards. The fork adds AMD support and keeps the NVIDIA path unchanged. It is a companion tool, not part of the benchmark envelope on the <a href="results.html">Results</a> page.</p>
+
+  <h2>What it runs</h2>
+  <ul>
+    <li><strong>llama.cpp server</strong> with a GGUF model, OpenAI-compatible API on port 8001. Default model: Qwen3.6-35B-A3B-UD-Q4_K_XL.</li>
+    <li><strong>SearXNG</strong>, a self-hosted metasearch engine, for web search without a third-party API.</li>
+    <li><strong>MCP servers</strong> (Model Context Protocol, the standard way to plug tools into an agent): page fetch, SearXNG search, browser automation.</li>
+    <li>A generated <code>opencode.json</code> that connects the <strong>Opencode</strong> coding agent to all of the above.</li>
+  </ul>
+
+  <h2>What the fork changes</h2>
+  <ul>
+    <li><code>GPU_BACKEND=auto|nvidia|rocm|vulkan</code> picks the llama.cpp image: <code>server-cuda</code>, <code>server-rocm</code> or <code>server-vulkan</code>.</li>
+    <li>Only the render nodes listed in <code>AMD_GPU0</code> and <code>AMD_GPU1</code> reach the container, so the integrated GPU stays out of the layer split.</li>
+    <li><code>make check_gpu</code> prints the PCI ID of every render node, to tell discrete cards from the iGPU.</li>
+    <li><code>MODELS_DIR</code> points at an existing GGUF directory; the default Hugging Face repository name is corrected.</li>
+  </ul>
+
+  <h2>Measured on 2x Radeon AI PRO R9700</h2>
+  <p>Qwen3.6-35B-A3B-UD-Q4_K_XL, context 98,304 tokens, KV cache q4_0, flash attention, layer split 50/50. Prompt of 600 tokens, 256 generated tokens, prompt cache off, three runs, 2026-11-13.</p>
+  <table>
+    <thead><tr><th>Backend</th><th>Image size</th><th>Prompt processing</th><th>Generation</th></tr></thead>
+    <tbody>
+      <tr><td>ROCm 7.2.1</td><td>30.8 GB</td><td>about 2,650 tok/s</td><td>76.9 tok/s</td></tr>
+      <tr><td>Vulkan (RADV)</td><td>1.2 GB</td><td>about 1,720 tok/s</td><td>88.4 tok/s</td></tr>
+    </tbody>
+  </table>
+  <p>ROCm reads long prompts faster. Vulkan generates faster and its image is 25 times smaller. A coding agent re-reads a large context on every turn, so prompt processing usually decides.</p>
+  <p class="muted">Single machine, single model, N=3 per backend. Not a controlled benchmark in the sense of the <a href="methodology.html">Methodology</a> page: no thermal gating, no power logging, two vLLM embedding services shared the first card during the runs.</p>
+
+  <h2>One ROCm trap</h2>
+  <p>leChatonFat stores the sampling temperature in an environment variable named <code>TEMP</code>. On ROCm, <code>llama-server</code> then crashes with a segmentation fault in <code>libamdhip64</code> right after it starts loading the model. The cause was isolated by bisecting the container environment: <code>TEMP=0.6</code> alone reproduces the crash. The fork unsets <code>TEMP</code> after its value is copied into <code>--temp</code>. NVIDIA is not affected.</p>
+
+  <h2>Quick start on AMD</h2>
+  <pre><code>git clone https://github.com/kicrazom/leChatonFat4Navi
+cd leChatonFat4Navi
+make copy_env          # then edit .env:
+                       #   GPU_BACKEND=rocm   (or vulkan)
+                       #   AMD_GPU0=/dev/dri/renderD128
+                       #   AMD_GPU1=/dev/dri/renderD129
+                       #   TENSOR_SPLIT=50,50
+                       #   MODELS_DIR=/path/to/gguf
+make check_gpu         # which renderD is which card
+make up
+make smoke_test</code></pre>
+  <p class="muted">Your user must be in the <code>video</code> and <code>render</code> groups.</p>
+
+</div>
+
+<footer class="site">
+  <p><strong>Łukasz Minarowski, MD, PhD</strong> · Department of Respiratory Physiopathology, Medical University of Białystok, Poland · ORCID <a href="https://orcid.org/0000-0002-2536-3508">0000-0002-2536-3508</a></p>
+  <p class="lic">Documentation and methodology licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; code <a href="https://github.com/kicrazom/navimed-umb/blob/main/LICENSE-CODE">MIT</a>. Built with generative-AI assistance. See the <a href="cite.html#ai">AI-usage disclosure</a>.</p>
+</footer>
+</main>
+</div>
+</body>
+</html>
