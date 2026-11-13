@@ -112,15 +112,15 @@ documentation are public.
 
 ## AI assistance
 
-Developed with generative AI tools — Claude Opus 4.7, 4.8, and 5 (web and Claude
-Code CLI, orchestration and analysis), Claude Fable 5 (Claude Code subagents —
-site design, drafting, and review), GPT-5.5 Deep Thinking (web), Gemini (web
-review), and a locally-served Bielik-11B-v3.0-instruct-AWQ (via vLLM on one
-R9700, used for Polish-language proofreading of documentation in May 2026).
-All experimental design,
-hardware configuration, empirical measurements, and scientific claims are
-the sole responsibility of the author. Disclosure: [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md);
-later Opus 5 assistance is recorded in the August 2026 Git commit trailers.
+This project is developed with generative-AI assistance: cloud language models
+(Anthropic Claude, OpenAI GPT, Google Gemini) for orchestration, analysis, code,
+drafting and review, and open-weight models served locally on the project's own
+R9700 hardware for Polish-language proofreading. AI tools do not produce
+measurements: every number comes from instrumented runs on the workstation.
+All experimental design, hardware configuration, empirical results and scientific
+claims are the sole responsibility of the author. Which tools were used, for what
+and when is recorded in [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md);
+per-change attribution is in the `Co-Authored-By` trailers of the Git history.
 
 ## License
 
