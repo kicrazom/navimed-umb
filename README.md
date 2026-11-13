@@ -2,7 +2,7 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19851346.svg)](https://doi.org/10.5281/zenodo.19851346)
-[![Version](https://img.shields.io/badge/version-0.5.2-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.5.1)
+[![Version](https://img.shields.io/badge/version-0.5.2-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.5.2)
 
 **📊 Live dashboard → [NaviMed-UMB](https://kicrazom.github.io/navimed-umb/)** — interactive hardware-envelope table, model cards, and methodology.
 
