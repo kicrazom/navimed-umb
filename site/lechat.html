@@ -96,15 +96,18 @@
   <p class="muted">Single machine, single model, N=3 per backend. Not a controlled benchmark in the sense of the <a href="methodology.html">Methodology</a> page: no thermal gating, no power logging, two vLLM embedding services shared the first card during the runs.</p>
 
   <h2>Three engines, one Polish agent model</h2>
-  <p>Bielik-11B-v3.1-Instruct (SpeakLeash, BF16, 22 GB), split over both cards (TP=2). Same prompt and generation length as above, three runs. The second column is tool calling through the Opencode API: one call and two parallel calls in a single answer.</p>
+  <p>Bielik-11B-v3.1-Instruct (SpeakLeash), BF16 weights (22 GB) on both cards. Same prompt and generation length as above, three runs. Tool calling was tested through the OpenAI-compatible API: one call, and two parallel calls in a single answer. All four rows passed both tests.</p>
   <table>
-    <thead><tr><th>Engine</th><th>Tool calls</th><th>Time to first token</th><th>Generation</th></tr></thead>
+    <thead><tr><th>Engine</th><th>Split</th><th>Prompt (600 tokens)</th><th>Generation</th></tr></thead>
     <tbody>
-      <tr><td>SGLang 0.5.18</td><td>yes, <code>hermes</code> parser</td><td>about 150 ms</td><td>33.5 tok/s</td></tr>
-      <tr><td>vLLM 0.19</td><td>yes, <code>hermes</code> parser</td><td>77 ms (warm cache)</td><td>22.4 tok/s</td></tr>
+      <tr><td>llama.cpp, ROCm</td><td>layers</td><td>211 ms</td><td>23.7 tok/s</td></tr>
+      <tr><td>llama.cpp, Vulkan</td><td>layers</td><td>470 ms</td><td>24.9 tok/s</td></tr>
+      <tr><td>SGLang 0.5.18</td><td>tensor (TP=2)</td><td>about 150 ms</td><td>33.5 tok/s</td></tr>
+      <tr><td>vLLM 0.19</td><td>tensor (TP=2)</td><td>77 ms, warm cache</td><td>22.4 tok/s</td></tr>
     </tbody>
   </table>
-  <p>SpeakLeash ships its own tool parser as a plugin for vLLM 0.24 or newer. The built-in <code>hermes</code> parser reads the same format on both engines here. vLLM runs with the gfx1201 environment floor from the <a href="reproduce.html">Reproduce</a> page, which serialises kernels and slows decoding, so the two rows are not an engine comparison. That comparison is planned under one protocol.</p>
+  <p>llama.cpp splits the model by layers, so each token passes through one card and then the other. SGLang and vLLM split every layer across both cards, which is why SGLang generates fastest here. vLLM runs with the gfx1201 environment floor from the <a href="reproduce.html">Reproduce</a> page, which serialises kernels and slows decoding. The rows are therefore a working setup, not an engine comparison; that comparison is planned under one protocol.</p>
+  <p class="muted">Two setup notes. Tool calls need the built-in <code>hermes</code> parser on SGLang and vLLM (SpeakLeash's own parser is a plugin for vLLM 0.24 or newer). llama.cpp rejects the model's chat template because of a <code>\u200b</code> escape; the same template with the literal character in its place works.</p>
 
   <h2>Quick start on AMD</h2>
   <pre><code>git clone https://github.com/kicrazom/leChatonFat4Navi
