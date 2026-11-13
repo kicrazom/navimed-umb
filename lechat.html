@@ -75,7 +75,7 @@
   </ul>
 
   <h2>Measured on 2x Radeon AI PRO R9700</h2>
-  <p>Qwen3.6-35B-A3B-UD-Q4_K_XL, context 98,304 tokens, KV cache q4_0, flash attention, layer split 50/50. Prompt of 600 tokens, 256 generated tokens, prompt cache off, three runs, 2026-11-13.</p>
+  <p>Single stream, one request at a time. Qwen3.6-35B-A3B-UD-Q4_K_XL, context 98,304 tokens, KV cache q4_0, flash attention, layer split 50/50. Prompt of 600 tokens, 256 generated tokens, prompt cache off, three runs, 2026-11-13.</p>
   <table>
     <thead><tr><th>Backend</th><th>Image size</th><th>Prompt processing</th><th>Generation</th></tr></thead>
     <tbody>
@@ -83,7 +83,16 @@
       <tr><td>Vulkan (RADV)</td><td>1.2 GB</td><td>about 1,720 tok/s</td><td>88.4 tok/s</td></tr>
     </tbody>
   </table>
-  <p>ROCm reads long prompts faster. Vulkan generates faster and its image is 25 times smaller. A coding agent re-reads a large context on every turn, so prompt processing usually decides.</p>
+  <p>gpt-oss-20b (<code>ggml-org/gpt-oss-20b-GGUF</code>, native MXFP4, 12.1 GB), same settings, the chat template stored in the GGUF, generation forced to 256 tokens:</p>
+  <table>
+    <thead><tr><th>Backend</th><th>Image size</th><th>Prompt processing</th><th>Generation</th></tr></thead>
+    <tbody>
+      <tr><td>ROCm 7.2.1</td><td>30.8 GB</td><td>about 4,300 tok/s</td><td>124.8 tok/s</td></tr>
+      <tr><td>Vulkan (RADV)</td><td>1.2 GB</td><td>about 2,580 tok/s</td><td>130.6 tok/s</td></tr>
+    </tbody>
+  </table>
+  <p>In April 2026 this model did not start on these cards under vLLM 0.19 (a <code>triton_kernels</code> API mismatch, documented in <a href="https://github.com/kicrazom/navimed-umb/blob/main/docs/sessions/2026-04-26-gpt-oss-20b-routing-api-skew.md">the session log</a>). llama.cpp does not use that code path.</p>
+  <p>On both models ROCm reads long prompts faster. Vulkan generates faster and its image is 25 times smaller. A coding agent re-reads a large context on every turn, so prompt processing usually decides.</p>
   <p class="muted">Single machine, single model, N=3 per backend. Not a controlled benchmark in the sense of the <a href="methodology.html">Methodology</a> page: no thermal gating, no power logging, two vLLM embedding services shared the first card during the runs.</p>
 
   <h2>Quick start on AMD</h2>
