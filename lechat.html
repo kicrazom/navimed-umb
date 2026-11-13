@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>leChatonFat4Navi · NaviMed-UMB</title>
+<title>Harness · NaviMed-UMB</title>
 <meta name="description" content="leChatonFat4Navi: an AMD (ROCm and Vulkan) fork of leChatonFat that runs a local Opencode coding agent on llama.cpp with SearXNG web search and MCP tools, on the NaviMed 2x R9700 workstation.">
 <link rel="canonical" href="https://kicrazom.github.io/navimed-umb/lechat.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="NaviMed-UMB">
-<meta property="og:title" content="leChatonFat4Navi · NaviMed-UMB">
+<meta property="og:title" content="Harness · NaviMed-UMB">
 <meta property="og:description" content="leChatonFat4Navi: an AMD (ROCm and Vulkan) fork of leChatonFat that runs a local Opencode coding agent on llama.cpp with SearXNG web search and MCP tools, on the NaviMed 2x R9700 workstation.">
 <meta property="og:url" content="https://kicrazom.github.io/navimed-umb/lechat.html">
 <meta name="twitter:card" content="summary">
@@ -32,7 +32,7 @@
       <a href="results.html">Results</a>
       <a href="conclusions.html">Conclusions</a>
       <a href="reproduce.html">Reproduce</a>
-      <a href="lechat.html" class="active">leChatonFat4Navi</a>
+      <a href="lechat.html" class="active">Harness</a>
       <a href="limitations.html">Limitations</a>
       <a href="cite.html">Cite</a>
   </nav>
@@ -52,8 +52,8 @@
 <main id="main">
 <div class="wrap">
 
-  <h1>leChatonFat4Navi</h1>
-  <p class="lead">A local coding agent on the same two R9700 cards that carry the NaviMed benchmarks. No external API, no cloud: model, web search and tools all run on the workstation.</p>
+  <h1>Harness</h1>
+  <p class="lead">leChatonFat4Navi: a local coding agent on the same two R9700 cards that carry the NaviMed benchmarks. No external API, no cloud: model, web search and tools all run on the workstation.</p>
 
   <p><a href="https://github.com/kicrazom/leChatonFat4Navi">github.com/kicrazom/leChatonFat4Navi</a> is a fork of <a href="https://github.com/grafiszti/leChatonFat">leChatonFat</a> by Mateusz Choiński (MIT licence). The original targets NVIDIA cards. The fork adds AMD support and keeps the NVIDIA path unchanged. It is a companion tool, not part of the benchmark envelope on the <a href="results.html">Results</a> page.</p>
 
@@ -71,6 +71,7 @@
     <li>Only the render nodes listed in <code>AMD_GPU0</code> and <code>AMD_GPU1</code> reach the container, so the integrated GPU stays out of the layer split.</li>
     <li><code>make check_gpu</code> prints the PCI ID of every render node, to tell discrete cards from the iGPU.</li>
     <li><code>MODELS_DIR</code> points at an existing GGUF directory; the default Hugging Face repository name is corrected.</li>
+    <li>Unsets <code>TEMP</code> (the sampling temperature) before start: with it set, <code>llama-server</code> on ROCm crashes while loading the model.</li>
   </ul>
 
   <h2>Measured on 2x Radeon AI PRO R9700</h2>
@@ -84,9 +85,6 @@
   </table>
   <p>ROCm reads long prompts faster. Vulkan generates faster and its image is 25 times smaller. A coding agent re-reads a large context on every turn, so prompt processing usually decides.</p>
   <p class="muted">Single machine, single model, N=3 per backend. Not a controlled benchmark in the sense of the <a href="methodology.html">Methodology</a> page: no thermal gating, no power logging, two vLLM embedding services shared the first card during the runs.</p>
-
-  <h2>One ROCm trap</h2>
-  <p>leChatonFat stores the sampling temperature in an environment variable named <code>TEMP</code>. On ROCm, <code>llama-server</code> then crashes with a segmentation fault in <code>libamdhip64</code> right after it starts loading the model. The cause was isolated by bisecting the container environment: <code>TEMP=0.6</code> alone reproduces the crash. The fork unsets <code>TEMP</code> after its value is copied into <code>--temp</code>. NVIDIA is not affected.</p>
 
   <h2>Quick start on AMD</h2>
   <pre><code>git clone https://github.com/kicrazom/leChatonFat4Navi
