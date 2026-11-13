@@ -2,7 +2,7 @@
 
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19851346.svg)](https://doi.org/10.5281/zenodo.19851346)
-[![Version](https://img.shields.io/badge/version-0.5.1-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.5.1)
+[![Version](https://img.shields.io/badge/version-0.5.2-blue.svg)](https://github.com/kicrazom/navimed-umb/releases/tag/v0.5.1)
 
 **📊 Live dashboard → [NaviMed-UMB](https://kicrazom.github.io/navimed-umb/)** — interactive hardware-envelope table, model cards, and methodology.
 
@@ -51,7 +51,7 @@ The Holm family is the eight-point ladder including N = 1
 
 - [`METHODOLOGY.md`](METHODOLOGY.md) — version 1.9 (2026-10-08): universal Phase 1 envelope + Phase 2 scaling protocol, the §8 vehicle-integrity boundary, and the §11.1/§11.2/§11.3 embargo classification applied across the 21-model suite. Cross-stack work remains deferred to v0.7 (§4.7).
 - [Reproduce](site/reproduce.html) — software pins, required environment variables, and kernel parameters.
-- [`RELEASES.md`](RELEASES.md) — per-release notes (v0.1.0 → v0.5.1) and between-version events (the 2026-05-23 public Llama-PLLuM-70B AWQ release and the 2026-05-26 Run-3 consumer-GPU 8B/12B AWQ release live here).
+- [`RELEASES.md`](RELEASES.md) — per-release notes (v0.1.0 → v0.5.2) and between-version events (the 2026-05-23 public Llama-PLLuM-70B AWQ release and the 2026-05-26 Run-3 consumer-GPU 8B/12B AWQ release live here).
 - [`CITATION.cff`](CITATION.cff) — canonical citation (or use GitHub's "Cite this repository").
 - [`AI_USAGE_DISCLOSURE.md`](AI_USAGE_DISCLOSURE.md) — disclosure of generative-AI assistance, including the locally-served Bielik-11B that proofread documentation in May 2026.
 
@@ -90,21 +90,13 @@ Released as part of (or alongside) this repository:
 
 ## Status
 
-Current release: **v0.5.1** (2026-08-23) — documentation-and-platform erratum:
-a corrected PCIe topology record, the CPU-cooling A/B/C study, and reproducible
-site deployment. No new benchmark results; the §11.2/§11.3 embargo is unchanged.
-Previous: **v0.5.0** (2026-07-05) — Tier-A n=10 statistical re-runs of the Phase 2
-suite + precision-ablation sub-study + N=1 single-stream anchor across all families
-+ firmware provenance reconciliation.
+Current release: **v0.5.2** (2026-11-13) — methodology-and-documentation release:
+METHODOLOGY 1.8 and 1.9 (power as the card sum over the generation window, the
+eight-point Holm family, Bielik roster correction), per-run kernel-parameter records,
+the N = 1 anchor gap-fill, and a companion [Harness](https://kicrazom.github.io/navimed-umb/lechat.html)
+page. No new public benchmark results; the §11.2/§11.3 embargo is unchanged.
+Previous: **v0.5.1** (2026-08-23) — PCIe topology erratum and CPU-cooling study.
 Full release history and per-version highlights: [`RELEASES.md`](RELEASES.md).
-
-Most recent activity (2026-08-29–31): the Holm contrast script was extended to
-include N = 1; the site corrected the Bielik AWQ checkpoint attribution;
-kernel parameters were documented and added to the generic runner's per-run
-record; and METHODOLOGY 1.8 reconciled the cross-stack plan with v0.7.
-METHODOLOGY 1.9 (2026-10-08) then fixed the power definition (card sum over the
-generation window) and the eight-point Holm family. These changes follow v0.5.1;
-the latest Git release tag remains v0.5.1.
 
 The 2026-08-23 release added a CPU-cooling A/B/C study
 ([`bom/cooling-test/`](bom/cooling-test/)) — air tower vs 420 mm AIO, one run

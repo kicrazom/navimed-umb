@@ -5,6 +5,57 @@ results for each tagged version. The current release summary lives in
 [`README.md`](README.md); the universal benchmark protocol lives in
 [`METHODOLOGY.md`](METHODOLOGY.md).
 
+## v0.5.2 — 2026-11-13
+
+Methodology-and-documentation release. No new public benchmark results; the §11.2/§11.3
+embargo is unchanged. Collects the changes made on `main` after v0.5.1.
+
+**METHODOLOGY 1.9 (2026-10-08)** ([`METHODOLOGY.md`](METHODOLOGY.md) §7.1, §7.4, §7.5, §4.2/§5.3).
+Power is a system quantity: within one sample of the 1 Hz sampler the discrete GPUs are
+**summed** (the integrated GPU is excluded), and the statistic is taken over samples.
+`W_mean` and `W_peak` are taken over the **generation window** (`gen start` / `gen end`),
+not the whole run, so energy per token divides energy by the tokens it was spent on.
+The Holm–Bonferroni family is the eight-point canonical ladder
+`CANON_N` = {1, 10, 25, 50, 100, 200, 500, 1000}, m = 8 per contrast; N = 1 is a full
+ladder point and is also reported as a standalone single-stream reference. The default
+plot band is the 95 % percentile-bootstrap CI of the median. The Bielik roster is
+corrected: #10 is the vendor-released `speakleash/Bielik-11B-v3.0-Instruct-awq`
+(revision `0de6dd1`), so the 11B BF16↔AWQ contrast is same-lineage, not a fourth
+same-checkpoint precision pair. The runner, finalize and plot scripts follow 1.9.
+No published (§11.1) quantity depends on power, so no public figure changes.
+
+**METHODOLOGY 1.8 (2026-08-31).** The cross-stack phase is re-labelled v0.7 (§4.7) to
+match the version table, with its re-entry conditions and two design bounds:
+Lemonade and Ollama wrap llama.cpp rather than being separate engines, and F16/BF16
+is the only quantization plane the engines share. §10.3 states the backend scope.
+
+**Kernel parameters are part of the record** ([Reproduce](site/reproduce.html)).
+The generic runner now stores `/proc/cmdline` with every run (machine identifiers
+masked). The whole campaign ran on the default cmdline with the IOMMU in translating
+mode; established from file provenance (`/etc/default/grub` unchanged since
+2026-02-28, first run 2026-04-17), not assumed.
+
+**N = 1 anchor gap-fill.** The June N = 1 campaign measured one member of each
+precision pair only. Three configurations × {TP1, TP2} × 10 reps complete the pairs
+(60/60 runs, zero failures), so the precision ratio is now defined at N = 1 too.
+
+**Site.** Dashboard shell with local fonts (no CDN); a "Why this exists" section on
+the index; the Bielik AWQ checkpoint attribution corrected on Results; Open Graph
+and canonical tags on every page; a new
+[Harness](https://kicrazom.github.io/navimed-umb/lechat.html) page.
+
+**Harness (companion tool, outside the envelope).**
+[`kicrazom/leChatonFat4Navi`](https://github.com/kicrazom/leChatonFat4Navi) is an AMD
+(ROCm / Vulkan) fork of leChatonFat by Mateusz Choiński (MIT): llama.cpp + SearXNG +
+MCP as a local provider for the Opencode coding agent on 2× R9700. A first speed check
+(N = 3, no thermal gating, no power logging) is on the Harness page. A plan to turn it
+into an application-level benchmark (energy per task, agent success rate) is in
+[`intent/2026-11-13-lechat-agentic-benchmark.md`](intent/2026-11-13-lechat-agentic-benchmark.md).
+
+**Workstation dashboard.** The repository copy of `ai-workstation-dashboard/` was
+re-synced with the live instance (it had drifted since 2026-07-14) and now reports
+TP > 1 services on every card they occupy.
+
 ## v0.5.1 — 2026-08-23
 
 Documentation-and-platform erratum release. No new benchmark results are published;
