@@ -67,7 +67,7 @@
 
   <h2>What the fork changes</h2>
   <ul>
-    <li><code>GPU_BACKEND=auto|nvidia|rocm|vulkan</code> picks the llama.cpp image: <code>server-cuda</code>, <code>server-rocm</code> or <code>server-vulkan</code>.</li>
+    <li><code>GPU_BACKEND=auto|nvidia|rocm|vulkan|sglang|vllm</code> picks the engine. The first four use llama.cpp images (<code>server-cuda</code>, <code>server-rocm</code>, <code>server-vulkan</code>) with GGUF models. <code>sglang</code> runs an SGLang build for RDNA 4 and <code>vllm</code> runs <code>vllm serve</code> from a host virtualenv, both with Hugging Face safetensors.</li>
     <li>Only the render nodes listed in <code>AMD_GPU0</code> and <code>AMD_GPU1</code> reach the container, so the integrated GPU stays out of the layer split.</li>
     <li><code>make check_gpu</code> prints the PCI ID of every render node, to tell discrete cards from the iGPU.</li>
     <li><code>MODELS_DIR</code> points at an existing GGUF directory; the default Hugging Face repository name is corrected.</li>
@@ -94,6 +94,17 @@
   <p>In April 2026 this model did not start on these cards under vLLM 0.19 (a <code>triton_kernels</code> API mismatch, documented in <a href="https://github.com/kicrazom/navimed-umb/blob/main/docs/sessions/2026-04-26-gpt-oss-20b-routing-api-skew.md">the session log</a>). llama.cpp does not use that code path.</p>
   <p>On both models ROCm reads long prompts faster. Vulkan generates faster and its image is 25 times smaller. A coding agent re-reads a large context on every turn, so prompt processing usually decides.</p>
   <p class="muted">Single machine, single model, N=3 per backend. Not a controlled benchmark in the sense of the <a href="methodology.html">Methodology</a> page: no thermal gating, no power logging, two vLLM embedding services shared the first card during the runs.</p>
+
+  <h2>Three engines, one Polish agent model</h2>
+  <p>Bielik-11B-v3.1-Instruct (SpeakLeash, BF16, 22 GB), split over both cards (TP=2). Same prompt and generation length as above, three runs. The second column is tool calling through the Opencode API: one call and two parallel calls in a single answer.</p>
+  <table>
+    <thead><tr><th>Engine</th><th>Tool calls</th><th>Time to first token</th><th>Generation</th></tr></thead>
+    <tbody>
+      <tr><td>SGLang 0.5.18</td><td>yes, <code>hermes</code> parser</td><td>about 150 ms</td><td>33.5 tok/s</td></tr>
+      <tr><td>vLLM 0.19</td><td>yes, <code>hermes</code> parser</td><td>77 ms (warm cache)</td><td>22.4 tok/s</td></tr>
+    </tbody>
+  </table>
+  <p>SpeakLeash ships its own tool parser as a plugin for vLLM 0.24 or newer. The built-in <code>hermes</code> parser reads the same format on both engines here. vLLM runs with the gfx1201 environment floor from the <a href="reproduce.html">Reproduce</a> page, which serialises kernels and slows decoding, so the two rows are not an engine comparison. That comparison is planned under one protocol.</p>
 
   <h2>Quick start on AMD</h2>
   <pre><code>git clone https://github.com/kicrazom/leChatonFat4Navi
