@@ -1,8 +1,8 @@
 # AI Usage Disclosure
 
-> **Document version**: 1.5 (released with `navimed-umb` v0.5.0)
+> **Document version**: 1.6 (follows `navimed-umb` v0.5.2)
 > **Author**: Łukasz Minarowski, MD, PhD
-> **Last updated**: 2026-07-03
+> **Last updated**: 2026-11-13
 
 This document discloses the AI tools used during the development of
 this repository and the associated preprint, the roles those tools
@@ -17,16 +17,25 @@ Transparency about AI assistance is a default policy for this project.
 |---|---|---|---|---|
 | Claude Opus 4.7 | Anthropic | `claude-opus-4-7` | claude.ai web app | Apr 2026 |
 | Claude Code (Opus 4.7) | Anthropic | `claude-opus-4-7` | command-line interface, Kubuntu 24.04 LTS | Apr 2026 – May 2026 |
-| Claude Opus 4.8 | Anthropic | `claude-opus-4-8` | claude.ai web app + Claude Code CLI | Jun 2026 – Jul 2026 |
+| Claude Opus 4.8 | Anthropic | `claude-opus-4-8` | claude.ai web app + Claude Code CLI | May 2026 – Jul 2026 |
 | Claude Fable 5 | Anthropic | `claude-fable-5` | Claude Code subagents (CLI) | Jun 2026 – Jul 2026 |
+| Claude Opus 5 | Anthropic | `claude-opus-5` | Claude Code CLI | Aug 2026 – Nov 2026 |
+| Claude Opus 5.5 | Anthropic | `claude-opus-5-5` | Claude Code CLI | Oct 2026 – present |
 | GPT-5.5 Deep Thinking | OpenAI | GPT-5.5 with extended reasoning | OpenAI web app | Apr 2026 |
 | Gemini | Google | (web review) | gemini web app | May 2026 |
 | Bielik-11B-v3.0-instruct (AWQ W4A16) | SpeakLeash / consortium | `bielik-11b-v30-instruct-awq` (local) | vLLM 0.19.0+rocm721 on 1× AMD Radeon AI PRO R9700 (gfx1201, TP=1) | May 2026 |
 
-All three tools were accessed through their official end-user
-interfaces. No API integration, no automated pipelines, no autonomous
-agents. Every interaction was a human-initiated session with explicit
-prompts.
+The web apps (claude.ai, OpenAI, Gemini) were used in human-initiated
+chat sessions. **Claude Code is different: it is an agentic command-line
+tool that runs on the measurement workstation itself.** Within a session it
+reads and edits files, runs shell commands, starts scripts and containers,
+and commits to Git; from June 2026 it also delegated sub-tasks to subagents.
+Every session is started and supervised by the author. Long or
+hard-to-reverse actions (benchmark campaigns, releases, pushes to public
+repositories, deletions) run only after the author's explicit approval.
+Earlier versions of this document (1.0–1.5) stated that no autonomous
+agents were used and that AI tools did not access the workstation; for
+Claude Code that wording was inaccurate and is corrected here.
 
 A relevant technical detail about Claude Opus 4.7: its knowledge cutoff
 is January 2026. The primary empirical finding documented in this
@@ -47,13 +56,28 @@ the commit level per modern git/GitHub disclosure conventions:
 - `426a712` (2026-04-25): *chore(benchmarks): reorganize into scripts/,
   results/<model>/, methodology/, assets/*
 
-Both predate the v0.1.0 release tag. All commits from v0.1.0 onward
-(2026-04-26 and later) are attributed solely to the author. The two
-trailers are intentionally retained — removing them would require rewriting
-the SHA values archived in Zenodo DOI 10.5281/zenodo.19851347 (v0.1.0) and
-the v0.2.0 DOI, breaking immutability guarantees expected of citation
-records. Per the principle that scientific disclosure should not be
-retroactively edited to appear cleaner than it was, the trailers stay.
+Both predate the v0.1.0 release tag and are intentionally retained —
+removing them would require rewriting the SHA values archived in Zenodo DOI
+10.5281/zenodo.19851347 (v0.1.0) and the v0.2.0 DOI, breaking immutability
+guarantees expected of citation records.
+
+From May 2026 onward, commits made in Claude Code sessions carry a
+`Co-Authored-By` trailer naming the model as a matter of routine. Count from
+the Git history on 2026-11-13 (commits with a trailer, by month):
+
+| Month | Model (trailer) | Commits |
+|---|---|---|
+| 2026-04 | Claude Opus 4.7 | 2 |
+| 2026-05 | Claude Opus 4.7 / Opus 4.8 | 59 / 5 |
+| 2026-06 | Claude Opus 4.8 / Fable 5 | 32 / 4 |
+| 2026-07 | Claude Opus 4.8 / Fable 5 | 7 / 9 |
+| 2026-08 | Claude Opus 5 | 17 |
+| 2026-10 | Claude Opus 5.5 | 1 |
+| 2026-11 | Claude Opus 5 / Opus 5.5 | 3 / 8 |
+
+The trailers are the per-change record; this document is the summary.
+Earlier versions stated that all commits from v0.1.0 onward were attributed
+solely to the author; that stopped being true in May 2026.
 
 This is the position consistent with COPE/ICMJE: AI is *not* an author
 (Section 3 below), but commit-level acknowledgement of AI assistance during
@@ -64,7 +88,7 @@ for the historical record.
 
 ## 2. Roles
 
-The three tools were used for the following classes of tasks:
+The tools were used for the following classes of tasks:
 
 ### Conceptualisation and architectural discussion
 - *Tools*: Claude Opus 4.7 (web), GPT-5.5 Deep Thinking (web)
@@ -97,6 +121,15 @@ The three tools were used for the following classes of tasks:
 - The author executed every test locally and reported the actual
   outcome; the tool never executed code on the workstation.
 
+### Agentic execution on the workstation
+- *Tools*: Claude Code (Opus 4.7 → 5.5), with Fable 5 subagents in Jun–Jul 2026
+- Running shell commands, launching author-defined or author-approved
+  scripts and containers (including some benchmark and sanity runs),
+  collecting their raw logs, editing code and documentation, committing.
+- The model never supplies a number itself: every figure comes from an
+  instrument (benchmark harness, sampler, server timings) whose raw output
+  is kept in the repository or its session logs.
+
 ### Second-opinion review
 - *Tool*: GPT-5.5 Deep Thinking (web)
 - Independent review of repository structure proposals and benchmark
@@ -116,8 +149,11 @@ delegated to any AI tool:
   configurations to test, definition of pass/fail criteria.
 - **Empirical measurements**: every benchmark figure, latency, memory
   footprint, throughput value, and stability outcome was obtained from
-  local execution by the author. No measurement was generated,
-  estimated, or interpolated by an AI tool.
+  instrumented runs on the author's workstation. Some runs were launched
+  by Claude Code at the author's request, executing scripts the author
+  defined or approved; the figures are taken from those instruments' raw
+  logs. No measurement was generated, estimated, or interpolated by an AI
+  tool.
 - **Interpretation of results**: claims about what the measurements
   mean (e.g., "BF16 outpaces FP8 by ~75% on R9700 due to missing FP8
   kernel configurations") are author conclusions formed from the data,
@@ -153,7 +189,10 @@ verification steps were applied before commit or release:
    technical specification was either taken directly from local logs
    or cross-checked against authoritative sources (vendor
    documentation, official release notes, model cards).
-4. **External claims**: cross-references to other work (e.g., the
+4. **Agent-executed runs**: the author reviews the command or script
+   before a long run starts and checks the raw log afterwards; reported
+   figures are read from the log, not from the agent's summary of it.
+5. **External claims**: cross-references to other work (e.g., the
    Digital Spaceport CUDA benchmark mentioned in the preprint) were
    verified by the author against the original source.
 
@@ -177,6 +216,7 @@ versions remain in git history.
 | 1.2 | v0.3.0 | No tooling-profile change: same models (Claude Opus 4.7 web + CLI, GPT-5.5 Deep Thinking web). Version bump to track the v0.3.0 release (version DOI 10.5281/zenodo.20317011). |
 | 1.3 | v0.4.0 | Added Gemini (Google, web review) and Bielik-11B-v3.0-instruct-AWQ (local, vLLM 0.19.0+rocm721 on 1× R9700) to the tooling profile, both used during the 2026-05-23 PLLuM-70B AWQ release session for cross-model documentation review and Polish-language editorial. Version DOI 10.5281/zenodo.20364953. |
 | 1.4 | v0.4.0 (Run-3 between-version) | No tooling-profile change vs 1.3: same four-tool stack (Claude + GPT + Gemini + Bielik). Version bump to track the 2026-05-26 Run-3 consumer-GPU PLLuM AWQ release (8B Llama base + 12B Mistral-Nemo base). Inherits v0.4.0 version DOI 10.5281/zenodo.20364953. |
+| 1.6 | v0.5.2 (follows) | Corrected two statements that had become inaccurate: (1) Claude Code is an agentic CLI running on the workstation (shell, scripts, containers, commits), not a passive assistant; earlier "no autonomous agents / no workstation access" wording is withdrawn; (2) commits since May 2026 routinely carry `Co-Authored-By` trailers, with a per-month count from Git. Added Claude Opus 5 (Aug–Nov 2026) and Opus 5.5 (Oct 2026 –), the "Agentic execution" role, and an agent-run verification step. Inline disclosure (§6) made version-independent. |
 | 1.5 | v0.5.0 | Added Claude Opus 4.8 and Claude Fable 5 (Anthropic) to the tooling profile, used from June 2026: Opus 4.8 for orchestration and analysis (claude.ai web + Claude Code CLI), Fable 5 for Claude Code subagent tasks — the RAG-architecture and evidence-percolation site pages, the site redesign, adversarial pre-release review, compute-results table extraction and benchmark-figure generation, repository-consistency auditing, and RAG backend-abstraction code — in every case operating on the author's own measured data and decisions, never generating measurements, statistics, or scientific claims. Version DOI assigned on v0.5.0 release. |
 
 ---
@@ -188,15 +228,16 @@ papers, posters, and external presentations citing this repository.
 Authors may copy it verbatim or paraphrase, with attribution to this
 document for full detail:
 
-> *"This work used Claude Opus 4.7 and 4.8 and Claude Fable 5 (Anthropic,
-> claude.ai web and Claude Code CLI) and GPT-5.5 Deep Thinking (OpenAI, web app) as
-> research assistants for documentation, debugging dialogue, and
-> sounding-board discussion. All experimental design, hardware
-> configuration, empirical measurements, and scientific claims are the
-> sole responsibility of the author. AI tools did not execute
-> experiments, did not access the workstation, and were not given
-> autonomous agency. Full disclosure: see `AI_USAGE_DISCLOSURE.md` in
-> the project repository (DOI: 10.5281/zenodo.19851346)."*
+> *"This work used generative-AI assistants (Anthropic Claude via claude.ai
+> and the Claude Code agentic command-line tool; OpenAI GPT and Google
+> Gemini via web apps) for documentation, code, analysis, debugging and
+> review. Claude Code operated on the measurement workstation under the
+> author's supervision and, in some sessions, launched author-approved
+> scripts and benchmark runs; it did not generate any measurement. All
+> experimental design, hardware configuration, empirical results and
+> scientific claims are the sole responsibility of the author. Full
+> disclosure: AI_USAGE_DISCLOSURE.md in the project repository
+> (DOI: 10.5281/zenodo.19851346)."*
 
 ---
 
