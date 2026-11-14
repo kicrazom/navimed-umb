@@ -242,6 +242,32 @@ MODELS = {
         "verbose_eager": "True (mandatory for Qwen 3.5/3.6)",
         "results_header": "RESULTS - Qwen 3.6 27B {quant} TP={tp}",
     },
+    # Qwen 3.8 27B, BF16 (2026-11-14). Same arch family and size as qwen36-27b
+    # (Qwen3_5ForConditionalGeneration, hybrid linear/full attention, text-only use);
+    # BF16 fits TP=2 only at max_model_len 1024 / util 0.95, as for Qwen 3.6 27B.
+    "qwen38-27b": {
+        "label": "Qwen 3.8 27B",
+        "quants": {
+            "bf16": {
+                "model_path": os.path.expanduser("~/models/qwen3.8-27b"),
+                "max_model_len": 1024,
+                "gpu_memory_utilization": 0.95,
+            },
+        },
+        "default_quant": "bf16",
+        "dtype": "auto",
+        "awq_marlin": False,
+        "report": "results_block",
+        "prompt_set": "standard",
+        "warmup": "min5",
+        "tp_warn": (
+            lambda tp: tp != 2,
+            "WARNING: Qwen 3.8 27B BF16 requires TP=2 on 32 GB GPUs",
+        ),
+        "verbose_cfg": True,
+        "verbose_eager": "True (mandatory for Qwen 3.5/3.6/3.8 hybrid attention)",
+        "results_header": "RESULTS - Qwen 3.8 27B {quant} TP={tp}",
+    },
     # Qwen 3.5 9B BF16, TP1 — international baseline at the canonical ctx 8192
     # (Paper #1 option A, 2026-06-08). 9B fits a single 32 GB card; eager mandatory
     # for the Qwen 3.5/3.6 arch on gfx1201. Arch served text-only (multimodal heads

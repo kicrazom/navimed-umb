@@ -134,6 +134,22 @@ MODELS = {
         "print_quant": True,
         "exit_on_rc": False,
     },
+    # Qwen 3.8 27B, BF16, TP=2. Robust unattended policy as bielik-11b-v30 (takes --timeout,
+    # timeout caught as rc=124, plotting best-effort, exit mirrors inner rc).
+    "qwen38-27b": {
+        "quants": ["bf16"],
+        "default_quant": "bf16",
+        "default_name": "{quant}-tp{tp}-n{n}",
+        "rocr_policy": "always_pop",
+        "default_timeout": 1800,
+        "timeout_flag": True,
+        "catch_timeout": True,
+        "grep_keys": GREP_KEYS_WITH_LOAD,
+        "require_plotter": False,
+        "plot_guard": True,
+        "print_quant": True,
+        "exit_on_rc": True,
+    },
     # Qwen 3.5 9B BF16, TP1 — international baseline for the canonical §3.3 ladder
     # (Paper #1 option A, 2026-06-08). MODERN policy (timeout_flag/catch_timeout/
     # exit_on_rc=True like bielik-4.5b-v30) so the v3 recovery harness's uniform
