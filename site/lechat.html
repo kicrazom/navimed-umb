@@ -92,7 +92,15 @@
     </tbody>
   </table>
   <p>In April 2026 this model did not start on these cards under vLLM 0.19 (a <code>triton_kernels</code> API mismatch, documented in <a href="https://github.com/kicrazom/navimed-umb/blob/main/docs/sessions/2026-04-26-gpt-oss-20b-routing-api-skew.md">the session log</a>). llama.cpp does not use that code path.</p>
-  <p>On both models ROCm reads long prompts faster. Vulkan generates faster and its image is 25 times smaller. A coding agent re-reads a large context on every turn, so prompt processing usually decides.</p>
+  <p>Qwen3.8-27B (<code>unsloth/Qwen3.8-27B-GGUF</code>, UD-Q4_K_XL, 17.7 GB), a dense model, same settings, 2026-11-14. Tool calls (one city and two parallel cities) worked on both backends:</p>
+  <table>
+    <thead><tr><th>Backend</th><th>Image size</th><th>Prompt processing</th><th>Generation</th></tr></thead>
+    <tbody>
+      <tr><td>ROCm 7.2.1</td><td>30.8 GB</td><td>about 960 tok/s</td><td>27.8 tok/s</td></tr>
+      <tr><td>Vulkan (RADV)</td><td>1.2 GB</td><td>about 575 tok/s</td><td>26.6 tok/s</td></tr>
+    </tbody>
+  </table>
+  <p>On all three models ROCm reads long prompts faster. Vulkan generates faster on the two MoE models and is level on the dense one, and its image is 25 times smaller. The dense 27B generates about three times slower than the 35B MoE, which activates only 3B parameters per token. A coding agent re-reads a large context on every turn, so prompt processing usually decides.</p>
   <p class="muted">Single machine, single model, N=3 per backend. Not a controlled benchmark in the sense of the <a href="methodology.html">Methodology</a> page: no thermal gating, no power logging, two vLLM embedding services shared the first card during the runs.</p>
 
   <h2>Three engines, one Polish agent model</h2>
