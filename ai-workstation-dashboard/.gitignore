@@ -1,0 +1,7 @@
+.venv/
+env/
+ai-dashboard-env/
+__pycache__/
+*.pyc
+*.log
+.env

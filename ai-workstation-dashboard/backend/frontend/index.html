@@ -636,6 +636,30 @@ function renderServices(services) {
         ${note}
         <div class="svc-rows">${rows}</div>
       </article>`;
+  }).join('') + renderContainers(services.containers);
+}
+
+/* ── Containers — grouped by compose project; stopped ones stay visible ──────── */
+function renderContainers(list) {
+  if (!list || !list.length) return '';
+  const groups = {};
+  list.forEach(c => (groups[c.project] = groups[c.project] || []).push(c));
+  return Object.entries(groups).map(([proj, cs]) => {
+    const allUp = cs.every(c => c.state === 'running');
+    const rows = cs.map(c => {
+      const up = c.state === 'running';
+      const port = (c.ports.match(/:(\d+)->/) || [])[1];
+      return `<div class="svc-row" title="${esc(c.image)} — ${esc(c.status)}">
+        <span class="dot ${up ? 'on' : 'off'}"></span>
+        <span class="n">${esc(c.name)}${port ? ' :' + port : ''}</span>
+        <span class="r" style="color:${up ? 'var(--ink-muted)' : 'var(--down)'}">${esc(up ? c.status.replace(/^Up /, '') : c.state)}</span></div>`;
+    }).join('');
+    return `
+      <article class="svc ${allUp ? 'is-up' : 'is-down'}">
+        <div class="svc-top"><span class="nm">docker · ${esc(proj)}</span>
+          <span class="flag" style="color:${allUp ? 'var(--up)' : 'var(--down)'}">${cs.filter(c => c.state === 'running').length}/${cs.length}</span></div>
+        <div class="svc-rows">${rows}</div>
+      </article>`;
   }).join('');
 }
 

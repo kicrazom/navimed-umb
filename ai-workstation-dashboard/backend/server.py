@@ -818,6 +818,39 @@ _services_lock = threading.Lock()
 _services_cache: Optional[tuple[float, dict]] = None
 
 
+def get_containers() -> list[dict]:
+    """Kontenery Dockera (także zatrzymane) — llama.cpp/SGLang w kontenerze trzyma GPU,
+    a z hosta wygląda jak proces `docker`; bez tej listy był niewidoczny (15.11)."""
+    out = run_cmd(["docker", "ps", "-a", "--format", "{{json .}}"], timeout=5)
+    items = []
+    for line in out.splitlines():
+        try:
+            c = json.loads(line)
+        except ValueError:
+            continue
+        labels = dict(
+            kv.split("=", 1) for kv in (c.get("Labels") or "").split(",") if "=" in kv
+        )
+        items.append(
+            {
+                "name": c.get("Names"),
+                "image": c.get("Image"),
+                "state": c.get("State"),  # running | exited | restarting | …
+                "status": c.get("Status"),  # „Up 29 minutes (healthy)”
+                "ports": c.get("Ports") or "",
+                "project": labels.get("com.docker.compose.project") or "—",
+            }
+        )
+    # ponytail: zatrzymane tylko z projektów, w których coś działa — reszta to śmieci (busybox, stare kursy)
+    live = {c["project"] for c in items if c["state"] == "running"}
+    items = [
+        c
+        for c in items
+        if c["state"] == "running" or (c["project"] != "—" and c["project"] in live)
+    ]
+    return sorted(items, key=lambda c: (c["project"], c["name"] or ""))
+
+
 def get_services() -> dict:
     """Health of local AI services, cached for SERVICES_TTL seconds."""
     global _services_cache
@@ -859,6 +892,7 @@ def get_services() -> dict:
             "checked_at": datetime.now().isoformat(timespec="seconds"),
             "items": items,
             "gpu_models": gpu_models,
+            "containers": get_containers(),
         }
         _services_cache = (time.monotonic(), result)
         return result
